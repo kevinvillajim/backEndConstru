@@ -1,0 +1,18 @@
+{
+	"type": "mysql",
+	"host": "localhost",
+	"port": 3306,
+	"username": "root",
+	"password": "password",
+	"database": "miobra",
+	"synchronize": false,
+	"logging": true,
+	"entities": ["src/infrastructure/database/entities/**/*.ts"],
+	"migrations": ["src/infrastructure/database/migrations/**/*.ts"],
+	"subscribers": ["src/infrastructure/database/subscribers/**/*.ts"],
+	"cli": {
+		"entitiesDir": "src/infrastructure/database/entities",
+		"migrationsDir": "src/infrastructure/database/migrations",
+		"subscribersDir": "src/infrastructure/database/subscribers"
+	}
+}

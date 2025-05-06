@@ -1,0 +1,9 @@
+.env
+node_modules
+*.log
+.npm/
+.yarn/
+.pnpm-store/
+.DS_Store
+dist/
+build/
