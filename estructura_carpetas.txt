@@ -1,0 +1,91 @@
+C:.
+|   .env
+|   .gitignore
+|   estructura_carpetas.txt
+|   ormconfig.json
+|   package-lock.json
+|   package.json
+|   README.md
+|   tsconfig.json
+|                      
++---scripts
++---src
+|   |   index.ts
+|   |   
+|   +---application
+|   |   +---auth
+|   |   +---calculation
+|   |   +---common
+|   |   +---invoice
+|   |   +---material
+|   |   +---project
+|   |   +---subscription
+|   |   \---user
+|   +---domain
+|   |   +---events
+|   |   +---exception
+|   |   +---models
+|   |   |   +---calculation
+|   |   |   +---invoice
+|   |   |   +---material
+|   |   |   +---project
+|   |   |   +---subscription
+|   |   |   \---user
+|   |   |           User.ts
+|   |   |           
+|   |   +---repositories
+|   |   |       UserRepository.ts
+|   |   |       
+|   |   \---services
+|   +---infrastructure
+|   |   +---config
+|   |   +---database
+|   |   |   |   data-source.ts
+|   |   |   |   
+|   |   |   +---entities
+|   |   |   |       BudgetItemEntity.ts
+|   |   |   |       CategoryEntity.ts
+|   |   |   |       InvoiceEntity.ts
+|   |   |   |       InvoiceItemEntity.ts
+|   |   |   |       MaterialEntity.ts
+|   |   |   |       MaterialRequestEntity.ts
+|   |   |   |       PhaseEntity.ts
+|   |   |   |       ProjectBudgetEntity.ts
+|   |   |   |       ProjectDocumentEntity.ts
+|   |   |   |       ProjectEntity.ts
+|   |   |   |       ProjectTeamMemberEntity.ts
+|   |   |   |       TaskEntity.ts
+|   |   |   |       UserEntity.ts
+|   |   |   |       UserInteractionEntity.ts
+|   |   |   |       UserRecommendationEntity.ts
+|   |   |   |       
+|   |   |   +---migrations
+|   |   |   |       1746555964763-InitialSchema.ts
+|   |   |   |       
+|   |   |   +---repositories
+|   |   |   |       TypeOrmUserRepository.ts
+|   |   |   |       
+|   |   |   \---seeds
+|   |   +---external
+|   |   |   +---notifications
+|   |   |   +---payment
+|   |   |   \---sri
+|   |   +---security
+|   |   |   +---encryption
+|   |   |   \---jwt
+|   |   \---webserver
+|   |       +---controllers
+|   |       +---middlewares
+|   |       +---routes
+|   |       \---validators
+|   \---interfaces
+|       +---events
+|       +---http
+|       |   +---graphql
+|       |   +---rest
+|       |   \---websocket
+|       \---jobs
+\---test
+    +---e2e
+    +---integration
+    \---unit

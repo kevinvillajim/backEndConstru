@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
 	port: parseInt(process.env.DB_PORT || "3306"),
 	username: process.env.DB_USERNAME || "root",
 	password: process.env.DB_PASSWORD || "",
-	database: process.env.DB_DATABASE || "miobra",
+	database: process.env.DB_DATABASE || "constru",
 	synchronize: false,
 	logging: process.env.NODE_ENV === "development",
 	entities: ["src/infrastructure/database/entities/**/*.ts"],
