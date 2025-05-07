@@ -1,4 +1,3 @@
-C:.
 |   .env
 |   .gitignore
 |   estructura_carpetas.txt
@@ -6,8 +5,7 @@ C:.
 |   package-lock.json
 |   package.json
 |   README.md
-|   tsconfig.json
-|                      
+|   tsconfig.json                    
 +---scripts
 +---src
 |   |   index.ts
@@ -26,6 +24,8 @@ C:.
 |   |   +---exception
 |   |   +---models
 |   |   |   +---calculation
+|   |   |   |       CalculationTemplate.ts
+|   |   |   |       
 |   |   |   +---invoice
 |   |   |   +---material
 |   |   |   +---project
@@ -44,11 +44,21 @@ C:.
 |   |   |   |   
 |   |   |   +---entities
 |   |   |   |       BudgetItemEntity.ts
+|   |   |   |       CalculationFeedbackEntity.ts
+|   |   |   |       CalculationGuideEntity.ts
+|   |   |   |       CalculationImprovementEntity.ts
+|   |   |   |       CalculationParameterEntity.ts
+|   |   |   |       CalculationRecommendationEntity.ts
+|   |   |   |       CalculationResultEntity.ts
+|   |   |   |       CalculationTemplateEntity.ts
 |   |   |   |       CategoryEntity.ts
+|   |   |   |       GeographicalZoneEntity.ts
 |   |   |   |       InvoiceEntity.ts
 |   |   |   |       InvoiceItemEntity.ts
 |   |   |   |       MaterialEntity.ts
+|   |   |   |       MaterialPriceHistoryEntity.ts
 |   |   |   |       MaterialRequestEntity.ts
+|   |   |   |       NotificationEntity.ts
 |   |   |   |       PhaseEntity.ts
 |   |   |   |       ProjectBudgetEntity.ts
 |   |   |   |       ProjectDocumentEntity.ts
@@ -58,9 +68,10 @@ C:.
 |   |   |   |       UserEntity.ts
 |   |   |   |       UserInteractionEntity.ts
 |   |   |   |       UserRecommendationEntity.ts
+|   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1746555964763-InitialSchema.ts
+|   |   |   |       1746648653972-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmUserRepository.ts
