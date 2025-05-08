@@ -12,6 +12,7 @@ import {TypeOrmGeographicalZoneRepository} from "../database/repositories/TypeOr
 import {CalculationService} from "../../domain/services/CalculationService";
 import {TemplateValidationService} from "../../domain/services/TemplateValidationService";
 import {RecommendationService} from "../../domain/services/RecommendationService";
+import {AuthService} from "../../domain/services/AuthService";
 
 // Casos de uso
 import {ExecuteCalculationUseCase} from "../../application/calculation/ExecuteCalculationUseCase";
@@ -22,6 +23,7 @@ import {SaveCalculationResultUseCase} from "../../application/calculation/SaveCa
 // Controladores
 import {CalculationController} from "../webserver/controllers/CalculationController";
 import {CalculationTemplateController} from "../webserver/controllers/CalculationTemplateController";
+import {AuthController} from "../webserver/controllers/AuthController";
 
 // Crear el contenedor
 const container = createContainer();
@@ -56,6 +58,9 @@ container.register({
 	recommendationService: asClass(RecommendationService, {
 		lifetime: Lifetime.SINGLETON,
 	}),
+	authService: asClass(AuthService, {
+		lifetime: Lifetime.SINGLETON,
+	}),
 
 	// Casos de uso
 	executeCalculationUseCase: asClass(ExecuteCalculationUseCase),
@@ -66,6 +71,7 @@ container.register({
 	// Controladores
 	CalculationController: asClass(CalculationController),
 	CalculationTemplateController: asClass(CalculationTemplateController),
+	AuthController: asClass(AuthController),
 });
 
 export {container};

@@ -7,6 +7,10 @@ import rateLimit from "express-rate-limit";
 import {AppDataSource} from "./infrastructure/database/data-source";
 import dotenv from "dotenv";
 
+//Rutas
+import calculationRoutes from "./infrastructure/webserver/routes/calculationRoutes";
+import authRoutes from "./infrastructure/webserver/routes/authRoutes";
+
 // Cargar variables de entorno
 dotenv.config();
 
@@ -21,18 +25,30 @@ const limiter = rateLimit({
 	legacyHeaders: false, // Deshabilita los headers `X-RateLimit-*`
 });
 
+// Configuración de CORS
+const corsOptions = {
+	origin: process.env.CORS_ORIGIN || "http://localhost:4000",
+	credentials: true, // Importante para cookies
+	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(limiter);
 
-// Rutas (se implementarán más adelante)
+//Rutas
 app.get("/", (req, res) => {
 	res.send("ConstructorAPP API");
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/calculations", calculationRoutes);
+
 
 // Manejo de errores
 app.use(
@@ -43,12 +59,18 @@ app.use(
 		next: express.NextFunction
 	) => {
 		console.error(err.stack);
-		res.status(500).send({error: "Algo salió mal!"});
+		res
+			.status(500)
+			.send({
+				success: false,
+				message: "Algo salió mal!",
+				error: process.env.NODE_ENV === "development" ? err.message : undefined,
+			});
 	}
 );
 
 // Conectar a la base de datos y iniciar el servidor
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 AppDataSource.initialize()
 	.then(() => {

@@ -13,10 +13,12 @@
 		"emitDecoratorMetadata": true,
 		"skipLibCheck": true,
 		"noImplicitAny": false,
-    	"strictNullChecks": false,
+		"strictNullChecks": false,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"baseUrl": ".",
+		"typeRoots": ["./node_modules/@types", "./src/types"],
+		"types": ["node", "express"],
 		"paths": {
 			"@domain/*": ["src/domain/*"],
 			"@application/*": ["src/application/*"],
