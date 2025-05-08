@@ -26,6 +26,6 @@
 			"@interfaces/*": ["src/interfaces/*"]
 		}
 	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "test", "./tsconfig.json"]
+	"include": ["src/**/*", "src/types"],
+	"exclude": ["node_modules", "dist"]
 }

@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import "module-alias/register";
+import "./bootstrap";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -7,6 +8,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import {AppDataSource} from "./infrastructure/database/data-source";
 import dotenv from "dotenv";
+
 
 //Rutas
 import calculationRoutes from "./infrastructure/webserver/routes/calculationRoutes";

@@ -1,10 +1,15 @@
 // src/infrastructure/webserver/controllers/AuthController.ts
-import {Request, Response} from "express";
+import { Request, Response } from "express";
+import {User} from "../../../domain/models/user/User";
 import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
 import { UserRole, SubscriptionPlan } from "../../../domain/models/user/User";
-import {v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
+
+interface RequestWithUser extends Request {
+	user?: User;
+}
 
 // Authentication successful cookie settings
 const AUTH_COOKIE_SETTINGS = {
@@ -470,7 +475,7 @@ export class AuthController {
 	/**
 	 * Get current user profile
 	 */
-	async getProfile(req: Request, res: Response): Promise<void> {
+	async getProfile(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			// User is already set by the auth middleware
 			if (!req.user) {
