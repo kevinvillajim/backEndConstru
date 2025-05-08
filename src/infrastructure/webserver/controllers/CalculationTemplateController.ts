@@ -37,17 +37,20 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al crear plantilla:", error);
 
+			const typedError = handleError(error);
+
 			// Si es un error de validación específico, devolver los errores detallados
-			if (error.name === "TemplateValidationError" && error.errors) {
+			if (typedError.name === "TemplateValidationError" && typedError.errors) {
 				res.status(400).json({
 					success: false,
 					message: "Error de validación",
-					errors: error.errors,
+					errors: typedError.errors,
 				});
 			} else {
 				res.status(400).json({
 					success: false,
-					message: error.message || "Error al crear la plantilla de cálculo",
+					message:
+						typedError.message || "Error al crear la plantilla de cálculo",
 				});
 			}
 		}
@@ -77,9 +80,11 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al obtener plantilla:", error);
 
+			const typedError = handleError(error);
+
 			res.status(500).json({
 				success: false,
-				message: error.message || "Error al obtener la plantilla",
+				message: typedError.message || "Error al obtener la plantilla",
 			});
 		}
 	}
@@ -180,9 +185,11 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al listar plantillas:", error);
 
+			const typedError = handleError(error);
+
 			res.status(500).json({
 				success: false,
-				message: error.message || "Error al obtener las plantillas",
+				message: typedError.message || "Error al obtener las plantillas",
 			});
 		}
 	}
@@ -213,9 +220,11 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al generar vista previa:", error);
 
+			const typedError = handleError(error);
+
 			res.status(500).json({
 				success: false,
-				message: error.message || "Error al generar la vista previa",
+				message: typedError.message || "Error al generar la vista previa",
 			});
 		}
 	}
@@ -262,9 +271,11 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al actualizar plantilla:", error);
 
+			const typedError = handleError(error);
+
 			res.status(400).json({
 				success: false,
-				message: error.message || "Error al actualizar la plantilla",
+				message: typedError.message || "Error al actualizar la plantilla",
 			});
 		}
 	}
@@ -314,9 +325,11 @@ export class CalculationTemplateController {
 		} catch (error) {
 			console.error("Error al eliminar plantilla:", error);
 
+			const typedError = handleError(error);
+
 			res.status(500).json({
 				success: false,
-				message: error.message || "Error al eliminar la plantilla",
+				message: typedError.message || "Error al eliminar la plantilla",
 			});
 		}
 	}

@@ -153,7 +153,7 @@ export class CalculationService {
 						context[param.name] = calculate(...Object.values(context));
 					} catch (err) {
 						throw new CalculationError(
-							`Error al calcular parámetro interno ${param.name}: ${err.message}`
+							`Error al calcular parámetro interno ${param.name}: ${(err as Error).message}`
 						);
 					}
 				}
@@ -177,7 +177,7 @@ export class CalculationService {
 				}
 			} catch (err) {
 				throw new CalculationError(
-					`Error al ejecutar cálculo principal: ${err.message}`
+					`Error al ejecutar cálculo principal: ${(err as Error).message}`
 				);
 			}
 
@@ -197,14 +197,14 @@ export class CalculationService {
 						);
 					} catch (err) {
 						throw new CalculationError(
-							`Error al calcular parámetro de salida ${param.name}: ${err.message}`
+							`Error al calcular parámetro de salida ${param.name}: ${(err as Error).message}`
 						);
 					}
 				}
 			}
 		} catch (error) {
 			wasSuccessful = false;
-			errorMessage = error.message;
+			errorMessage = (error as Error).message;
 			console.error(`Error en cálculo (${template.id}):`, error);
 		}
 
@@ -306,7 +306,7 @@ export class CalculationService {
 		} catch (error) {
 			return {
 				sampleInputs,
-				error: `Error al generar vista previa: ${error.message}`,
+				error: `Error al generar vista previa: ${(error as Error).message}`,
 			};
 		}
 	}

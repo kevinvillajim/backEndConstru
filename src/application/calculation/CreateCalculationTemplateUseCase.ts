@@ -62,10 +62,7 @@ export class CreateCalculationTemplateUseCase {
 			...templateFields,
 			source,
 			createdBy: userId,
-			// Estos campos NO se deben incluir en el DTO, son generados por el sistema
-			// usageCount: 0, <-- Este no debe estar aquí, causa error
-			// averageRating: 0, <-- Este no debe estar aquí, causa error
-			// ratingCount: 0, <-- Este no debe estar aquí, causa error
+			parameters: [], // Añadir esta propiedad
 		});
 
 		// 4. Crear los parámetros asociados a la plantilla

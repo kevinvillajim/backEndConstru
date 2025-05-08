@@ -131,8 +131,10 @@ export class TemplateValidationService {
 
 			return {isValid: true};
 		} catch (error) {
-			return {isValid: false, error: `Error de sintaxis: ${error.message}`};
-		}
+            return {
+            	isValid: false,
+            	error: `Error de sintaxis: ${(error as Error).message}`,
+            };		}
 	}
 
 	/**
@@ -219,7 +221,7 @@ export class TemplateValidationService {
 		try {
 			this.checkCircularDependencies(template.parameters);
 		} catch (error) {
-			errors.push(error.message);
+			errors.push((error as Error).message);
 		}
 
 		return {
