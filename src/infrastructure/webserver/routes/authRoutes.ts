@@ -27,3 +27,4 @@ router.post("/reset-password/:token", validatePasswordResetRequest, (req, res) =
 // Protected routes
 router.get("/profile", authenticate, (req, res) => authController.getProfile(req, res));
 
+export default router;

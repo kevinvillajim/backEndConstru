@@ -1,15 +1,15 @@
 // src/infrastructure/webserver/middlewares/authMiddleware.ts
 import {Request, Response, NextFunction} from "express";
+import {User, UserRole} from "../../../domain/models/user/User";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {AuthService} from "../../../domain/services/AuthService";
 import {container} from "../../config/container";
-import {UserRole} from "../../../domain/models/user/User";
 
 /**
  * Middleware to verify user authentication using HTTP-only cookies
  */
 export const authenticate = async (
-	req: Request,
+	req: Request & {user?: User},
 	res: Response,
 	next: NextFunction
 ): Promise<void> => {
@@ -69,11 +69,12 @@ export const authenticate = async (
 
 		// Try to refresh the token if the access token has expired
 		if (req.cookies.refreshToken) {
-			return res.status(401).json({
+			res.status(401).json({
 				success: false,
 				message: "Token expirado. Por favor, actualiza el token",
 				shouldRefresh: true,
 			});
+			return;
 		}
 
 		res.status(401).json({
@@ -88,7 +89,11 @@ export const authenticate = async (
  * Middleware to check if user has required roles
  */
 export const authorize = (roles: UserRole[]) => {
-	return (req: Request, res: Response, next: NextFunction): void => {
+	return (
+		req: Request & {user?: User},
+		res: Response,
+		next: NextFunction
+	): void => {
 		// User should be set by the authenticate middleware
 		if (!req.user) {
 			res.status(401).json({
