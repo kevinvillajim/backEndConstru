@@ -1,13 +1,18 @@
 // src/infrastructure/webserver/controllers/CalculationTemplateController.ts
 import {Request, Response} from "express";
-import {CreateCalculationTemplateUseCase} from "../../../application/calculation/CreateCalculationTemplateUseCase";
+import { CreateCalculationTemplateUseCase } from "../../../application/calculation/CreateCalculationTemplateUseCase";
 import {CalculationService} from "../../../domain/services/CalculationService";
 import {CalculationTemplateRepository} from "../../../domain/repositories/CalculationTemplateRepository";
 import {
 	CalculationType,
 	ProfessionType,
 } from "../../../domain/models/calculation/CalculationTemplate";
-import {handleError} from "../utils/errorHandler";
+import { handleError } from "../utils/errorHandler";
+import { User } from "../../../domain/models/user/User";
+
+interface RequestWithUser extends Request {
+	user?: User;
+}
 
 export class CalculationTemplateController {
 	constructor(
@@ -19,10 +24,19 @@ export class CalculationTemplateController {
 	/**
 	 * Crea una nueva plantilla de cálculo
 	 */
-	async createTemplate(req: Request, res: Response): Promise<void> {
+	async createTemplate(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			const templateData = req.body;
-			const userId = req.user.id;
+			const userId = req.user?.id;
+
+			// Verificar que userId existe
+			if (!userId) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
 
 			const createdTemplate =
 				await this.createCalculationTemplateUseCase.execute(
@@ -232,7 +246,7 @@ export class CalculationTemplateController {
 	/**
 	 * Actualiza una plantilla existente
 	 */
-	async updateTemplate(req: Request, res: Response): Promise<void> {
+	async updateTemplate(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			const {id} = req.params;
 			const updateData = req.body;
@@ -283,7 +297,7 @@ export class CalculationTemplateController {
 	/**
 	 * Elimina una plantilla
 	 */
-	async deleteTemplate(req: Request, res: Response): Promise<void> {
+	async deleteTemplate(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			const {id} = req.params;
 			const userId = req.user.id;
@@ -301,7 +315,7 @@ export class CalculationTemplateController {
 			}
 
 			// Verificar permisos (solo el creador o admin puede eliminar)
-			if (existingTemplate.createdBy !== userId && req.user.role !== "admin") {
+			if (existingTemplate.createdBy !== userId && req.user?.role !== "admin") {
 				res.status(403).json({
 					success: false,
 					message: "No tienes permiso para eliminar esta plantilla",

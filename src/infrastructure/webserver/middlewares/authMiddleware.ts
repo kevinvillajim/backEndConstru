@@ -6,7 +6,7 @@ import {AuthService} from "../../../domain/services/AuthService";
 import {container} from "../../config/container";
 
 // Asegurar que TypeScript reconozca req.user
-interface RequestWithUser extends Request {
+export interface RequestWithUser extends Request {
 	user?: User;
 }
 
