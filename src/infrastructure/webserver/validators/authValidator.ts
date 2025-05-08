@@ -10,6 +10,9 @@ export const validateLoginRequest = (
 	res: Response,
 	next: NextFunction
 ): void => {
+
+	 console.log("Body en validateRegisterRequest:", req.body);
+
 	const schema = Joi.object({
 		email: Joi.string().email().required().messages({
 			"string.email": "El correo electrónico debe tener un formato válido",

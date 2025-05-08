@@ -19,8 +19,8 @@ const authController = container.resolve<AuthController>("AuthController");
 
 // Auth routes
 router.post("/login", validateLoginRequest, (req, res) => authController.login(req, res));
-router.post("/register", validateDTO(RegisterUserDTO), (req, res) =>
-	authController.register(req, res)
+router.post("/register", validateRegisterRequest, (req, res) => {const controller = container.resolve<AuthController>("AuthController");
+return controller.register(req, res); }
 );
 router.post("/refresh-token", (req, res) => authController.refreshToken(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));

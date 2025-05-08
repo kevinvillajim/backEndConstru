@@ -29,7 +29,15 @@ export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private userRepository: UserRepository
-	) {}
+	) {
+		console.log(
+			"AuthController construido con:",
+			"authService=",
+			!!this.authService,
+			"userRepository=",
+			!!this.userRepository
+		);
+	}
 
 	/**
 	 * User login
@@ -143,7 +151,7 @@ export class AuthController {
 	/**
 	 * User registration
 	 */
-	async register(req: Request, res: Response): Promise<void> {
+	register = async (req: Request, res: Response): Promise<void> => {
 		try {
 			const {
 				firstName,
@@ -227,7 +235,7 @@ export class AuthController {
 				message: "Error al registrar usuario",
 			});
 		}
-	}
+	};
 
 	/**
 	 * Refresh access token using refresh token
