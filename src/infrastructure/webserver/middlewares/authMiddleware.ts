@@ -5,11 +5,16 @@ import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {AuthService} from "../../../domain/services/AuthService";
 import {container} from "../../config/container";
 
+// Asegurar que TypeScript reconozca req.user
+interface RequestWithUser extends Request {
+	user?: User;
+}
+
 /**
  * Middleware to verify user authentication using HTTP-only cookies
  */
 export const authenticate = async (
-	req: Request & {user?: User},
+	req: RequestWithUser,
 	res: Response,
 	next: NextFunction
 ): Promise<void> => {
@@ -89,11 +94,7 @@ export const authenticate = async (
  * Middleware to check if user has required roles
  */
 export const authorize = (roles: UserRole[]) => {
-	return (
-		req: Request & {user?: User},
-		res: Response,
-		next: NextFunction
-	): void => {
+	return (req: RequestWithUser, res: Response, next: NextFunction): void => {
 		// User should be set by the authenticate middleware
 		if (!req.user) {
 			res.status(401).json({

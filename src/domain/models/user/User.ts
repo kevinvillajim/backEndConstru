@@ -1,3 +1,5 @@
+import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
+
 export enum UserRole {
 	ADMIN = "admin",
 	NORMAL = "normal",
@@ -129,4 +131,20 @@ export interface User {
 	createdAt: Date;
 	updatedAt: Date;
 	deletedAt?: Date;
+}
+
+export type CreateUserDTO = Omit<User, "id" | "createdAt" | "updatedAt">;
+
+export class RegisterUserDTO {
+	@IsNotEmpty()
+	firstName: string;
+
+	@IsNotEmpty()
+	lastName: string;
+
+	@IsEmail()
+	email: string;
+
+	@MinLength(8)
+	password: string;
 }

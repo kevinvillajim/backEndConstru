@@ -5,6 +5,12 @@ import {GetTemplateRecommendationsUseCase} from "../../../application/calculatio
 import {SaveCalculationResultUseCase} from "../../../application/calculation/SaveCalculationResultUseCase";
 import {CalculationRequest} from "../../../domain/models/calculation/CalculationResult";
 import {handleError} from "../utils/errorHandler";
+import {User} from "../../../domain/models/user/User";
+
+// Interfaz extendida para Request con usuario
+interface RequestWithUser extends Request {
+	user?: User;
+}
 
 export class CalculationController {
 	constructor(
@@ -16,7 +22,7 @@ export class CalculationController {
 	/**
 	 * Ejecuta un cálculo con los parámetros proporcionados
 	 */
-	async executeCalculation(req: Request, res: Response): Promise<void> {
+	async executeCalculation(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			const {templateId, projectId, parameters} = req.body;
 
@@ -61,7 +67,10 @@ export class CalculationController {
 	/**
 	 * Guarda un resultado de cálculo con un nombre específico
 	 */
-	async saveCalculationResult(req: Request, res: Response): Promise<void> {
+	async saveCalculationResult(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
 		try {
 			const {id, name, notes, usedInProject, projectId} = req.body;
 
@@ -106,7 +115,7 @@ export class CalculationController {
 	/**
 	 * Obtiene recomendaciones de plantillas basadas en el contexto actual
 	 */
-	async getRecommendations(req: Request, res: Response): Promise<void> {
+	async getRecommendations(req: RequestWithUser, res: Response): Promise<void> {
 		try {
 			// Verificar que el usuario está autenticado
 			if (!req.user) {

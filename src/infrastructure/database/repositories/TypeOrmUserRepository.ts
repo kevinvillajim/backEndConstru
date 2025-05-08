@@ -27,7 +27,7 @@ export class TypeOrmUserRepository implements UserRepository {
 	}
 
 	async create(user: User): Promise<User> {
-		const userEntity = this.toEntity(user);
+		const userEntity = this.toEntity(user as User);
 		const savedUser = await this.repository.save(userEntity);
 		return this.toDomainModel(savedUser);
 	}
@@ -104,7 +104,7 @@ export class TypeOrmUserRepository implements UserRepository {
 		};
 	}
 
-	private toEntity(model: User): UserEntity {
+	private toEntity(model: User | Omit<User, "id">): UserEntity {
 		const entity = new UserEntity();
 		Object.assign(entity, model);
 		return entity;

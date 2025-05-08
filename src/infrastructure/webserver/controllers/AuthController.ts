@@ -3,7 +3,8 @@ import {Request, Response} from "express";
 import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
-import {UserRole, SubscriptionPlan} from "../../../domain/models/user/User";
+import { UserRole, SubscriptionPlan } from "../../../domain/models/user/User";
+import {v4 as uuidv4} from "uuid";
 
 // Authentication successful cookie settings
 const AUTH_COOKIE_SETTINGS = {
