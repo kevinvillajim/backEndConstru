@@ -1,0 +1,233 @@
+import React, { useState, useEffect } from 'react';
+import { Bell, Check, Trash2, X } from 'lucide-react';
+
+// Definición de tipos
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  priority: string;
+  isRead: boolean;
+  createdAt: string;
+  actionUrl?: string;
+  actionText?: string;
+  icon?: string;
+}
+
+const NotificationCenter = () => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Simulación de la carga de notificaciones
+  useEffect(() => {
+    // En una implementación real, esto obtendría datos del API
+    const mockNotifications = [
+      {
+        id: '1',
+        title: 'Nueva solicitud de material',
+        content: 'Tienes una nueva solicitud de hormigón para el proyecto Casa Modelo',
+        type: 'material_request',
+        priority: 'medium',
+        isRead: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30 minutos atrás
+      },
+      {
+        id: '2',
+        title: 'Retraso en proyecto',
+        content: 'El proyecto "Edificio Central" está atrasado en un 15% según lo planificado',
+        type: 'project_delay',
+        priority: 'high',
+        isRead: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 horas atrás
+      },
+      {
+        id: '3',
+        title: 'Factura aprobada',
+        content: 'La factura #F-2023-156 ha sido aprobada',
+        type: 'payment_due',
+        priority: 'low',
+        isRead: true,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() // 1 día atrás
+      }
+    ];
+    
+    setNotifications(mockNotifications);
+    setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+  }, []);
+
+  // Marcar como leída
+  const markAsRead = (notificationId: string) => {
+    setIsLoading(true);
+    // Simulación de llamada a API
+    setTimeout(() => {
+      setNotifications(notifications.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true } 
+          : notification
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      setIsLoading(false);
+    }, 300);
+  };
+
+  // Marcar todas como leídas
+  const markAllAsRead = () => {
+    setIsLoading(true);
+    // Simulación de llamada a API
+    setTimeout(() => {
+      setNotifications(notifications.map(notification => ({ 
+        ...notification, 
+        isRead: true 
+      })));
+      setUnreadCount(0);
+      setIsLoading(false);
+    }, 300);
+  };
+
+  // Eliminar notificación
+  const deleteNotification = (notificationId: string) => {
+    setIsLoading(true);
+    // Simulación de llamada a API
+    setTimeout(() => {
+      const newNotifications = notifications.filter(
+        notification => notification.id !== notificationId
+      );
+      setNotifications(newNotifications);
+      setUnreadCount(newNotifications.filter(n => !n.isRead).length);
+      setIsLoading(false);
+    }, 300);
+  };
+
+  // Determinar clase de prioridad
+  const getPriorityClass = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Formatear fecha
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.round(diffMs / (1000 * 60));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 60) {
+      return `Hace ${diffMins} ${diffMins === 1 ? 'minuto' : 'minutos'}`;
+    } else if (diffHours < 24) {
+      return `Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+    } else {
+      return `Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+    }
+  };
+
+  return (
+    <div className="relative">
+      {/* Botón de notificaciones */}
+      <button 
+        className="relative p-2 text-gray-600 hover:text-indigo-600 focus:outline-none"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Bell size={24} />
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Panel de notificaciones */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-40 border border-gray-200">
+          <div className="px-4 py-2 border-b flex justify-between items-center bg-gray-50">
+            <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>
+            <div className="flex space-x-2">
+              {unreadCount > 0 && (
+                <button 
+                  className="text-xs text-indigo-600 hover:text-indigo-800"
+                  onClick={markAllAsRead}
+                  disabled={isLoading}
+                >
+                  Marcar todas como leídas
+                </button>
+              )}
+              <button 
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No hay notificaciones
+              </div>
+            ) : (
+              notifications.map(notification => (
+                <div 
+                  key={notification.id} 
+                  className={`p-4 hover:bg-gray-50 transition-colors ${!notification.isRead ? 'bg-blue-50' : ''}`}
+                >
+                  <div className="flex justify-between">
+                    <h4 className="text-sm font-medium text-gray-900">{notification.title}</h4>
+                    <span className={`text-xs px-2 py-1 rounded-full ${getPriorityClass(notification.priority)}`}>
+                      {notification.priority}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-600">{notification.content}</p>
+                  <div className="mt-2 flex justify-between items-center">
+                    <span className="text-xs text-gray-500">{formatDate(notification.createdAt)}</span>
+                    <div className="flex space-x-2">
+                      {!notification.isRead && (
+                        <button 
+                          className="text-blue-600 hover:text-blue-800"
+                          onClick={() => markAsRead(notification.id)}
+                          disabled={isLoading}
+                        >
+                          <Check size={16} />
+                        </button>
+                      )}
+                      <button 
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => deleteNotification(notification.id)}
+                        disabled={isLoading}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div className="p-2 border-t text-center">
+            <button 
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+              onClick={() => console.log('Ver todas las notificaciones')}
+            >
+              Ver todas
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default NotificationCenter;

@@ -32,6 +32,9 @@ import {UpdateTaskProgressUseCase} from "../../application/project/UpdateTaskPro
 import {AssignTaskUseCase} from "../../application/project/AssignTaskUseCase";
 import { TaskController } from "../webserver/controllers/TaskController";
 import { PhaseController } from "../webserver/controllers/PhaseController";
+import {TypeOrmNotificationRepository} from "../database/repositories/TypeOrmNotificationRepository";
+import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
+import {NotificationController} from "../webserver/controllers/NotificationController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -66,6 +69,9 @@ let updateTaskProgressUseCase: UpdateTaskProgressUseCase;
 let assignTaskUseCase: AssignTaskUseCase;
 let taskController: TaskController;
 let phaseController: PhaseController;
+let notificationRepository: TypeOrmNotificationRepository;
+let notificationService: NotificationServiceImpl;
+let notificationController: NotificationController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -84,12 +90,18 @@ export function initializeServices() {
 		projectRepository = new TypeOrmProjectRepository();
 		phaseRepository = new TypeOrmPhaseRepository();
 		taskRepository = new TypeOrmTaskRepository();
+		notificationRepository = new TypeOrmNotificationRepository();
 
 		// Initialize services
 		authService = new AuthService();
 		calculationService = new CalculationService();
 		templateValidationService = new TemplateValidationService();
 		recommendationService = new RecommendationService();
+		notificationService = new NotificationServiceImpl(
+			notificationRepository,
+			userRepository,
+			projectRepository
+		);
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -178,7 +190,9 @@ export function initializeServices() {
 				taskRepository
 			);
 
-			phaseController = new PhaseController(phaseRepository, taskRepository);
+		phaseController = new PhaseController(phaseRepository, taskRepository);
+
+		notificationController = new NotificationController(notificationService);
 
 		console.log("Services initialized successfully");
 	} catch (error) {
@@ -249,4 +263,13 @@ export function getPhaseController() {
 		);
 	}
 	return phaseController;
+}
+
+export function getNotificationController() {
+	if (!notificationController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return notificationController;
 }

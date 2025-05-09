@@ -8,8 +8,10 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import http from "http";
 import {AppDataSource} from "./infrastructure/database/data-source";
-import {initializeServices} from "./infrastructure/config/service-factory";
+import { initializeServices } from "./infrastructure/config/service-factory";
+import {WebSocketService} from "./infrastructure/websocket/WebSocketService";
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +33,12 @@ async function bootstrap() {
 
 		// Initialize Express
 		const app = express();
+
+		// Create HTTP server
+		const server = http.createServer(app);
+
+		// Initialize WebSocket service
+		WebSocketService.getInstance(server);
 
 		// Middlewares and configuration
 		const limiter = rateLimit({
@@ -68,12 +76,15 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/budgetRoutes").default;
 		const projectScheduleRoutes =
 			require("./infrastructure/webserver/routes/projectScheduleRoutes").default;
-		
+		const notificationRoutes =
+			require("./infrastructure/webserver/routes/notificationRoutes").default;
+
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
 		app.use("/api/budgets", budgetRoutes);
 		app.use("/api/schedule", projectScheduleRoutes);
+		app.use("/api/notifications", notificationRoutes);
 
 		// Global error handler
 		app.use(

@@ -1,0 +1,22 @@
+// Inyectar notificationService donde sea necesario
+constructor(private notificationService: NotificationService) {}
+
+// Enviar notificación a un usuario
+await this.notificationService.sendToUser(userId, {
+  title: "Nuevo pedido de material",
+  content: `Se ha realizado un pedido de ${quantity} ${materialName}`,
+  type: NotificationType.MATERIAL_REQUEST,
+  priority: NotificationPriority.MEDIUM,
+  relatedEntityType: "material_request",
+  relatedEntityId: requestId,
+  actionUrl: `/requests/${requestId}`,
+  actionText: "Ver solicitud"
+});
+
+// Enviar notificación a todos los miembros de un proyecto
+await this.notificationService.sendToProjectMembers(projectId, {
+  title: "Actualización de cronograma",
+  content: "El cronograma del proyecto ha sido actualizado",
+  type: NotificationType.PROJECT_DELAY,
+  priority: NotificationPriority.HIGH
+});

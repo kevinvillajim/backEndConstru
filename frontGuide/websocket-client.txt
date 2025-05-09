@@ -1,0 +1,190 @@
+// src/frontend/services/websocket-client.ts
+import {io, Socket} from "socket.io-client";
+import {
+	NotificationType,
+	NotificationPriority,
+} from "../../infrastructure/database/entities/NotificationEntity";
+
+interface NotificationEvent {
+	userId: string;
+	type: NotificationType;
+	priority: NotificationPriority;
+	title: string;
+	content: string;
+	timestamp: Date;
+	actionUrl?: string;
+	actionText?: string;
+	relatedEntityType?: string;
+	relatedEntityId?: string;
+	icon?: string;
+}
+
+interface WebSocketClientOptions {
+	onConnect?: () => void;
+	onDisconnect?: () => void;
+	onNotification?: (notification: NotificationEvent) => void;
+	onError?: (error: any) => void;
+}
+
+/**
+ * Cliente de WebSocket para comunicación en tiempo real con el servidor
+ */
+export class WebSocketClient {
+	private static instance: WebSocketClient;
+	private socket: Socket | null = null;
+	private options: WebSocketClientOptions;
+	private authenticated = false;
+	private userId: string | null = null;
+
+	private constructor(options: WebSocketClientOptions = {}) {
+		this.options = options;
+	}
+
+	/**
+	 * Obtiene una instancia del cliente WebSocket (Singleton)
+	 */
+	public static getInstance(options?: WebSocketClientOptions): WebSocketClient {
+		if (!WebSocketClient.instance) {
+			WebSocketClient.instance = new WebSocketClient(options);
+		} else if (options) {
+			// Actualizar opciones si se proporcionan
+			WebSocketClient.instance.options = {
+				...WebSocketClient.instance.options,
+				...options,
+			};
+		}
+		return WebSocketClient.instance;
+	}
+
+	/**
+	 * Inicia la conexión con el servidor WebSocket
+	 */
+	public connect(serverUrl: string = "http://localhost:4000"): void {
+		if (this.socket) {
+			this.disconnect();
+		}
+
+		this.socket = io(serverUrl, {
+			withCredentials: true,
+			transports: ["websocket", "polling"],
+		});
+
+		// Configurar event listeners
+		this.socket.on("connect", this.handleConnect.bind(this));
+		this.socket.on("disconnect", this.handleDisconnect.bind(this));
+		this.socket.on("notification", this.handleNotification.bind(this));
+		this.socket.on("connect_error", this.handleError.bind(this));
+	}
+
+	/**
+	 * Desconecta del servidor WebSocket
+	 */
+	public disconnect(): void {
+		if (this.socket) {
+			this.socket.disconnect();
+			this.socket = null;
+			this.authenticated = false;
+		}
+	}
+
+	/**
+	 * Autentica la conexión WebSocket con el ID de usuario
+	 */
+	public authenticate(userId: string): void {
+		if (!this.socket) {
+			throw new Error("WebSocket not connected. Call connect() first.");
+		}
+
+		this.userId = userId;
+		this.socket.emit("authenticate", userId);
+		this.authenticated = true;
+	}
+
+	/**
+	 * Verifica si el cliente está conectado
+	 */
+	public isConnected(): boolean {
+		return !!this.socket && this.socket.connected;
+	}
+
+	/**
+	 * Verifica si el cliente está autenticado
+	 */
+	public isAuthenticated(): boolean {
+		return this.isConnected() && this.authenticated;
+	}
+
+	/**
+	 * Manejador para el evento de conexión
+	 */
+	private handleConnect(): void {
+		console.log("WebSocket connected");
+
+		// Re-autenticar si tenemos un userId
+		if (this.userId) {
+			this.authenticate(this.userId);
+		}
+
+		if (this.options.onConnect) {
+			this.options.onConnect();
+		}
+	}
+
+	/**
+	 * Manejador para el evento de desconexión
+	 */
+	private handleDisconnect(): void {
+		console.log("WebSocket disconnected");
+		this.authenticated = false;
+
+		if (this.options.onDisconnect) {
+			this.options.onDisconnect();
+		}
+	}
+
+	/**
+	 * Manejador para eventos de notificación
+	 */
+	private handleNotification(notification: NotificationEvent): void {
+		console.log("Notification received:", notification);
+
+		if (this.options.onNotification) {
+			this.options.onNotification(notification);
+		}
+	}
+
+	/**
+	 * Manejador para errores de conexión
+	 */
+	private handleError(error: any): void {
+		console.error("WebSocket error:", error);
+
+		if (this.options.onError) {
+			this.options.onError(error);
+		}
+	}
+}
+
+// Ejemplo de uso:
+/*
+const wsClient = WebSocketClient.getInstance({
+  onNotification: (notification) => {
+    // Mostrar notificación en la interfaz
+    console.log('Nueva notificación:', notification);
+    
+    // Ejemplo: Mostrar notificación toast
+    toast.info({
+      title: notification.title,
+      message: notification.content,
+      duration: 5000
+    });
+  }
+});
+
+// Conectar al iniciar la aplicación
+wsClient.connect();
+
+// Autenticar después del login
+const userId = '123456';
+wsClient.authenticate(userId);
+*/
