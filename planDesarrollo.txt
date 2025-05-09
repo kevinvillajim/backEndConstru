@@ -1,0 +1,171 @@
+Plan de Desarrollo Backend para CONSTRU App
+Veo que ya tienes implementada la autenticación y parte del módulo de cálculos. Basándome en el esquema de base de datos y el contexto del proyecto, te propongo un plan de desarrollo ordenado y progresivo para completar el backend de manera eficiente.
+Fase 1: Módulos Fundamentales
+1. Completar Módulo de Cálculos Técnicos
+
+Finalizar API para cálculos técnicos:
+
+Completar endpoints para gestión de plantillas de cálculo (CRUD)
+Implementar la ejecución de cálculos basada en parámetros
+Sistema de versiones para plantillas de cálculo
+
+
+Implementar validaciones específicas según normativa NEC
+Agregar conversión automática de áreas a materiales
+
+2. Gestión de Materiales
+
+CRUD de materiales:
+
+Endpoints para creación, consulta, actualización y eliminación
+Sistema de validación para propiedades requeridas
+Soporte para almacenamiento de dimensiones como JSON
+
+
+Implementar historial de precios:
+
+Registro de cambios de precio con razones
+Consulta de precios históricos
+Funcionalidad para actualización masiva de precios
+
+
+
+3. Gestión de Proyectos
+
+CRUD básico de proyectos:
+
+Crear estructura de datos completa (información general, ubicación, etc.)
+Implementar manejo de estados de proyecto
+
+
+Gestión de fases y tareas:
+
+Estructura jerárquica (proyecto > fases > tareas)
+Asignación de responsables
+Seguimiento de progreso
+
+
+
+Fase 2: Funcionalidades de Presupuestación y Seguimiento
+4. Sistema de Presupuestos
+
+Generación automática de presupuestos:
+
+Convertir cálculos de materiales a presupuestos
+Incluir mano de obra y otros costos
+
+
+Gestión de ítems presupuestarios:
+
+Categorización (materiales, mano de obra, etc.)
+Manejo de cantidades y precios
+Cálculo automático de totales
+
+
+Versiones y comparativas de presupuestos:
+
+Historial de cambios
+Análisis de variaciones
+
+
+
+5. Seguimiento de Progreso
+
+API para informes de progreso:
+
+Registro de avances diarios
+Comparativa avance real vs. planificado
+
+
+Sistema de alertas:
+
+Detección de retrasos
+Notificaciones por hitos importantes
+
+
+Gestión de solicitudes de materiales:
+
+Solicitudes desde la obra
+Aprobación y seguimiento
+
+
+
+Fase 3: Integración Comercial y Facturación
+6. Marketplace de Materiales
+
+Catálogo de materiales:
+
+Endpoints para búsqueda y filtrado
+Disponibilidad en tiempo real
+
+
+Sistema de pedidos:
+
+Creación de órdenes
+Seguimiento del estado
+Confirmación de recepción
+
+
+
+7. Facturación Electrónica
+
+Generación de facturas:
+
+Conformidad con requisitos del SRI
+Conexión con presupuestos y proyectos
+
+
+Integración con SRI:
+
+Generación de claves de acceso
+Autorización electrónica
+
+
+
+Fase 4: Inteligencia y Personalización
+8. Recomendaciones e Interacciones
+
+Motor de recomendaciones:
+
+Basado en preferencias de usuario
+Historial de interacciones
+Patrones de uso
+
+
+Análisis de uso del sistema:
+
+Seguimiento de interacciones
+Métricas de adopción
+
+
+
+9. Notificaciones y Comunicación
+
+Sistema de notificaciones:
+
+Configuración de canales (email, push, in-app)
+Plantillas personalizables
+Programación y envío
+
+
+
+Plan de Ejecución Propuesto
+Para cada módulo, te recomiendo seguir estos pasos:
+
+Estructura de datos: Asegurar que la migración está completa
+Modelos y entidades: Implementar las clases con propiedades y relaciones
+Repositorios: Crear la capa de acceso a datos
+Servicios: Implementar la lógica de negocio
+Controladores: Desarrollar las APIs REST
+Middleware: Agregar validaciones, autenticación/autorización
+Pruebas: Implementar tests unitarios y de integración
+
+Prioridad de desarrollo recomendada:
+
+Materiales (es fundamental para los cálculos y presupuestos)
+Proyectos-Fases-Tareas (estructura organizativa básica)
+Presupuestos (valor inmediato para usuarios)
+Seguimiento de Progreso (valor práctico para obra)
+Marketplace (integración con proveedores)
+Facturación (cumplimiento normativo)
+Recomendaciones y Notificaciones (mejora de experiencia)

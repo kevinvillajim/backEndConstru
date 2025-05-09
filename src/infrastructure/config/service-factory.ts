@@ -16,6 +16,13 @@ import {RecommendationService} from "../../domain/services/RecommendationService
 import {GetTemplateRecommendationsUseCase} from "../../application/calculation/GetTemplateRecommendationsUseCase";
 import {SaveCalculationResultUseCase} from "../../application/calculation/SaveCalculationResultUseCase";
 import {CalculationController} from "../webserver/controllers/CalculationController";
+import {TypeOrmMaterialRepository} from "../database/repositories/TypeOrmMaterialRepository";
+import {TypeOrmProjectBudgetRepository} from "../database/repositories/TypeOrmProjectBudgetRepository";
+import {TypeOrmBudgetItemRepository} from "../database/repositories/TypeOrmBudgetItemRepository";
+import {GenerateBudgetFromCalculationUseCase} from "../../application/calculation/GenerateBudgetFromCalculationUseCase";
+import {BudgetController} from "../webserver/controllers/BudgetController";
+
+
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -34,6 +41,11 @@ let recommendationService: RecommendationService;
 let getTemplateRecommendationsUseCase: GetTemplateRecommendationsUseCase;
 let saveCalculationResultUseCase: SaveCalculationResultUseCase;
 let calculationController: CalculationController;
+let materialRepository: TypeOrmMaterialRepository;
+let projectBudgetRepository: TypeOrmProjectBudgetRepository;
+let budgetItemRepository: TypeOrmBudgetItemRepository;
+let generateBudgetFromCalculationUseCase: GenerateBudgetFromCalculationUseCase;
+let budgetController: BudgetController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -46,6 +58,9 @@ export function initializeServices() {
 			new TypeOrmCalculationParameterRepository();
 		calculationResultRepository = new TypeOrmCalculationResultRepository();
 		geographicalZoneRepository = new TypeOrmGeographicalZoneRepository();
+		materialRepository = new TypeOrmMaterialRepository();
+		projectBudgetRepository = new TypeOrmProjectBudgetRepository();
+		budgetItemRepository = new TypeOrmBudgetItemRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -77,6 +92,14 @@ export function initializeServices() {
 			calculationResultRepository
 		);
 
+		generateBudgetFromCalculationUseCase =
+			new GenerateBudgetFromCalculationUseCase(
+				calculationResultRepository,
+				materialRepository,
+				projectBudgetRepository,
+				budgetItemRepository
+			);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -88,6 +111,9 @@ export function initializeServices() {
 			executeCalculationUseCase,
 			getTemplateRecommendationsUseCase,
 			saveCalculationResultUseCase
+		);
+		budgetController = new BudgetController(
+			generateBudgetFromCalculationUseCase
 		);
 
 		console.log("Services initialized successfully");
@@ -123,4 +149,13 @@ export function getCalculationTemplateController() {
 		);
 	}
 	return calculationTemplateController;
+}
+
+export function getBudgetController() {
+	if (!budgetController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return budgetController;
 }
