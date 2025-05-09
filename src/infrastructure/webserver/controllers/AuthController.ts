@@ -31,12 +31,33 @@ export class AuthController {
 		private userRepository: UserRepository
 	) {
 		console.log(
-			"AuthController construido con:",
+			"AuthController constructor llamado con:",
 			"authService=",
 			!!this.authService,
 			"userRepository=",
-			!!this.userRepository
+			!!this.userRepository,
+			"userRepository type=",
+			typeof this.userRepository
 		);
+
+		// Verificar si authService y userRepository tienen las funciones esperadas
+		if (this.authService) {
+			console.log(
+				"authService methods:",
+				Object.getOwnPropertyNames(Object.getPrototypeOf(this.authService))
+			);
+		}
+
+		if (this.userRepository) {
+			console.log(
+				"userRepository methods:",
+				Object.getOwnPropertyNames(Object.getPrototypeOf(this.userRepository))
+			);
+		} else {
+			console.error(
+				"ALERTA: userRepository es undefined en el constructor de AuthController"
+			);
+		}
 	}
 
 	/**
@@ -151,7 +172,11 @@ export class AuthController {
 	/**
 	 * User registration
 	 */
-	register = async (req: Request, res: Response): Promise<void> => {
+	async register(req: Request, res: Response): Promise<void> {
+		console.log(
+			"Método register llamado, verificando userRepository:",
+			!!this.userRepository
+		);
 		try {
 			const {
 				firstName,
@@ -172,14 +197,20 @@ export class AuthController {
 			}
 
 			// Check if user already exists
-			const existingUser = await this.userRepository.findByEmail(email);
-			if (existingUser) {
-				res.status(409).json({
+			console.log(`Buscando si el usuario ${email} ya existe`);
+			if (!this.userRepository) {
+				console.error(
+					"ERROR CRÍTICO: userRepository undefined al intentar findByEmail"
+				);
+				res.status(500).json({
 					success: false,
-					message: "El correo electrónico ya está registrado",
+					message: "Error interno del servidor - repo undefined",
 				});
 				return;
 			}
+
+			const existingUser = await this.userRepository.findByEmail(email);
+			console.log(`¿Usuario ${email} existe?:`, !!existingUser);
 
 			// Hash password
 			const hashedPassword = await this.authService.hashPassword(password);
@@ -227,15 +258,21 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
+			console.error("Error detallado en registro:", error);
 			const typedError = handleError(error);
 			console.error("Error de registro:", typedError);
+			if (error instanceof Error) {
+				console.error("Stack completo:", error.stack);
+			}
 
 			res.status(500).json({
 				success: false,
 				message: "Error al registrar usuario",
+				debug:
+					process.env.NODE_ENV === "development" && error instanceof Error ? error.message : undefined,
 			});
 		}
-	};
+	}
 
 	/**
 	 * Refresh access token using refresh token

@@ -16,3 +16,8 @@ export const AppDataSource = new DataSource({
 	migrations: ["src/infrastructure/database/migrations/**/*.ts"],
 	subscribers: ["src/infrastructure/database/subscribers/**/*.ts"],
 });
+
+console.log(
+	"AppDataSource configurado. Estado:",
+	AppDataSource.isInitialized ? "Inicializado" : "No inicializado"
+);

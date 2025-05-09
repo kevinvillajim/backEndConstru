@@ -14,6 +14,8 @@ import dotenv from "dotenv";
 import calculationRoutes from "./infrastructure/webserver/routes/calculationRoutes";
 import authRoutes from "./infrastructure/webserver/routes/authRoutes";
 
+console.log("Iniciando aplicación");
+
 // Cargar variables de entorno
 dotenv.config();
 
@@ -70,6 +72,11 @@ app.use(
 				error: process.env.NODE_ENV === "development" ? err.message : undefined,
 			});
 	}
+);
+
+console.log(
+	"Estado inicial de AppDataSource:",
+	AppDataSource.isInitialized ? "Inicializado" : "No inicializado"
 );
 
 // Conectar a la base de datos y iniciar el servidor
