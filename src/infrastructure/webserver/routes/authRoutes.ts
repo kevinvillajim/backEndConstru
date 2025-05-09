@@ -2,8 +2,6 @@
 import {Router} from "express";
 import {AuthController} from "../controllers/AuthController";
 import { authenticate } from "../middlewares/authMiddleware";
-import {validateDTO} from "../middlewares/validationMiddleware";
-import {RegisterUserDTO} from "@domain/dtos/user/RegisterUserDTO";
 import {
 	validateLoginRequest,
 	validateRegisterRequest,
@@ -16,11 +14,15 @@ const router = Router();
 
 // Get controller from container
 const authController = container.resolve<AuthController>("AuthController");
+console.log("Controller resolved with repositories:", {
+	authService: !!authController["authService"],
+	userRepository: !!authController["userRepository"],
+});
 
 // Auth routes
 router.post("/login", validateLoginRequest, (req, res) => authController.login(req, res));
-router.post("/register", validateRegisterRequest, (req, res) => {const controller = container.resolve<AuthController>("AuthController");
-return controller.register(req, res); }
+router.post("/register", validateRegisterRequest, (req, res) =>
+	authController.register(req, res)
 );
 router.post("/refresh-token", (req, res) => authController.refreshToken(req, res));
 router.post("/logout", (req, res) => authController.logout(req, res));
