@@ -1,15 +1,17 @@
 // src/infrastructure/database/repositories/TypeOrmUserRepository.ts
 import {Repository} from "typeorm";
-import {AppDataSource} from "../data-source";
 import {User} from "@domain/models/user/User";
 import {UserRepository} from "@domain/repositories/UserRepository";
 import {UserEntity} from "../entities/UserEntity";
+import {DatabaseService} from "../database.service";
 
 export class TypeOrmUserRepository implements UserRepository {
 	private repository: Repository<UserEntity>;
 
 	constructor() {
-		this.repository = AppDataSource.getRepository(UserEntity);
+		const databaseService = DatabaseService.getInstance();
+		const dataSource = databaseService.getDataSource();
+		this.repository = dataSource.getRepository(UserEntity);
 	}
 
 	async findById(id: string): Promise<User | null> {

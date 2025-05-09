@@ -1,5 +1,6 @@
 // src/infrastructure/config/container.ts
-import {createContainer, asClass, asFunction, Lifetime} from "awilix";
+import {createContainer, asClass, asValue, Lifetime} from "awilix";
+import {DatabaseService} from "../database/database.service";
 
 // Repositorios
 import {TypeOrmUserRepository} from "../database/repositories/TypeOrmUserRepository";
@@ -25,13 +26,12 @@ import {CalculationController} from "../webserver/controllers/CalculationControl
 import {CalculationTemplateController} from "../webserver/controllers/CalculationTemplateController";
 import {AuthController} from "../webserver/controllers/AuthController";
 
-console.log("Iniciando registro de dependencias en el contenedor");
-
 // Crear el contenedor
 const container = createContainer();
 
 // Registrar dependencias
 container.register({
+	databaseService: asValue(DatabaseService.getInstance()),
 	// Repositorios
 	userRepository: asClass(TypeOrmUserRepository, {
 		lifetime: Lifetime.SINGLETON,
@@ -75,18 +75,5 @@ container.register({
 	CalculationTemplateController: asClass(CalculationTemplateController),
 	AuthController: asClass(AuthController),
 });
-
-console.log(
-	"Dependencias registradas. Contenido:",
-	Object.keys(container.registrations)
-);
-
-// Intentar resolver userRepository para verificar que está correctamente registrado
-try {
-    const userRepo = container.resolve("userRepository");
-    console.log("userRepository resuelto correctamente:", !!userRepo);
-} catch (error) {
-    console.error("Error al resolver userRepository:", error);
-}
 
 export {container};

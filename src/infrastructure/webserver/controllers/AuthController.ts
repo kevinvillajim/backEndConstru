@@ -5,7 +5,6 @@ import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
 import { UserRole, SubscriptionPlan } from "../../../domain/models/user/User";
-import { v4 as uuidv4 } from "uuid";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -30,34 +29,15 @@ export class AuthController {
 		private authService: AuthService,
 		private userRepository: UserRepository
 	) {
-		console.log(
-			"AuthController constructor llamado con:",
-			"authService=",
-			!!this.authService,
-			"userRepository=",
-			!!this.userRepository,
-			"userRepository type=",
-			typeof this.userRepository
-		);
+		console.log("AuthController constructor: verificando dependencias:");
+		console.log("- authService:", !!authService);
+		console.log("- userRepository:", !!userRepository);
 
-		// Verificar si authService y userRepository tienen las funciones esperadas
-		if (this.authService) {
-			console.log(
-				"authService methods:",
-				Object.getOwnPropertyNames(Object.getPrototypeOf(this.authService))
-			);
+		if (!authService || !userRepository) {
+			throw new Error("AuthController: Missing required dependencies");
 		}
 
-		if (this.userRepository) {
-			console.log(
-				"userRepository methods:",
-				Object.getOwnPropertyNames(Object.getPrototypeOf(this.userRepository))
-			);
-		} else {
-			console.error(
-				"ALERTA: userRepository es undefined en el constructor de AuthController"
-			);
-		}
+		console.log("AuthController inicializado correctamente");
 	}
 
 	/**
@@ -269,7 +249,9 @@ export class AuthController {
 				success: false,
 				message: "Error al registrar usuario",
 				debug:
-					process.env.NODE_ENV === "development" && error instanceof Error ? error.message : undefined,
+					process.env.NODE_ENV === "development" && error instanceof Error
+						? error.message
+						: undefined,
 			});
 		}
 	}
