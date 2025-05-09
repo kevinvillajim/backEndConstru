@@ -5,7 +5,8 @@ import {TaskRepository} from "../../domain/repositories/TaskRepository";
 import {ProjectBudgetRepository} from "../../domain/repositories/ProjectBudgetRepository";
 import {ProjectEntity} from "../../infrastructure/database/entities/ProjectEntity";
 import {PhaseEntity} from "../../infrastructure/database/entities/PhaseEntity";
-import {TaskEntity} from "../../infrastructure/database/entities/TaskEntity";
+import { TaskEntity } from "../../infrastructure/database/entities/TaskEntity";
+import {TaskStatus} from "../../domain/models/project/Task";
 import {v4 as uuidv4} from "uuid";
 
 export class GenerateProjectScheduleUseCase {
@@ -131,7 +132,7 @@ export class GenerateProjectScheduleUseCase {
 				task.id = uuidv4();
 				task.name = taskTemplate.name;
 				task.description = taskTemplate.description;
-				task.status = "pending";
+				task.status = TaskStatus.PENDING;
 				task.startDate = taskStartDate;
 				task.endDate = taskEndDate;
 				task.phaseId = phase.id;

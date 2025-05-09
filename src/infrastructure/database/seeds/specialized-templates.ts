@@ -77,21 +77,21 @@ export async function seedSpecializedTemplates() {
         // Preparar los materiales para presupuesto
         const materials = [
           {
-            description: \`Tubería PVC ${selectedDiameter}mm\`,
+            description: \`Tubería PVC \${selectedDiameter}mm\`,
             quantity: totalLength,
             unitOfMeasure: "m",
             unitPrice: pipeUnitPrice,
             category: "Plomería"
           },
           {
-            description: \`Codo PVC ${selectedDiameter}mm x 90°\`,
+            description: \`Codo PVC \${selectedDiameter}mm x 90°\`,
             quantity: elbowCount,
             unitOfMeasure: "und",
             unitPrice: elbowUnitPrice,
             category: "Plomería"
           },
           {
-            description: \`Tee PVC ${selectedDiameter}mm\`,
+            description: \`Tee PVC \${selectedDiameter}mm\`,
             quantity: teeCount,
             unitOfMeasure: "und",
             unitPrice: teeUnitPrice,
@@ -364,21 +364,21 @@ export async function seedSpecializedTemplates() {
         // Preparar los materiales para presupuesto
         const materials = [
           {
-            description: \`Cable ${wireGauge} THHN\`,
+            description: \`Cable \${wireGauge} THHN\`,
             quantity: totalWireLength,
             unitOfMeasure: "m",
             unitPrice: wirePricesPerMeter[wireGauge] || 0,
             category: "Eléctrico"
           },
           {
-            description: \`Tubería conduit PVC ${conduitSize}\`,
+            description: \`Tubería conduit PVC \${conduitSize}\`,
             quantity: circuitLength,
             unitOfMeasure: "m",
             unitPrice: conduitPricesPerMeter[conduitSize] || 0,
             category: "Eléctrico"
           },
           {
-            description: \`Breaker ${breakerSize}A\`,
+            description: \`Breaker \${breakerSize}A\`,
             quantity: 1,
             unitOfMeasure: "und",
             unitPrice: breakerPrices[breakerSize] || 0,

@@ -156,6 +156,21 @@ export class TypeOrmCalculationResultRepository
 		});
 	}
 
+	async update(
+		id: string,
+		resultData: Partial<CalculationResult>
+	): Promise<CalculationResult | null> {
+		const result = await this.repository.findOne({where: {id}});
+
+		if (!result) return null;
+
+		// Actualizar campos
+		Object.assign(result, resultData);
+
+		const updatedResult = await this.repository.save(result);
+		return this.toDomainModel(updatedResult);
+	}
+
 	// Métodos de conversión de entidad a dominio y viceversa
 	private toDomainModel(entity: CalculationResultEntity): CalculationResult {
 		return {

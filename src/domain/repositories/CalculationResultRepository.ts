@@ -27,4 +27,8 @@ export interface CalculationResultRepository {
 	delete(id: string): Promise<boolean>;
 	getAverageExecutionTime(templateId: string): Promise<number | null>;
 	countSuccessfulByTemplate(templateId: string): Promise<number>;
+	update(
+		id: string,
+		resultData: Partial<CalculationResult>
+	): Promise<CalculationResult | null>;
 }
