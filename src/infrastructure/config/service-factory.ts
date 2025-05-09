@@ -34,7 +34,16 @@ import { TaskController } from "../webserver/controllers/TaskController";
 import { PhaseController } from "../webserver/controllers/PhaseController";
 import {TypeOrmNotificationRepository} from "../database/repositories/TypeOrmNotificationRepository";
 import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
-import {NotificationController} from "../webserver/controllers/NotificationController";
+import { NotificationController } from "../webserver/controllers/NotificationController";
+import {CompareBudgetVersionsUseCase} from "../../application/budget/CompareBudgetVersionsUseCase";
+import {AddLaborAndIndirectCostsUseCase} from "../../application/budget/AddLaborAndIndirectCostsUseCase";
+import {GenerateProgressReportUseCase} from "../../application/project/GenerateProgressReportUseCase";
+import {CreateMaterialRequestUseCase} from "../../application/project/CreateMaterialRequestUseCase";
+import {ApproveMaterialRequestUseCase} from "../../application/project/ApproveMaterialRequestUseCase";
+import {ProgressReportController} from "../webserver/controllers/ProgressReportController";
+import {MaterialRequestController} from "../webserver/controllers/MaterialRequestController";
+import {TypeOrmMaterialRequestRepository} from "../database/repositories/TypeOrmMaterialRequestRepository";
+
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -72,6 +81,14 @@ let phaseController: PhaseController;
 let notificationRepository: TypeOrmNotificationRepository;
 let notificationService: NotificationServiceImpl;
 let notificationController: NotificationController;
+let compareBudgetVersionsUseCase: CompareBudgetVersionsUseCase;
+let addLaborAndIndirectCostsUseCase: AddLaborAndIndirectCostsUseCase;
+let generateProgressReportUseCase: GenerateProgressReportUseCase;
+let createMaterialRequestUseCase: CreateMaterialRequestUseCase;
+let approveMaterialRequestUseCase: ApproveMaterialRequestUseCase;
+let materialRequestRepository: TypeOrmMaterialRequestRepository;
+let progressReportController: ProgressReportController;
+let materialRequestController: MaterialRequestController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -91,6 +108,7 @@ export function initializeServices() {
 		phaseRepository = new TypeOrmPhaseRepository();
 		taskRepository = new TypeOrmTaskRepository();
 		notificationRepository = new TypeOrmNotificationRepository();
+		materialRequestRepository = new TypeOrmMaterialRequestRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -159,6 +177,37 @@ export function initializeServices() {
 
 		assignTaskUseCase = new AssignTaskUseCase(taskRepository, userRepository);
 
+		compareBudgetVersionsUseCase = new CompareBudgetVersionsUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+
+		addLaborAndIndirectCostsUseCase = new AddLaborAndIndirectCostsUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+
+		generateProgressReportUseCase = new GenerateProgressReportUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			notificationService
+		);
+
+		createMaterialRequestUseCase = new CreateMaterialRequestUseCase(
+			taskRepository,
+			materialRepository,
+			materialRequestRepository,
+			notificationService
+		);
+
+		approveMaterialRequestUseCase = new ApproveMaterialRequestUseCase(
+			materialRequestRepository,
+			materialRepository,
+			userRepository,
+			notificationService
+		);
+
 
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
@@ -177,7 +226,9 @@ export function initializeServices() {
 			generateBudgetFromCalculationUseCase,
 			getProjectBudgetsUseCase,
 			createBudgetVersionUseCase,
-			projectBudgetRepository
+			projectBudgetRepository,
+			compareBudgetVersionsUseCase,
+			addLaborAndIndirectCostsUseCase
 		);
 
 		projectScheduleController = new ProjectScheduleController(
@@ -193,6 +244,16 @@ export function initializeServices() {
 		phaseController = new PhaseController(phaseRepository, taskRepository);
 
 		notificationController = new NotificationController(notificationService);
+
+		progressReportController = new ProgressReportController(
+			generateProgressReportUseCase
+		);
+
+		materialRequestController = new MaterialRequestController(
+			createMaterialRequestUseCase,
+			approveMaterialRequestUseCase,
+			materialRequestRepository
+		);
 
 		console.log("Services initialized successfully");
 	} catch (error) {
@@ -272,4 +333,22 @@ export function getNotificationController() {
 		);
 	}
 	return notificationController;
+}
+
+export function getProgressReportController() {
+	if (!progressReportController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return progressReportController;
+}
+
+export function getMaterialRequestController() {
+	if (!materialRequestController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return materialRequestController;
 }

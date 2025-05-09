@@ -41,4 +41,21 @@ router.patch(
 	}
 );
 
+router.post("/compare", authenticate, (req, res) => {
+	const budgetController = getBudgetController();
+	return budgetController.compareBudgetVersions(req, res);
+});
+
+// Ruta para añadir costos de mano de obra e indirectos
+router.post("/:budgetId/costs", authenticate, (req, res) => {
+	const budgetController = getBudgetController();
+	return budgetController.addLaborAndIndirectCosts(req, res);
+});
+
+// Ruta para exportar presupuesto a PDF
+router.get("/:budgetId/export/pdf", authenticate, (req, res) => {
+	const budgetController = getBudgetController();
+	return budgetController.exportBudgetToPdf(req, res);
+});
+
 export default router;

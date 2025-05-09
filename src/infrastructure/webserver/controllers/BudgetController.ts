@@ -6,7 +6,10 @@ import {CreateBudgetVersionUseCase} from "../../../application/budget/CreateBudg
 import {ProjectBudgetRepository} from "../../../domain/repositories/ProjectBudgetRepository";
 import {handleError} from "../utils/errorHandler";
 import {User} from "../../../domain/models/user/User";
-import {BudgetStatus} from "../../../domain/models/project/ProjectBudget";
+import { BudgetStatus } from "../../../domain/models/project/ProjectBudget";
+import { CompareBudgetVersionsUseCase } from "../../../application/budget/CompareBudgetVersionsUseCase";
+import { AddLaborAndIndirectCostsUseCase } from "../../../application/budget/AddLaborAndIndirectCostsUseCase";
+
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -17,7 +20,9 @@ export class BudgetController {
 		private generateBudgetFromCalculationUseCase: GenerateBudgetFromCalculationUseCase,
 		private getProjectBudgetsUseCase: GetProjectBudgetsUseCase,
 		private createBudgetVersionUseCase: CreateBudgetVersionUseCase,
-		private projectBudgetRepository: ProjectBudgetRepository
+		private projectBudgetRepository: ProjectBudgetRepository,
+		private compareBudgetVersionsUseCase: CompareBudgetVersionsUseCase,
+		private addLaborAndIndirectCostsUseCase: AddLaborAndIndirectCostsUseCase
 	) {}
 
 	/**
@@ -256,6 +261,136 @@ export class BudgetController {
 			res.status(400).json({
 				success: false,
 				message: typedError.message || "Error al actualizar estado",
+			});
+		}
+	}
+
+	/**
+	 * Compara dos versiones de un presupuesto
+	 */
+	async compareBudgetVersions(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			const {originalBudgetId, newBudgetId} = req.body;
+
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			// Verificar parámetros
+			if (!originalBudgetId || !newBudgetId) {
+				res.status(400).json({
+					success: false,
+					message: "Se requieren IDs de ambos presupuestos para comparar",
+				});
+				return;
+			}
+
+			const comparison = await this.compareBudgetVersionsUseCase.execute(
+				originalBudgetId,
+				newBudgetId
+			);
+
+			res.status(200).json({
+				success: true,
+				data: comparison,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al comparar presupuestos",
+			});
+		}
+	}
+
+	/**
+	 * Añade costos de mano de obra y costos indirectos al presupuesto
+	 */
+	async addLaborAndIndirectCosts(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			const {budgetId} = req.params;
+			const {laborCosts, indirectCosts} = req.body;
+
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			// Validar entrada
+			if (!Array.isArray(laborCosts) || !Array.isArray(indirectCosts)) {
+				res.status(400).json({
+					success: false,
+					message: "Formato de datos inválido",
+				});
+				return;
+			}
+
+			const result = await this.addLaborAndIndirectCostsUseCase.execute(
+				budgetId,
+				laborCosts,
+				indirectCosts,
+				req.user.id
+			);
+
+			res.status(200).json({
+				success: true,
+				message: "Costos añadidos exitosamente",
+				data: result,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al añadir costos",
+			});
+		}
+	}
+
+	/**
+	 * Exporta el presupuesto a PDF
+	 */
+	async exportBudgetToPdf(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			const {budgetId} = req.params;
+			const {includeDetails} = req.query;
+
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			// Este sería un servicio que genere PDF
+			// Por ahora simplemente reportamos éxito
+			res.status(200).json({
+				success: true,
+				message:
+					"La funcionalidad de exportación a PDF se implementará en una fase posterior",
+				data: {
+					budgetId,
+					includeDetails: includeDetails === "true",
+				},
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al exportar presupuesto",
 			});
 		}
 	}

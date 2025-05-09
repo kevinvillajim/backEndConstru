@@ -48,6 +48,9 @@ export class MaterialRequestEntity {
 	@Column({name: "requester_id"})
 	requesterId: string;
 
+	@Column({name: "notes", nullable: true})
+	notes: string;
+
 	@ManyToOne(() => UserEntity)
 	requester: UserEntity;
 
