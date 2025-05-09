@@ -8,35 +8,31 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
-import {DatabaseService} from "./infrastructure/database/database.service";
-import {container} from "./infrastructure/config/container";
 import {AppDataSource} from "./infrastructure/database/data-source";
+import {initializeServices} from "./infrastructure/config/service-factory";
 
-// Importar rutas DESPUÉS de inicializar la DB
-let authRoutes: any;
-let calculationRoutes: any;
-
-// Cargar variables de entorno
+// Load environment variables
 dotenv.config();
 
-// Función para iniciar la aplicación
+// Function to start the application
 async function bootstrap() {
 	try {
-		// Inicializar la base de datos primero
-		const dbService = DatabaseService.getInstance();
-		await dbService.initialize();
-		console.log("Base de datos inicializada correctamente");
+		console.log("Starting application initialization...");
 
-		// Solo importar rutas DESPUÉS de que la DB esté inicializada
-		authRoutes =
-			require("./infrastructure/webserver/routes/authRoutes").default;
-		calculationRoutes =
-			require("./infrastructure/webserver/routes/calculationRoutes").default;
+		// Initialize database
+		if (!AppDataSource.isInitialized) {
+			console.log("Initializing database connection...");
+			await AppDataSource.initialize();
+			console.log("Database initialized successfully");
+		}
 
-		// Inicializar Express
+		// Initialize services
+		initializeServices();
+
+		// Initialize Express
 		const app = express();
 
-		// Middlewares y configuración
+		// Middlewares and configuration
 		const limiter = rateLimit({
 			windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"),
 			max: parseInt(process.env.RATE_LIMIT_MAX || "100"),
@@ -58,16 +54,22 @@ async function bootstrap() {
 		app.use(cookieParser());
 		app.use(limiter);
 
-		// Ruta básica
+		// Basic route
 		app.get("/", (req, res) => {
 			res.send("ConstructorAPP API");
 		});
 
-		// Configurar rutas
+		// Import routes AFTER services are initialized
+		const authRoutes =
+			require("./infrastructure/webserver/routes/authRoutes").default;
+		const calculationRoutes =
+			require("./infrastructure/webserver/routes/calculationRoutes").default;
+
+		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
 
-		// Manejo global de errores
+		// Global error handler
 		app.use(
 			(
 				err: any,
@@ -75,8 +77,8 @@ async function bootstrap() {
 				res: express.Response,
 				next: express.NextFunction
 			) => {
-				console.error(err.stack);
-				res.status(500).send({
+				console.error("Global error handler:", err);
+				res.status(500).json({
 					success: false,
 					message: "Algo salió mal!",
 					error:
@@ -85,21 +87,21 @@ async function bootstrap() {
 			}
 		);
 
-		// Iniciar servidor
+		// Start server
 		const PORT = process.env.PORT || 4000;
 		app.listen(PORT, () => {
-			console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+			console.log(`Server running on port ${PORT}`);
 		});
 
 		return app;
 	} catch (error) {
-		console.error("Error al iniciar la aplicación:", error);
+		console.error("Error starting application:", error);
 		process.exit(1);
 	}
 }
 
-// Iniciar la aplicación
+// Start the application
 bootstrap();
 
-// Para testing
+// For testing
 export default bootstrap;

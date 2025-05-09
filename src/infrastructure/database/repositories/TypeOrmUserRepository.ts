@@ -6,23 +6,20 @@ import {UserEntity} from "../entities/UserEntity";
 import {AppDataSource} from "../data-source";
 
 export class TypeOrmUserRepository implements UserRepository {
-	private _repository: Repository<UserEntity> | null = null;
+	private repository: Repository<UserEntity>;
 
-	// Usar getter para obtener el repositorio bajo demanda
-	private get repository(): Repository<UserEntity> {
-		if (!this._repository) {
-			if (!AppDataSource.isInitialized) {
-				throw new Error("La base de datos no está inicializada");
-			}
-			this._repository = AppDataSource.getRepository(UserEntity);
+	constructor() {
+		if (!AppDataSource.isInitialized) {
+			throw new Error("Database is not initialized");
 		}
-		return this._repository;
+		this.repository = AppDataSource.getRepository(UserEntity);
 	}
 
 	async findById(id: string): Promise<User | null> {
 		const user = await this.repository.findOne({
 			where: {id},
 		});
+
 		return user ? this.toDomainModel(user) : null;
 	}
 
@@ -30,10 +27,19 @@ export class TypeOrmUserRepository implements UserRepository {
 		const user = await this.repository.findOne({
 			where: {email},
 		});
+
 		return user ? this.toDomainModel(user) : null;
 	}
 
-	async create(user: User): Promise<User> {
+	async findByVerificationToken(token: string): Promise<User[]> {
+		const users = await this.repository.find({
+			where: {verificationToken: token},
+		});
+
+		return users.map((user) => this.toDomainModel(user));
+	}
+
+	async create(user: Omit<User, "id">): Promise<User> {
 		const userEntity = this.toEntity(user as User);
 		const savedUser = await this.repository.save(userEntity);
 		return this.toDomainModel(savedUser);
@@ -47,6 +53,13 @@ export class TypeOrmUserRepository implements UserRepository {
 	async delete(id: string): Promise<boolean> {
 		const result = await this.repository.softDelete(id);
 		return result.affected !== 0;
+	}
+
+	async findByResetToken(token: string): Promise<User[]> {
+		const users = await this.repository.find({
+			where: {passwordResetToken: token},
+		});
+		return users.map((user) => this.toDomainModel(user));
 	}
 
 	private toDomainModel(entity: UserEntity): User {
@@ -71,27 +84,7 @@ export class TypeOrmUserRepository implements UserRepository {
 			role: entity.role,
 			subscriptionPlan: entity.subscriptionPlan,
 			subscriptionExpiresAt: entity.subscriptionExpiresAt,
-			company: entity.company
-				? {
-						name: entity.company.name,
-						taxId: entity.company.taxId,
-						address: {
-							street: entity.company.address.street,
-							number: entity.company.address.number,
-							city: entity.company.address.city,
-							province: entity.company.address.province,
-							postalCode: entity.company.address.postalCode,
-							country: entity.company.address.country,
-							reference: entity.company.address.reference,
-						},
-						phone: entity.company.phone,
-						email: entity.company.email,
-						website: entity.company.website,
-						position: entity.company.position,
-						employees: entity.company.employees,
-						yearFounded: entity.company.yearFounded,
-					}
-				: undefined,
+			company: entity.company,
 			addresses: entity.addresses,
 			preferences: entity.preferences,
 			stats: entity.stats,

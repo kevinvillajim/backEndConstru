@@ -1,10 +1,10 @@
 // src/infrastructure/webserver/controllers/AuthController.ts
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import {User} from "../../../domain/models/user/User";
 import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
-import { UserRole, SubscriptionPlan } from "../../../domain/models/user/User";
+import {UserRole, SubscriptionPlan} from "../../../domain/models/user/User";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -29,15 +29,16 @@ export class AuthController {
 		private authService: AuthService,
 		private userRepository: UserRepository
 	) {
-		console.log("AuthController constructor: verificando dependencias:");
-		console.log("- authService:", !!authService);
-		console.log("- userRepository:", !!userRepository);
-
-		if (!authService || !userRepository) {
-			throw new Error("AuthController: Missing required dependencies");
+		// Validate dependencies when controller is created
+		if (!authService) {
+			throw new Error("AuthController: Missing authService dependency");
 		}
 
-		console.log("AuthController inicializado correctamente");
+		if (!userRepository) {
+			throw new Error("AuthController: Missing userRepository dependency");
+		}
+
+		console.log("AuthController initialized successfully");
 	}
 
 	/**
@@ -153,11 +154,17 @@ export class AuthController {
 	 * User registration
 	 */
 	async register(req: Request, res: Response): Promise<void> {
-		console.log(
-			"Método register llamado, verificando userRepository:",
-			!!this.userRepository
-		);
+		console.log("Register endpoint called");
 		try {
+			if (!this.userRepository) {
+				console.error("userRepository is undefined");
+				res.status(500).json({
+					success: false,
+					message: "Error interno del servidor - repo undefined",
+				});
+				return;
+			}
+
 			const {
 				firstName,
 				lastName,
@@ -166,6 +173,13 @@ export class AuthController {
 				professionalType,
 				referralCode,
 			} = req.body;
+
+			console.log("Received registration data:", {
+				firstName,
+				lastName,
+				email,
+				professionalType,
+			});
 
 			// Validate input
 			if (!firstName || !lastName || !email || !password) {
@@ -177,20 +191,17 @@ export class AuthController {
 			}
 
 			// Check if user already exists
-			console.log(`Buscando si el usuario ${email} ya existe`);
-			if (!this.userRepository) {
-				console.error(
-					"ERROR CRÍTICO: userRepository undefined al intentar findByEmail"
-				);
-				res.status(500).json({
+			console.log(`Checking if user ${email} already exists`);
+			const existingUser = await this.userRepository.findByEmail(email);
+
+			if (existingUser) {
+				console.log(`User ${email} already exists`);
+				res.status(400).json({
 					success: false,
-					message: "Error interno del servidor - repo undefined",
+					message: "El correo electrónico ya está registrado",
 				});
 				return;
 			}
-
-			const existingUser = await this.userRepository.findByEmail(email);
-			console.log(`¿Usuario ${email} existe?:`, !!existingUser);
 
 			// Hash password
 			const hashedPassword = await this.authService.hashPassword(password);
@@ -227,6 +238,7 @@ export class AuthController {
 			});
 
 			// TODO: Send verification email
+			console.log(`User registered successfully: ${newUser.id}`);
 
 			res.status(201).json({
 				success: true,
@@ -238,23 +250,21 @@ export class AuthController {
 				},
 			});
 		} catch (error) {
-			console.error("Error detallado en registro:", error);
+			console.error("Error in registration:", error);
 			const typedError = handleError(error);
-			console.error("Error de registro:", typedError);
-			if (error instanceof Error) {
-				console.error("Stack completo:", error.stack);
-			}
 
 			res.status(500).json({
 				success: false,
 				message: "Error al registrar usuario",
 				debug:
-					process.env.NODE_ENV === "development" && error instanceof Error
-						? error.message
+					process.env.NODE_ENV === "development"
+						? typedError.message
 						: undefined,
 			});
 		}
 	}
+
+	// Rest of the controller methods...
 
 	/**
 	 * Refresh access token using refresh token
@@ -345,20 +355,18 @@ export class AuthController {
 			}
 
 			// Find user by verification token
-			// Note: This would need an additional method in the UserRepository
-			// For now, we can improvise with a query
-			const userRepository = this.userRepository as any;
-			const user = await userRepository.repository.findOne({
-				where: {verificationToken: token},
-			});
+			// This requires searching by verification token
+			const users = await this.userRepository.findByVerificationToken(token);
 
-			if (!user) {
+			if (!users || users.length === 0) {
 				res.status(400).json({
 					success: false,
 					message: "Token de verificación inválido o expirado",
 				});
 				return;
 			}
+
+			const user = users[0];
 
 			// Update user
 			await this.userRepository.update(user.id, {
@@ -377,6 +385,51 @@ export class AuthController {
 			res.status(500).json({
 				success: false,
 				message: "Error al verificar correo electrónico",
+			});
+		}
+	}
+
+	/**
+	 * Get current user profile
+	 */
+	async getProfile(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			// User is already set by the auth middleware
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "No autorizado",
+				});
+				return;
+			}
+
+			// Send user data (without sensitive information)
+			const userData = {
+				id: req.user.id,
+				firstName: req.user.firstName,
+				lastName: req.user.lastName,
+				email: req.user.email,
+				role: req.user.role,
+				subscriptionPlan: req.user.subscriptionPlan,
+				profilePicture: req.user.profilePicture,
+				professionalType: req.user.professionalType,
+				company: req.user.company,
+				specializations: req.user.specializations,
+				yearsOfExperience: req.user.yearsOfExperience,
+				stats: req.user.stats,
+			};
+
+			res.status(200).json({
+				success: true,
+				data: userData,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error al obtener perfil:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: "Error al obtener perfil de usuario",
 			});
 		}
 	}
@@ -423,12 +476,16 @@ export class AuthController {
 				passwordResetExpires: resetExpires,
 			});
 
-			// TODO: Send password reset email
+			// TODO: In a real application, send an email with the reset link
+			console.log(`Reset token for ${email}: ${resetToken}`);
+			console.log(`Reset URL would be: /api/auth/reset-password/${resetToken}`);
 
 			res.status(200).json({
 				success: true,
 				message:
 					"Si el correo existe, recibirás instrucciones para restablecer tu contraseña",
+				// Include token in response for testing purposes (remove in production)
+				...(process.env.NODE_ENV === "development" && {token: resetToken}),
 			});
 		} catch (error) {
 			const typedError = handleError(error);
@@ -457,19 +514,27 @@ export class AuthController {
 				return;
 			}
 
-			// Find user by reset token
-			const userRepository = this.userRepository as any;
-			const user = await userRepository.repository.findOne({
-				where: {
-					passwordResetToken: token,
-					passwordResetExpires: {$gt: new Date()},
-				},
-			});
+			// Find user by reset token and check if token is not expired
+			const users = await this.userRepository.findByResetToken(token);
 
-			if (!user) {
+			if (!users || users.length === 0) {
 				res.status(400).json({
 					success: false,
 					message: "Token inválido o expirado",
+				});
+				return;
+			}
+
+			const user = users[0];
+
+			// Check if token is expired
+			if (
+				!user.passwordResetExpires ||
+				new Date() > user.passwordResetExpires
+			) {
+				res.status(400).json({
+					success: false,
+					message: "Token expirado",
 				});
 				return;
 			}
@@ -499,47 +564,32 @@ export class AuthController {
 		}
 	}
 
-	/**
-	 * Get current user profile
-	 */
-	async getProfile(req: RequestWithUser, res: Response): Promise<void> {
+	async devVerifyEmail(req: Request, res: Response): Promise<void> {
 		try {
-			// User is already set by the auth middleware
-			if (!req.user) {
-				res.status(401).json({
+			const { email } = req.params;
+			const user = await this.userRepository.findByEmail(email);
+    
+			if (!user) {
+				res.status(404).json({
 					success: false,
-					message: "No autorizado",
+					message: "Usuario no encontrado",
 				});
 				return;
 			}
-
-			// Send user data (without sensitive information)
-			const userData = {
-				id: req.user.id,
-				firstName: req.user.firstName,
-				lastName: req.user.lastName,
-				email: req.user.email,
-				role: req.user.role,
-				subscriptionPlan: req.user.subscriptionPlan,
-				profilePicture: req.user.profilePicture,
-				professionalType: req.user.professionalType,
-				company: req.user.company,
-				specializations: req.user.specializations,
-				yearsOfExperience: req.user.yearsOfExperience,
-				stats: req.user.stats,
-			};
-
+    
+			await this.userRepository.update(user.id, {
+				isVerified: true,
+				verificationToken: null,
+			});
+    
 			res.status(200).json({
 				success: true,
-				data: userData,
+				message: "Usuario verificado para desarrollo",
 			});
 		} catch (error) {
-			const typedError = handleError(error);
-			console.error("Error al obtener perfil:", typedError);
-
 			res.status(500).json({
 				success: false,
-				message: "Error al obtener perfil de usuario",
+				message: "Error al verificar usuario",
 			});
 		}
 	}

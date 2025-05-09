@@ -1,0 +1,126 @@
+// src/infrastructure/config/service-factory.ts
+import {DatabaseService} from "../database/database.service";
+import {TypeOrmUserRepository} from "../database/repositories/TypeOrmUserRepository";
+import {AuthService} from "../../domain/services/AuthService";
+import {AuthController} from "../webserver/controllers/AuthController";
+import {CalculationService} from "../../domain/services/CalculationService";
+import {TypeOrmCalculationTemplateRepository} from "../database/repositories/TypeOrmCalculationTemplateRepository";
+import {TypeOrmCalculationParameterRepository} from "../database/repositories/TypeOrmCalculationParameterRepository";
+import {TemplateValidationService} from "../../domain/services/TemplateValidationService";
+import {CreateCalculationTemplateUseCase} from "../../application/calculation/CreateCalculationTemplateUseCase";
+import {CalculationTemplateController} from "../webserver/controllers/CalculationTemplateController";
+import {TypeOrmCalculationResultRepository} from "../database/repositories/TypeOrmCalculationResultRepository";
+import {ExecuteCalculationUseCase} from "../../application/calculation/ExecuteCalculationUseCase";
+import {TypeOrmGeographicalZoneRepository} from "../database/repositories/TypeOrmGeographicalZoneRepository";
+import {RecommendationService} from "../../domain/services/RecommendationService";
+import {GetTemplateRecommendationsUseCase} from "../../application/calculation/GetTemplateRecommendationsUseCase";
+import {SaveCalculationResultUseCase} from "../../application/calculation/SaveCalculationResultUseCase";
+import {CalculationController} from "../webserver/controllers/CalculationController";
+
+// Global service instances
+let userRepository: TypeOrmUserRepository;
+let authService: AuthService;
+let authController: AuthController;
+let calculationService: CalculationService;
+let calculationTemplateRepository: TypeOrmCalculationTemplateRepository;
+let calculationParameterRepository: TypeOrmCalculationParameterRepository;
+let templateValidationService: TemplateValidationService;
+let createCalculationTemplateUseCase: CreateCalculationTemplateUseCase;
+let calculationTemplateController: CalculationTemplateController;
+let calculationResultRepository: TypeOrmCalculationResultRepository;
+let executeCalculationUseCase: ExecuteCalculationUseCase;
+let geographicalZoneRepository: TypeOrmGeographicalZoneRepository;
+let recommendationService: RecommendationService;
+let getTemplateRecommendationsUseCase: GetTemplateRecommendationsUseCase;
+let saveCalculationResultUseCase: SaveCalculationResultUseCase;
+let calculationController: CalculationController;
+
+export function initializeServices() {
+	console.log("Initializing services directly...");
+
+	try {
+		// Initialize repositories first
+		userRepository = new TypeOrmUserRepository();
+		calculationTemplateRepository = new TypeOrmCalculationTemplateRepository();
+		calculationParameterRepository =
+			new TypeOrmCalculationParameterRepository();
+		calculationResultRepository = new TypeOrmCalculationResultRepository();
+		geographicalZoneRepository = new TypeOrmGeographicalZoneRepository();
+
+		// Initialize services
+		authService = new AuthService();
+		calculationService = new CalculationService();
+		templateValidationService = new TemplateValidationService();
+		recommendationService = new RecommendationService();
+
+		// Initialize use cases
+		executeCalculationUseCase = new ExecuteCalculationUseCase(
+			calculationTemplateRepository,
+			calculationResultRepository,
+			calculationService
+		);
+
+		createCalculationTemplateUseCase = new CreateCalculationTemplateUseCase(
+			calculationTemplateRepository,
+			calculationParameterRepository,
+			templateValidationService
+		);
+
+		getTemplateRecommendationsUseCase = new GetTemplateRecommendationsUseCase(
+			calculationTemplateRepository,
+			calculationResultRepository,
+			userRepository,
+			recommendationService
+		);
+
+		saveCalculationResultUseCase = new SaveCalculationResultUseCase(
+			calculationResultRepository
+		);
+
+		// Initialize controllers
+		authController = new AuthController(authService, userRepository);
+		calculationTemplateController = new CalculationTemplateController(
+			createCalculationTemplateUseCase,
+			calculationService,
+			calculationTemplateRepository
+		);
+		calculationController = new CalculationController(
+			executeCalculationUseCase,
+			getTemplateRecommendationsUseCase,
+			saveCalculationResultUseCase
+		);
+
+		console.log("Services initialized successfully");
+	} catch (error) {
+		console.error("Failed to initialize services:", error);
+		throw error;
+	}
+}
+
+// Factory methods to get services
+export function getAuthController() {
+	if (!authController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return authController;
+}
+
+export function getCalculationController() {
+	if (!calculationController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return calculationController;
+}
+
+export function getCalculationTemplateController() {
+	if (!calculationTemplateController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return calculationTemplateController;
+}

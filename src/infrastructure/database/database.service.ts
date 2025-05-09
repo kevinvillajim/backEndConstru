@@ -40,4 +40,8 @@ export class DatabaseService {
 		}
 		return this.dataSource;
 	}
+
+	public isInitialized(): boolean {
+		return this.initialized;
+	}
 }

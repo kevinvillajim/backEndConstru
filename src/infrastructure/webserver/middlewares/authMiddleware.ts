@@ -1,13 +1,23 @@
 // src/infrastructure/webserver/middlewares/authMiddleware.ts
 import {Request, Response, NextFunction} from "express";
 import {User, UserRole} from "../../../domain/models/user/User";
-import {UserRepository} from "../../../domain/repositories/UserRepository";
+import {AppDataSource} from "../../../infrastructure/database/data-source";
+import {UserEntity} from "../../../infrastructure/database/entities/UserEntity";
 import {AuthService} from "../../../domain/services/AuthService";
-import {container} from "../../config/container";
 
-// Asegurar que TypeScript reconozca req.user
+// Define a request with user
 export interface RequestWithUser extends Request {
 	user?: User;
+}
+
+// Get services directly to avoid dependency issues
+let authService: AuthService;
+
+function getAuthService() {
+	if (!authService) {
+		authService = new AuthService();
+	}
+	return authService;
 }
 
 /**
@@ -19,14 +29,9 @@ export const authenticate = async (
 	next: NextFunction
 ): Promise<void> => {
 	try {
-		// Get the authentication service and user repository
-		const authService = container.resolve<AuthService>("authService");
-		const userRepository = container.resolve<UserRepository>("userRepository");
-
-		// Get token from Authorization header (fallback) or cookie (preferred)
+		// Get token from cookie or Authorization header
 		let token = req.cookies.accessToken;
 
-		// Fallback to Authorization header if cookie is not present
 		if (!token && req.headers.authorization) {
 			const authHeader = req.headers.authorization;
 			if (authHeader.startsWith("Bearer ")) {
@@ -42,11 +47,13 @@ export const authenticate = async (
 			return;
 		}
 
-		// Verify the token
-		const decoded = authService.verifyAccessToken(token);
+		// Verify token
+		const auth = getAuthService();
+		const decoded = auth.verifyAccessToken(token);
 
-		// Verify that the user exists in the database
-		const user = await userRepository.findById(decoded.userId);
+		// Find user directly from database
+		const userRepository = AppDataSource.getRepository(UserEntity);
+		const user = await userRepository.findOne({where: {id: decoded.userId}});
 
 		if (!user) {
 			res.status(401).json({
@@ -65,14 +72,14 @@ export const authenticate = async (
 			return;
 		}
 
-		// Add the user to the request
-		req.user = user;
+		// Add user to request
+		req.user = user as User;
 
 		next();
 	} catch (error) {
 		console.error("Error de autenticación:", error);
 
-		// Try to refresh the token if the access token has expired
+		// Try to refresh token if available
 		if (req.cookies.refreshToken) {
 			res.status(401).json({
 				success: false,
@@ -104,9 +111,10 @@ export const authorize = (roles: UserRole[]) => {
 			return;
 		}
 
-		// Check if user has any of the required roles
-		const authService = container.resolve<AuthService>("authService");
-		if (!authService.hasRole(req.user, roles)) {
+		// Check if user has required role
+		const hasRole = roles.includes(req.user.role as UserRole);
+
+		if (!hasRole) {
 			res.status(403).json({
 				success: false,
 				message: "No tienes permiso para acceder a este recurso",
