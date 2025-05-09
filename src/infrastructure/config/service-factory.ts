@@ -20,7 +20,12 @@ import {TypeOrmMaterialRepository} from "../database/repositories/TypeOrmMateria
 import {TypeOrmProjectBudgetRepository} from "../database/repositories/TypeOrmProjectBudgetRepository";
 import {TypeOrmBudgetItemRepository} from "../database/repositories/TypeOrmBudgetItemRepository";
 import {GenerateBudgetFromCalculationUseCase} from "../../application/calculation/GenerateBudgetFromCalculationUseCase";
-import {BudgetController} from "../webserver/controllers/BudgetController";
+import { BudgetController } from "../webserver/controllers/BudgetController";
+import {TypeOrmProjectRepository} from "../database/repositories/TypeOrmProjectRepository";
+import {TypeOrmPhaseRepository} from "../database/repositories/TypeOrmPhaseRepository";
+import {TypeOrmTaskRepository} from "../database/repositories/TypeOrmTaskRepository";
+import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
+import {ProjectScheduleController} from "../webserver/controllers/ProjectScheduleController";
 
 
 
@@ -46,6 +51,11 @@ let projectBudgetRepository: TypeOrmProjectBudgetRepository;
 let budgetItemRepository: TypeOrmBudgetItemRepository;
 let generateBudgetFromCalculationUseCase: GenerateBudgetFromCalculationUseCase;
 let budgetController: BudgetController;
+let projectRepository: TypeOrmProjectRepository;
+let phaseRepository: TypeOrmPhaseRepository;
+let taskRepository: TypeOrmTaskRepository;
+let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
+let projectScheduleController: ProjectScheduleController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -61,6 +71,9 @@ export function initializeServices() {
 		materialRepository = new TypeOrmMaterialRepository();
 		projectBudgetRepository = new TypeOrmProjectBudgetRepository();
 		budgetItemRepository = new TypeOrmBudgetItemRepository();
+		projectRepository = new TypeOrmProjectRepository();
+		phaseRepository = new TypeOrmPhaseRepository();
+		taskRepository = new TypeOrmTaskRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -99,6 +112,14 @@ export function initializeServices() {
 				projectBudgetRepository,
 				budgetItemRepository
 			);
+		
+		generateProjectScheduleUseCase = new GenerateProjectScheduleUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectBudgetRepository
+		);
+
 
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
@@ -114,6 +135,9 @@ export function initializeServices() {
 		);
 		budgetController = new BudgetController(
 			generateBudgetFromCalculationUseCase
+		);
+		projectScheduleController = new ProjectScheduleController(
+			generateProjectScheduleUseCase
 		);
 
 		console.log("Services initialized successfully");
@@ -158,4 +182,13 @@ export function getBudgetController() {
 		);
 	}
 	return budgetController;
+}
+
+export function getProjectScheduleController() {
+	if (!projectScheduleController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return projectScheduleController;
 }

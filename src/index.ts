@@ -66,11 +66,14 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/calculationRoutes").default;
 		const budgetRoutes =
 			require("./infrastructure/webserver/routes/budgetRoutes").default;
+		const projectScheduleRoutes =
+			require("./infrastructure/webserver/routes/projectScheduleRoutes").default;
 		
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
 		app.use("/api/budgets", budgetRoutes);
+		app.use("/api/schedule", projectScheduleRoutes);
 
 		// Global error handler
 		app.use(
