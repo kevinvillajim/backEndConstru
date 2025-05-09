@@ -10,10 +10,11 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import {DatabaseService} from "./infrastructure/database/database.service";
 import {container} from "./infrastructure/config/container";
+import {AppDataSource} from "./infrastructure/database/data-source";
 
-// Importar rutas
-import authRoutes from "./infrastructure/webserver/routes/authRoutes";
-import calculationRoutes from "./infrastructure/webserver/routes/calculationRoutes";
+// Importar rutas DESPUÉS de inicializar la DB
+let authRoutes: any;
+let calculationRoutes: any;
 
 // Cargar variables de entorno
 dotenv.config();
@@ -24,6 +25,13 @@ async function bootstrap() {
 		// Inicializar la base de datos primero
 		const dbService = DatabaseService.getInstance();
 		await dbService.initialize();
+		console.log("Base de datos inicializada correctamente");
+
+		// Solo importar rutas DESPUÉS de que la DB esté inicializada
+		authRoutes =
+			require("./infrastructure/webserver/routes/authRoutes").default;
+		calculationRoutes =
+			require("./infrastructure/webserver/routes/calculationRoutes").default;
 
 		// Inicializar Express
 		const app = express();

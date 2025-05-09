@@ -3,15 +3,20 @@ import {Repository} from "typeorm";
 import {User} from "@domain/models/user/User";
 import {UserRepository} from "@domain/repositories/UserRepository";
 import {UserEntity} from "../entities/UserEntity";
-import {DatabaseService} from "../database.service";
+import {AppDataSource} from "../data-source";
 
 export class TypeOrmUserRepository implements UserRepository {
-	private repository: Repository<UserEntity>;
+	private _repository: Repository<UserEntity> | null = null;
 
-	constructor() {
-		const databaseService = DatabaseService.getInstance();
-		const dataSource = databaseService.getDataSource();
-		this.repository = dataSource.getRepository(UserEntity);
+	// Usar getter para obtener el repositorio bajo demanda
+	private get repository(): Repository<UserEntity> {
+		if (!this._repository) {
+			if (!AppDataSource.isInitialized) {
+				throw new Error("La base de datos no está inicializada");
+			}
+			this._repository = AppDataSource.getRepository(UserEntity);
+		}
+		return this._repository;
 	}
 
 	async findById(id: string): Promise<User | null> {
