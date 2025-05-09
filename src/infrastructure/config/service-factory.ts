@@ -26,8 +26,12 @@ import {TypeOrmPhaseRepository} from "../database/repositories/TypeOrmPhaseRepos
 import {TypeOrmTaskRepository} from "../database/repositories/TypeOrmTaskRepository";
 import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
 import {ProjectScheduleController} from "../webserver/controllers/ProjectScheduleController";
-
-
+import {GetProjectBudgetsUseCase} from "../../application/budget/GetProjectBudgetsUseCase";
+import {CreateBudgetVersionUseCase} from "../../application/budget/CreateBudgetVersionUseCase";
+import {UpdateTaskProgressUseCase} from "../../application/project/UpdateTaskProgressUseCase";
+import {AssignTaskUseCase} from "../../application/project/AssignTaskUseCase";
+import { TaskController } from "../webserver/controllers/TaskController";
+import { PhaseController } from "../webserver/controllers/PhaseController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -56,6 +60,12 @@ let phaseRepository: TypeOrmPhaseRepository;
 let taskRepository: TypeOrmTaskRepository;
 let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
 let projectScheduleController: ProjectScheduleController;
+let getProjectBudgetsUseCase: GetProjectBudgetsUseCase;
+let createBudgetVersionUseCase: CreateBudgetVersionUseCase;
+let updateTaskProgressUseCase: UpdateTaskProgressUseCase;
+let assignTaskUseCase: AssignTaskUseCase;
+let taskController: TaskController;
+let phaseController: PhaseController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -120,6 +130,23 @@ export function initializeServices() {
 			projectBudgetRepository
 		);
 
+		getProjectBudgetsUseCase = new GetProjectBudgetsUseCase(
+			projectBudgetRepository
+		);
+
+		createBudgetVersionUseCase = new CreateBudgetVersionUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+
+		updateTaskProgressUseCase = new UpdateTaskProgressUseCase(
+			taskRepository,
+			phaseRepository,
+			projectRepository
+		);
+
+		assignTaskUseCase = new AssignTaskUseCase(taskRepository, userRepository);
+
 
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
@@ -133,12 +160,25 @@ export function initializeServices() {
 			getTemplateRecommendationsUseCase,
 			saveCalculationResultUseCase
 		);
+
 		budgetController = new BudgetController(
-			generateBudgetFromCalculationUseCase
+			generateBudgetFromCalculationUseCase,
+			getProjectBudgetsUseCase,
+			createBudgetVersionUseCase,
+			projectBudgetRepository
 		);
+
 		projectScheduleController = new ProjectScheduleController(
 			generateProjectScheduleUseCase
 		);
+
+		 taskController = new TaskController(
+				updateTaskProgressUseCase,
+				assignTaskUseCase,
+				taskRepository
+			);
+
+			phaseController = new PhaseController(phaseRepository, taskRepository);
 
 		console.log("Services initialized successfully");
 	} catch (error) {
@@ -191,4 +231,22 @@ export function getProjectScheduleController() {
 		);
 	}
 	return projectScheduleController;
+}
+
+export function getTaskController() {
+	if (!taskController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return taskController;
+}
+
+export function getPhaseController() {
+	if (!phaseController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return phaseController;
 }
