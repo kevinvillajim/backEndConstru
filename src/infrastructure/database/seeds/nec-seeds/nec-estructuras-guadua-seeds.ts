@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de estructuras de guadúa según NEC-SE-GUADUA
  */
-export async function seedGuaduaTemplates() {
+export async function seedEstructurasGuaduaTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

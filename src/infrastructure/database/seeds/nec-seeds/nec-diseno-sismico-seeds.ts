@@ -1,4 +1,4 @@
-// src/infrastructure/database/seeds/nec-seeds/nec-sismica-seeds.ts
+// src/infrastructure/database/seeds/nec-seeds/nec-diseno-sismico-seeds.ts
 import {AppDataSource} from "../../data-source";
 import {
 	CalculationTemplateEntity,
@@ -13,9 +13,9 @@ import {
 } from "../../entities/CalculationParameterEntity";
 
 /**
- * Semillas para plantillas de cálculo de peligro sísmico (NEC-SE-DS)
+ * Semillas para plantillas de cálculo de diseño sísmico (NEC-SE-DS)
  */
-export async function seedSismicaCalculations() {
+export async function seedDisenoSismicoTemplates() {
 	const connection = AppDataSource.getInstance();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
@@ -35,7 +35,7 @@ export async function seedSismicaCalculations() {
 
 	if (existingCount > 0) {
 		console.log(
-			`Ya existen ${existingCount} plantillas de Peligro Sísmico. Omitiendo...`
+			`Ya existen ${existingCount} plantillas de Diseño Sísmico. Omitiendo...`
 		);
 		return;
 	}
@@ -49,26 +49,51 @@ export async function seedSismicaCalculations() {
 			type: CalculationType.STRUCTURAL,
 			targetProfession: ProfessionType.CIVIL_ENGINEER,
 			formula: `
-        // Cálculo del cortante basal
-        const Sa = calculoEspectroDiseno(T);
-        const V = (I * Sa * W) / (R * phiP * phiE);
-        
-        // Peso sísmico efectivo ajustado si hay mezanine
-        const Weff = conMezanine ? W + 0.25 * L : W;
-        
-        // Cortante basal final
-        const cortanteBasal = (I * Sa * Weff) / (R * phiP * phiE);
-        
-        return {
-          cortanteBasal,
-          Sa,
-          factorUsado: I,
-          factorReduccion: R,
-          irregularidadPlanta: phiP,
-          irregularidadElevacion: phiE,
-          pesoReactivo: Weff
-        };
-      `,
+                // Cálculo del espectro de aceleración
+                let eta;
+                if (region === "Costa" && provincia !== "Esmeraldas") {
+                    eta = 1.80;
+                } else if (region === "Sierra" || region === "Galapagos" || provincia === "Esmeraldas") {
+                    eta = 2.48;
+                } else if (region === "Oriente") {
+                    eta = 2.60;
+                }
+                
+                // Período límite (Tc)
+                const Tc = 0.55 * Fs * (Fd/Fa);
+                
+                // Factor r (1.0 para todos los suelos excepto tipo E)
+                const r = tipoSuelo === "E" ? 1.5 : 1.0;
+                
+                // Cálculo del espectro de diseño
+                let Sa;
+                if (T <= Tc) {
+                    Sa = eta * Z * Fa;
+                } else {
+                    Sa = eta * Z * Fa * Math.pow(Tc/T, r);
+                }
+                
+                // Cortante basal
+                const V = (I * Sa * W) / (R * PhiP * PhiE);
+                
+                // Peso sísmico efectivo ajustado si hay mezanine
+                const Weff = conMezanine ? W + 0.25 * L : W;
+                
+                // Cortante basal final
+                const cortanteBasal = (I * Sa * Weff) / (R * PhiP * PhiE);
+                
+                return {
+                    cortanteBasal,
+                    Sa,
+                    factorUsado: I,
+                    factorReduccion: R,
+                    irregularidadPlanta: PhiP,
+                    irregularidadElevacion: PhiE,
+                    pesoReactivo: Weff,
+                    periodoLimite: Tc,
+                    factorAmplificacion: eta
+                };
+            `,
 			necReference: "NEC-SE-DS, Sección 6.3.2",
 			isActive: true,
 			version: 1,
@@ -93,6 +118,7 @@ export async function seedSismicaCalculations() {
 				isRequired: true,
 				minValue: 0.15,
 				maxValue: 0.5,
+				defaultValue: "0.4",
 				helpText:
 					"Factor que depende de la ubicación geográfica del proyecto (0.15 a 0.50)",
 			}),
@@ -139,7 +165,7 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: cortanteBasalTemplate.id,
-				name: "phiP",
+				name: "PhiP",
 				description: "Coeficiente de regularidad en planta",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.INPUT,
@@ -152,7 +178,7 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: cortanteBasalTemplate.id,
-				name: "phiE",
+				name: "PhiE",
 				description: "Coeficiente de regularidad en elevación",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.INPUT,
@@ -211,7 +237,7 @@ export async function seedSismicaCalculations() {
 				isRequired: true,
 				minValue: 0.5,
 				maxValue: 2.0,
-				defaultValue: "1.0",
+				defaultValue: "1.2",
 				helpText:
 					"Coeficiente de amplificación de espectro para períodos cortos",
 			}),
@@ -225,7 +251,7 @@ export async function seedSismicaCalculations() {
 				isRequired: true,
 				minValue: 0.5,
 				maxValue: 2.0,
-				defaultValue: "1.0",
+				defaultValue: "1.15",
 				helpText: "Coeficiente de amplificación para desplazamientos",
 			}),
 			parameterRepository.create({
@@ -243,53 +269,70 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: cortanteBasalTemplate.id,
+				name: "tipoSuelo",
+				description: "Tipo de suelo",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 13,
+				isRequired: true,
+				defaultValue: "C",
+				allowedValues: JSON.stringify(["A", "B", "C", "D", "E", "F"]),
+				helpText: "Tipo de suelo según clasificación NEC",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: cortanteBasalTemplate.id,
 				name: "region",
 				description: "Región geográfica",
 				dataType: ParameterDataType.ENUM,
 				scope: ParameterScope.INPUT,
-				displayOrder: 13,
+				displayOrder: 14,
 				isRequired: true,
 				defaultValue: "Sierra",
 				allowedValues: JSON.stringify([
 					"Costa",
 					"Sierra",
 					"Oriente",
-					"Galápagos",
+					"Galapagos",
 				]),
 				helpText: "Región geográfica para el factor η",
 			}),
 			parameterRepository.create({
 				calculationTemplateId: cortanteBasalTemplate.id,
-				name: "calculoEspectroDiseno",
-				description: "Función para calcular espectro de diseño",
-				dataType: ParameterDataType.STRING,
-				scope: ParameterScope.INTERNAL,
-				displayOrder: 14,
-				isRequired: true,
-				formula: `
-          function(T) {
-            let eta = 1.8;
-            if (region === "Sierra" || region === "Oriente" || region === "Galápagos") {
-              eta = 2.48;
-            }
-            if (region === "Oriente") {
-              eta = 2.6;
-            }
-            
-            // Período límite (Tc)
-            const Tc = 0.55 * Fs * (Fd/Fa);
-            
-            // Factor r (1.0 para todos los suelos excepto tipo E)
-            const r = 1.0;
-            
-            // Cálculo del espectro de diseño
-            if (T <= Tc) {
-              return eta * Z * Fa;
-            } else {
-              return eta * Z * Fa * Math.pow(Tc/T, r);
-            }
-          }
-        `,
+				name: "provincia",
+				description: "Provincia",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 15,
+				isRequired: false,
+				defaultValue: "",
+				allowedValues: JSON.stringify([
+					"",
+					"Azuay",
+					"Bolívar",
+					"Cañar",
+					"Carchi",
+					"Chimborazo",
+					"Cotopaxi",
+					"El Oro",
+					"Esmeraldas",
+					"Galápagos",
+					"Guayas",
+					"Imbabura",
+					"Loja",
+					"Los Ríos",
+					"Manabí",
+					"Morona Santiago",
+					"Napo",
+					"Orellana",
+					"Pastaza",
+					"Pichincha",
+					"Santa Elena",
+					"Santo Domingo",
+					"Sucumbíos",
+					"Tungurahua",
+					"Zamora Chinchipe",
+				]),
+				helpText: "Provincia (requerido para región Costa)",
 			}),
 			parameterRepository.create({
 				calculationTemplateId: cortanteBasalTemplate.id,
@@ -297,7 +340,7 @@ export async function seedSismicaCalculations() {
 				description: "Aceleración espectral",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 15,
+				displayOrder: 16,
 				unitOfMeasure: "g",
 			}),
 			parameterRepository.create({
@@ -306,7 +349,7 @@ export async function seedSismicaCalculations() {
 				description: "Cortante basal de diseño",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 16,
+				displayOrder: 17,
 				unitOfMeasure: "kN",
 			}),
 		];
@@ -321,53 +364,55 @@ export async function seedSismicaCalculations() {
 			type: CalculationType.STRUCTURAL,
 			targetProfession: ProfessionType.CIVIL_ENGINEER,
 			formula: `
-        // Período límite de retorno Tc
-        const Tc = 0.55 * Fs * (Fd/Fa);
-        
-        // Factor r (1.0 para todos los suelos excepto tipo E)
-        const r = tipoSuelo === "E" ? 1.5 : 1.0;
-        
-        // Factor η según región geográfica
-        let eta = 1.8; // Costa (excepto Esmeraldas)
-        if (region === "Sierra" || region === "Esmeraldas" || region === "Galapagos") {
-          eta = 2.48;
-        } else if (region === "Oriente") {
-          eta = 2.6;
-        }
-        
-        // Cálculo de los puntos del espectro
-        const puntos = [];
-        const numPuntos = 100; // Número de puntos para graficar el espectro
-        const Tmax = 4.0; // Período máximo para el espectro
-        
-        for (let i = 0; i <= numPuntos; i++) {
-          const T = (Tmax * i) / numPuntos;
-          let Sa;
-          
-          if (T <= Tc) {
-            Sa = eta * Z * Fa; // Meseta del espectro
-          } else {
-            Sa = eta * Z * Fa * Math.pow(Tc/T, r); // Parte descendente del espectro
-          }
-          
-          puntos.push({periodo: T, aceleracion: Sa});
-        }
-        
-        // Puntos característicos
-        const Sa0 = eta * Z * Fa; // Aceleración en la meseta
-        const Tl = 2.4 * Fd; // Período límite para espectro de desplazamientos
-        
-        return {
-          espectro: puntos,
-          Tc,
-          Tl,
-          Sa0,
-          periodoMeseta: Tc,
-          factorZona: Z,
-          factorSuelo: Fa,
-          factorAmplificacion: eta
-        };
-      `,
+                // Factor η según región geográfica
+                let eta;
+                if (region === "Costa" && provincia !== "Esmeraldas") {
+                    eta = 1.80;
+                } else if (region === "Sierra" || region === "Galapagos" || provincia === "Esmeraldas") {
+                    eta = 2.48;
+                } else if (region === "Oriente") {
+                    eta = 2.60;
+                }
+                
+                // Período límite de retorno Tc
+                const Tc = 0.55 * Fs * (Fd/Fa);
+                
+                // Factor r (1.0 para todos los suelos excepto tipo E)
+                const r = tipoSuelo === "E" ? 1.5 : 1.0;
+                
+                // Cálculo de los puntos del espectro
+                const puntos = [];
+                const numPuntos = 100; // Número de puntos para graficar el espectro
+                const Tmax = 4.0; // Período máximo para el espectro
+                
+                for (let i = 0; i <= numPuntos; i++) {
+                    const T = (Tmax * i) / numPuntos;
+                    let Sa;
+                    
+                    if (T <= Tc) {
+                        Sa = eta * Z * Fa; // Meseta del espectro
+                    } else {
+                        Sa = eta * Z * Fa * Math.pow(Tc/T, r); // Parte descendente del espectro
+                    }
+                    
+                    puntos.push({periodo: T, aceleracion: Sa});
+                }
+                
+                // Puntos característicos
+                const Sa0 = eta * Z * Fa; // Aceleración en la meseta
+                const Tl = 2.4 * Fd; // Período límite para espectro de desplazamientos
+                
+                return {
+                    espectro: puntos,
+                    Tc,
+                    Tl,
+                    Sa0,
+                    periodoMeseta: Tc,
+                    factorZona: Z,
+                    factorSuelo: Fa,
+                    factorAmplificacion: eta
+                };
+            `,
 			necReference: "NEC-SE-DS, Sección 3.3",
 			isActive: true,
 			version: 1,
@@ -438,29 +483,11 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: espectroDiseno.id,
-				name: "region",
-				description: "Región geográfica",
-				dataType: ParameterDataType.ENUM,
-				scope: ParameterScope.INPUT,
-				displayOrder: 5,
-				isRequired: true,
-				defaultValue: "Sierra",
-				allowedValues: JSON.stringify([
-					"Costa",
-					"Sierra",
-					"Oriente",
-					"Galapagos",
-					"Esmeraldas",
-				]),
-				helpText: "Región geográfica para el factor η",
-			}),
-			parameterRepository.create({
-				calculationTemplateId: espectroDiseno.id,
 				name: "tipoSuelo",
 				description: "Tipo de suelo",
 				dataType: ParameterDataType.ENUM,
 				scope: ParameterScope.INPUT,
-				displayOrder: 6,
+				displayOrder: 5,
 				isRequired: true,
 				defaultValue: "C",
 				allowedValues: JSON.stringify(["A", "B", "C", "D", "E", "F"]),
@@ -468,11 +495,66 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: espectroDiseno.id,
+				name: "region",
+				description: "Región geográfica",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				defaultValue: "Sierra",
+				allowedValues: JSON.stringify([
+					"Costa",
+					"Sierra",
+					"Oriente",
+					"Galapagos",
+				]),
+				helpText: "Región geográfica para el factor η",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: espectroDiseno.id,
+				name: "provincia",
+				description: "Provincia",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: false,
+				defaultValue: "",
+				allowedValues: JSON.stringify([
+					"",
+					"Azuay",
+					"Bolívar",
+					"Cañar",
+					"Carchi",
+					"Chimborazo",
+					"Cotopaxi",
+					"El Oro",
+					"Esmeraldas",
+					"Galápagos",
+					"Guayas",
+					"Imbabura",
+					"Loja",
+					"Los Ríos",
+					"Manabí",
+					"Morona Santiago",
+					"Napo",
+					"Orellana",
+					"Pastaza",
+					"Pichincha",
+					"Santa Elena",
+					"Santo Domingo",
+					"Sucumbíos",
+					"Tungurahua",
+					"Zamora Chinchipe",
+				]),
+				helpText: "Provincia (requerido para región Costa)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: espectroDiseno.id,
 				name: "Tc",
 				description: "Período límite para meseta espectral",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 7,
+				displayOrder: 8,
 				unitOfMeasure: "s",
 			}),
 			parameterRepository.create({
@@ -481,7 +563,7 @@ export async function seedSismicaCalculations() {
 				description: "Período límite para espectro de desplazamientos",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 8,
+				displayOrder: 9,
 				unitOfMeasure: "s",
 			}),
 			parameterRepository.create({
@@ -490,7 +572,7 @@ export async function seedSismicaCalculations() {
 				description: "Aceleración en la meseta espectral",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 9,
+				displayOrder: 10,
 				unitOfMeasure: "g",
 			}),
 			parameterRepository.create({
@@ -499,7 +581,7 @@ export async function seedSismicaCalculations() {
 				description: "Puntos del espectro",
 				dataType: ParameterDataType.ARRAY,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 10,
+				displayOrder: 11,
 			}),
 		];
 
@@ -513,54 +595,63 @@ export async function seedSismicaCalculations() {
 			type: CalculationType.STRUCTURAL,
 			targetProfession: ProfessionType.CIVIL_ENGINEER,
 			formula: `
-        // Cálculo del período fundamental aproximado según Método 1 NEC-SE-DS
-        let Ct, alpha;
-        
-        switch(sistemaEstructural) {
-          case "portico_acero_sin_arriostramientos":
-            Ct = 0.072;
-            alpha = 0.8;
-            break;
-          case "portico_acero_con_arriostramientos":
-            Ct = 0.073;
-            alpha = 0.75;
-            break;
-          case "portico_hormigon_sin_muros":
-            Ct = 0.055;
-            alpha = 0.9;
-            break;
-          case "portico_hormigon_con_muros":
-            Ct = 0.055;
-            alpha = 0.75;
-            break;
-          case "mamposteria":
-            Ct = 0.055;
-            alpha = 0.75;
-            break;
-          default:
-            Ct = 0.055;
-            alpha = 0.75;
-        }
-        
-        // Ta = Ct * hn^α
-        const Ta = Ct * Math.pow(alturaEdificio, alpha);
-        
-        // Límites según NEC-SE-DS
-        let Tmax = Ta;
-        if (suelo === "C" || suelo === "D" || suelo === "E") {
-          Tmax = 1.3 * Ta; // Para tipo de suelo C, D o E
-        } else {
-          Tmax = 1.1 * Ta; // Para tipo de suelo A o B
-        }
-        
-        return {
-          periodoFundamental: Ta,
-          periodoMaximo: Tmax,
-          coeficienteCt: Ct,
-          exponenteAlpha: alpha,
-          clasificacionSistema: sistemaEstructural
-        };
-      `,
+                // Cálculo del período fundamental aproximado según Método 1 NEC-SE-DS
+                let Ct, alpha;
+                
+                switch(sistemaEstructural) {
+                    case "portico_acero_sin_arriostramientos":
+                        Ct = 0.072;
+                        alpha = 0.8;
+                        break;
+                    case "portico_acero_con_arriostramientos":
+                        Ct = 0.073;
+                        alpha = 0.75;
+                        break;
+                    case "portico_hormigon_sin_muros":
+                        Ct = 0.055;
+                        alpha = 0.9;
+                        break;
+                    case "portico_hormigon_con_muros":
+                    case "mamposteria":
+                        Ct = 0.055;
+                        alpha = 0.75;
+                        break;
+                    default:
+                        Ct = 0.055;
+                        alpha = 0.75;
+                }
+                
+                // Para estructuras con muros estructurales, se puede usar el método de Cw
+                if (sistemaEstructural === "portico_hormigon_con_muros" || sistemaEstructural === "mamposteria") {
+                    if (usarMetodoCw && AB > 0 && sumatoriaMuros > 0) {
+                        const Cw = (1/AB) * sumatoriaMuros;
+                        Ct = 0.0055 / Math.sqrt(Cw);
+                    }
+                }
+                
+                // Ta = Ct * hn^α
+                const Ta = Ct * Math.pow(alturaEdificio, alpha);
+                
+                // Limitación según tipo de suelo
+                let Tmax;
+                if (tipoSuelo === "C" || tipoSuelo === "D" || tipoSuelo === "E") {
+                    Tmax = 1.3 * Ta; // Para tipo de suelo C, D o E
+                } else {
+                    Tmax = 1.1 * Ta; // Para tipo de suelo A o B
+                }
+                
+                // Si se ha proporcionado un T alternativo (por análisis modal), limitarlo
+                const Tfinal = T > 0 ? Math.min(T, Tmax) : Ta;
+                
+                return {
+                    periodoFundamental: Ta,
+                    periodoMaximo: Tmax,
+                    periodoFinal: Tfinal,
+                    coeficienteCt: Ct,
+                    exponenteAlpha: alpha,
+                    clasificacionSistema: sistemaEstructural
+                };
+            `,
 			necReference: "NEC-SE-DS, Sección 6.3.3",
 			isActive: true,
 			version: 1,
@@ -610,7 +701,7 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: periodoFundamental.id,
-				name: "suelo",
+				name: "tipoSuelo",
 				description: "Tipo de suelo",
 				dataType: ParameterDataType.ENUM,
 				scope: ParameterScope.INPUT,
@@ -622,21 +713,101 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: periodoFundamental.id,
+				name: "T",
+				description: "Período calculado por método 2 (opcional)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: false,
+				minValue: 0,
+				unitOfMeasure: "s",
+				helpText: "Si se conoce el periodo por análisis modal, ingresar aquí",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "usarMetodoCw",
+				description: "Usar método de Cw para muros estructurales",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: false,
+				defaultValue: "false",
+				helpText:
+					"Activa el cálculo mediante parámetro Cw para muros estructurales",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "AB",
+				description: "Área de la edificación en planta",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: false,
+				minValue: 0,
+				defaultValue: "0",
+				unitOfMeasure: "m²",
+				helpText:
+					"Área en planta (solo para estructuras con muros estructurales)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "sumatoriaMuros",
+				description: "Sumatoria de parámetros de muros estructurales",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: false,
+				minValue: 0,
+				defaultValue: "0",
+				helpText: "Suma de (Awi×(hi/lwi)²) para todos los muros",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
 				name: "periodoFundamental",
-				description: "Período fundamental aproximado",
+				description: "Período fundamental aproximado (Ta)",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 4,
+				displayOrder: 8,
+				isRequired: false,
 				unitOfMeasure: "s",
 			}),
 			parameterRepository.create({
 				calculationTemplateId: periodoFundamental.id,
 				name: "periodoMaximo",
-				description: "Período máximo a considerar en el análisis",
+				description: "Período máximo permitido",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 5,
+				displayOrder: 9,
+				isRequired: false,
 				unitOfMeasure: "s",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "periodoFinal",
+				description: "Período de diseño final",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 10,
+				isRequired: false,
+				unitOfMeasure: "s",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "coeficienteCt",
+				description: "Coeficiente Ct utilizado",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 11,
+				isRequired: false,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: periodoFundamental.id,
+				name: "exponenteAlpha",
+				description: "Exponente Alpha utilizado",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 12,
+				isRequired: false,
 			}),
 		];
 
@@ -650,46 +821,50 @@ export async function seedSismicaCalculations() {
 			type: CalculationType.STRUCTURAL,
 			targetProfession: ProfessionType.CIVIL_ENGINEER,
 			formula: `
-        // Cálculo de derivas inelásticas máximas
-        const derivasInelasticas = [];
-        const cumplimientoValores = [];
-        const cumplimiento = [];
-        
-        // Deriva máxima permitida según NEC-SE-DS
-        let deltaPermitido;
-        if (sistemaEstructural === "mamposteria") {
-          deltaPermitido = 0.01; // Para mampostería
-        } else {
-          deltaPermitido = 0.02; // Para hormigón armado, acero o madera
-        }
-        
-        // Calcular deriva inelástica para cada piso
-        for (let i = 0; i < desplazamientos.length; i++) {
-          if (i === 0) {
-            // Para el primer piso, la deriva es el desplazamiento dividido por altura
-            const deltaE = desplazamientos[i] / alturasPiso[i];
-            const deltaM = 0.75 * R * deltaE;
-            derivasInelasticas.push(deltaM);
-            cumplimientoValores.push(deltaM <= deltaPermitido);
-          } else {
-            // Para pisos superiores, la deriva es la diferencia de desplazamientos dividida por altura
-            const deltaE = (desplazamientos[i] - desplazamientos[i-1]) / alturasPiso[i];
-            const deltaM = 0.75 * R * deltaE;
-            derivasInelasticas.push(deltaM);
-            cumplimientoValores.push(deltaM <= deltaPermitido);
-          }
-        }
-        
-        // Determinar si todas las derivas cumplen
-        const cumplenTodas = cumplimientoValores.every(cumple => cumple);
-        
-        return {
-          derivasInelasticas,
-          derivaMaximaPermitida: deltaPermitido,
-          cumplimiento: cumplimientoValores,
-          cumplimientoGeneral: cumplenTodas
-        };
-      `,
+                // Cálculo de derivas inelásticas máximas
+                const derivasInelasticas = [];
+                const derivasElasticas = [];
+                const cumplimientoValores = [];
+                
+                // Deriva máxima permitida según NEC-SE-DS
+                let deltaPermitido;
+                if (sistemaEstructural === "mamposteria") {
+                    deltaPermitido = 0.01; // Para mampostería
+                } else {
+                    deltaPermitido = 0.02; // Para hormigón armado, acero o madera
+                }
+                
+                // Calcular deriva inelástica para cada piso
+                for (let i = 0; i < desplazamientos.length; i++) {
+                    let deltaE;
+                    
+                    if (i === 0) {
+                        // Para el primer piso, la deriva es el desplazamiento dividido por altura
+                        deltaE = desplazamientos[i] / alturasPiso[i];
+                    } else {
+                        // Para pisos superiores, la deriva es la diferencia de desplazamientos dividida por altura
+                        deltaE = (desplazamientos[i] - desplazamientos[i-1]) / alturasPiso[i];
+                    }
+                    
+                    derivasElasticas.push(deltaE);
+                    
+                    // Deriva inelástica según NEC-SE-DS
+                    const deltaM = 0.75 * R * deltaE;
+                    derivasInelasticas.push(deltaM);
+                    cumplimientoValores.push(deltaM <= deltaPermitido);
+                }
+                
+                // Determinar si todas las derivas cumplen
+                const cumplenTodas = cumplimientoValores.every(cumple => cumple);
+                
+                return {
+                    derivasElasticas,
+                    derivasInelasticas,
+                    derivaMaximaPermitida: deltaPermitido,
+                    cumplimiento: cumplimientoValores,
+                    cumplimientoGeneral: cumplenTodas
+                };
+            `,
 			necReference: "NEC-SE-DS, Sección 4.2.2",
 			isActive: true,
 			version: 1,
@@ -707,24 +882,26 @@ export async function seedSismicaCalculations() {
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
 				name: "desplazamientos",
-				description: "Desplazamientos elásticos de cada piso (mm)",
+				description: "Desplazamientos elásticos de cada piso",
 				dataType: ParameterDataType.ARRAY,
 				scope: ParameterScope.INPUT,
 				displayOrder: 1,
 				isRequired: true,
 				defaultValue: JSON.stringify([10, 18, 24, 28]),
+				unitOfMeasure: "mm",
 				helpText:
 					"Ingrese los desplazamientos elásticos de cada piso en milímetros, de abajo hacia arriba",
 			}),
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
 				name: "alturasPiso",
-				description: "Alturas de entrepiso (m)",
+				description: "Alturas de entrepiso",
 				dataType: ParameterDataType.ARRAY,
 				scope: ParameterScope.INPUT,
 				displayOrder: 2,
 				isRequired: true,
 				defaultValue: JSON.stringify([3.0, 3.0, 3.0, 3.0]),
+				unitOfMeasure: "m",
 				helpText:
 					"Ingrese las alturas de cada piso en metros, de abajo hacia arriba",
 			}),
@@ -761,11 +938,19 @@ export async function seedSismicaCalculations() {
 			}),
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
+				name: "derivasElasticas",
+				description: "Derivas elásticas de piso",
+				dataType: ParameterDataType.ARRAY,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 5,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: derivasPiso.id,
 				name: "derivasInelasticas",
 				description: "Derivas inelásticas de piso",
 				dataType: ParameterDataType.ARRAY,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 5,
+				displayOrder: 6,
 			}),
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
@@ -773,7 +958,7 @@ export async function seedSismicaCalculations() {
 				description: "Deriva máxima permitida",
 				dataType: ParameterDataType.NUMBER,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 6,
+				displayOrder: 7,
 			}),
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
@@ -781,7 +966,7 @@ export async function seedSismicaCalculations() {
 				description: "Cumplimiento por piso",
 				dataType: ParameterDataType.ARRAY,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 7,
+				displayOrder: 8,
 			}),
 			parameterRepository.create({
 				calculationTemplateId: derivasPiso.id,
@@ -789,7 +974,7 @@ export async function seedSismicaCalculations() {
 				description: "Cumplimiento general",
 				dataType: ParameterDataType.BOOLEAN,
 				scope: ParameterScope.OUTPUT,
-				displayOrder: 8,
+				displayOrder: 9,
 			}),
 		];
 
@@ -803,60 +988,60 @@ export async function seedSismicaCalculations() {
 			type: CalculationType.STRUCTURAL,
 			targetProfession: ProfessionType.CIVIL_ENGINEER,
 			formula: `
-        // Cálculo de distribución vertical de fuerzas sísmicas
-        const n = pesos.length; // Número de pisos
-        const fuerzas = [];
-        let sumatoriaWiHik = 0;
-        
-        // Cálculo de valor k según período
-        let k;
-        if (T <= 0.5) {
-          k = 1.0;
-        } else if (T > 0.5 && T <= 2.5) {
-          k = 0.75 + 0.5 * T;
-        } else {
-          k = 2.0;
-        }
-        
-        // Calcular sumatoria de Wi * Hi^k
-        for (let i = 0; i < n; i++) {
-          sumatoriaWiHik += pesos[i] * Math.pow(alturas[i], k);
-        }
-        
-        // Calcular fuerza en cada nivel
-        for (let i = 0; i < n; i++) {
-          const fx = (pesos[i] * Math.pow(alturas[i], k) / sumatoriaWiHik) * cortanteBasal;
-          fuerzas.push(fx);
-        }
-        
-        // Calcular cortante de piso
-        const cortantesPiso = [];
-        for (let i = 0; i < n; i++) {
-          let cortantePiso = 0;
-          for (let j = i; j < n; j++) {
-            cortantePiso += fuerzas[j];
-          }
-          cortantesPiso.push(cortantePiso);
-        }
-        
-        // Calcular momentos de volcamiento
-        const momentosVolcamiento = [];
-        for (let i = 0; i < n; i++) {
-          let momentoVolcamiento = 0;
-          for (let j = i; j < n; j++) {
-            momentoVolcamiento += fuerzas[j] * (alturas[j] - alturas[i]);
-          }
-          momentosVolcamiento.push(momentoVolcamiento);
-        }
-        
-        return {
-          factorK: k,
-          fuerzasPorPiso: fuerzas,
-          cortantesPorPiso: cortantesPiso,
-          momentosVolcamiento,
-          sumatoriaPesos: pesos.reduce((sum, peso) => sum + peso, 0)
-        };
-      `,
+                // Cálculo de distribución vertical de fuerzas sísmicas
+                const n = pesos.length; // Número de pisos
+                const fuerzas = [];
+                let sumatoriaWiHik = 0;
+                
+                // Cálculo de valor k según período
+                let k;
+                if (T <= 0.5) {
+                    k = 1.0;
+                } else if (T > 0.5 && T <= 2.5) {
+                    k = 0.75 + 0.5 * T;
+                } else {
+                    k = 2.0;
+                }
+                
+                // Calcular sumatoria de Wi * Hi^k
+                for (let i = 0; i < n; i++) {
+                    sumatoriaWiHik += pesos[i] * Math.pow(alturas[i], k);
+                }
+                
+                // Calcular fuerza en cada nivel
+                for (let i = 0; i < n; i++) {
+                    const fx = (pesos[i] * Math.pow(alturas[i], k) / sumatoriaWiHik) * cortanteBasal;
+                    fuerzas.push(fx);
+                }
+                
+                // Calcular cortante de piso
+                const cortantesPiso = [];
+                for (let i = 0; i < n; i++) {
+                    let cortantePiso = 0;
+                    for (let j = i; j < n; j++) {
+                        cortantePiso += fuerzas[j];
+                    }
+                    cortantesPiso.push(cortantePiso);
+                }
+                
+                // Calcular momentos de volcamiento
+                const momentosVolcamiento = [];
+                for (let i = 0; i < n; i++) {
+                    let momentoVolcamiento = 0;
+                    for (let j = i; j < n; j++) {
+                        momentoVolcamiento += fuerzas[j] * (alturas[j] - alturas[i]);
+                    }
+                    momentosVolcamiento.push(momentoVolcamiento);
+                }
+                
+                return {
+                    factorK: k,
+                    fuerzasPorPiso: fuerzas,
+                    cortantesPorPiso: cortantesPiso,
+                    momentosVolcamiento,
+                    sumatoriaPesos: pesos.reduce((sum, peso) => sum + peso, 0)
+                };
+            `,
 			necReference: "NEC-SE-DS, Sección 6.3.5",
 			isActive: true,
 			version: 1,
@@ -893,6 +1078,7 @@ export async function seedSismicaCalculations() {
 				displayOrder: 2,
 				isRequired: true,
 				defaultValue: JSON.stringify([500, 500, 400, 300]),
+				unitOfMeasure: "kN",
 				helpText:
 					"Ingrese los pesos sísmicos de cada piso en kN, de abajo hacia arriba",
 			}),
@@ -905,6 +1091,7 @@ export async function seedSismicaCalculations() {
 				displayOrder: 3,
 				isRequired: true,
 				defaultValue: JSON.stringify([3, 6, 9, 12]),
+				unitOfMeasure: "m",
 				helpText:
 					"Ingrese las alturas acumuladas de cada piso en m, de abajo hacia arriba",
 			}),
@@ -957,15 +1144,24 @@ export async function seedSismicaCalculations() {
 				displayOrder: 8,
 				unitOfMeasure: "kN·m",
 			}),
+			parameterRepository.create({
+				calculationTemplateId: distribucionFuerzas.id,
+				name: "sumatoriaPesos",
+				description: "Sumatoria de pesos totales",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 9,
+				unitOfMeasure: "kN",
+			}),
 		];
 
 		await parameterRepository.save(distribucionParameters);
 
 		console.log(
-			"✅ Plantillas de Peligro Sísmico (NEC-SE-DS) creadas exitosamente"
+			"✅ Plantillas de Diseño Sísmico (NEC-SE-DS) creadas exitosamente"
 		);
 	} catch (error) {
-		console.error("❌ Error al crear plantillas de Peligro Sísmico:", error);
+		console.error("❌ Error al crear plantillas de Diseño Sísmico:", error);
 		throw error;
 	}
 }

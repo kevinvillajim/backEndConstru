@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de eficiencia energética según NEC-HS-EE
  */
-export async function seedEnergyEfficiencyTemplates() {
+export async function seedEficienciaEnergeticaTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

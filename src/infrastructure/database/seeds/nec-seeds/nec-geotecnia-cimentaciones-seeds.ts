@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de cimentaciones según NEC-SE-GC
  */
-export async function seedFoundationTemplates() {
+export async function seedGeotecniaCimentacionesTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

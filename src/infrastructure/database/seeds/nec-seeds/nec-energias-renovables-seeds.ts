@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de energías renovables según NEC-HS-ER
  */
-export async function seedRenewableEnergyTemplates() {
+export async function seedEnergiasRenovablesTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

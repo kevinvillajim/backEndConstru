@@ -1,16 +1,25 @@
 // src/infrastructure/database/seeds/nec-seeds/index.ts
 import {seedCalculationTemplates} from "../calculation-templates";
 import {seedSpecializedTemplates} from "../specialized-templates";
-import {seedSeismicTemplates} from "./seismic-templates";
-import {seedStructuralTemplates} from "./structural-templates";
-import {seedFoundationTemplates} from "./foundation-templates";
-import {seedEnergyEfficiencyTemplates} from "./energy-efficiency-templates";
-import {seedRenewableEnergyTemplates} from "./renewable-energy-templates";
-import {seedClimatizationTemplates} from "./climatization-templates";
-import {seedGlassTemplates} from "./glass-templates";
-import {seedGuaduaTemplates} from "./guadua-templates";
-import {seedCargasCalculations} from "./nec-cargas-seeds";
-import {seedSismicaCalculations} from "./nec-sismica-seeds";
+
+// Agregar las nuevas importaciones con nomenclatura descriptiva
+import {seedCargasNoSismicasTemplates} from "./nec-cargas-no-sismicas-seeds";
+import {seedDisenoSismicoTemplates} from "./nec-diseno-sismico-seeds";
+import {seedHormigonArmadoTemplates} from "./nec-hormigon-armado-seeds";
+import {seedEstructurasAceroTemplates} from "./nec-estructuras-acero-seeds";
+import {seedGeotecniaCimentacionesTemplates} from "./nec-geotecnia-cimentaciones-seeds";
+import {seedEstructurasMaderaTemplates} from "./nec-estructuras-madera-seeds";
+import {seedEstructurasGuaduaTemplates} from "./nec-estructuras-guadua-seeds";
+import {seedViviendasDosPisosTemplates} from "./nec-viviendas-dos-pisos-seeds";
+import {seedEficienciaEnergeticaTemplates} from "./nec-eficiencia-energetica-seeds";
+import {seedClimatizacionTemplates} from "./nec-climatizacion-seeds";
+import {seedEnergiasRenovablesTemplates} from "./nec-energias-renovables-seeds";
+import {seedVidriosTemplates} from "./nec-vidrios-seeds";
+import {seedContraIncendiosTemplates} from "./nec-contra-incendios-seeds";
+import {seedMamposteriaTemplates} from "./nec-mamposteria-seeds";
+import {seedInstalacionesElectricasTemplates} from "./nec-instalaciones-electricas-seeds";
+import {seedTelecomunicacionesTemplates} from "./nec-telecomunicaciones-seeds";
+import {seedAccesibilidadUniversalTemplates} from "./nec-accesibilidad-universal-seeds";
 
 /**
  * Función principal para inicializar todas las plantillas de cálculo basadas en la normativa NEC
@@ -23,28 +32,29 @@ export async function seedNECTemplates() {
 		await seedCalculationTemplates();
 		await seedSpecializedTemplates();
 
-		// Plantillas específicas NEC - Estructural
+		// Plantillas específicas NEC organizadas por grupo normativo
 		console.log("⚙️ Inicializando plantillas estructurales...");
-		await seedSeismicTemplates();
-		await seedStructuralTemplates();
-		await seedFoundationTemplates();
-		await seedGuaduaTemplates();
+		await seedDisenoSismicoTemplates();
+		await seedCargasNoSismicasTemplates();
+		await seedHormigonArmadoTemplates();
+		await seedEstructurasAceroTemplates();
+		await seedMamposteriaTemplates(); // Nueva
+		await seedGeotecniaCimentacionesTemplates();
+		await seedEstructurasMaderaTemplates();
+		await seedEstructurasGuaduaTemplates();
+		await seedViviendasDosPisosTemplates();
 
-		// Plantillas específicas NEC - Cargas y Sísmica (formato original)
-		console.log(
-			"⚡ Inicializando plantillas de cargas y sísmica adicionales..."
-		);
-		await seedCargasCalculations();
-		await seedSismicaCalculations();
+		console.log("🌱 Inicializando plantillas de habitabilidad y salud...");
+		await seedEficienciaEnergeticaTemplates();
+		await seedEnergiasRenovablesTemplates();
+		await seedClimatizacionTemplates();
+		await seedVidriosTemplates();
+		await seedContraIncendiosTemplates(); // Nueva
+		await seedAccesibilidadUniversalTemplates(); // Nueva
 
-		// Plantillas específicas NEC - Habitabilidad y Salud
-		console.log(
-			"🌱 Inicializando plantillas de eficiencia y sostenibilidad..."
-		);
-		await seedEnergyEfficiencyTemplates();
-		await seedRenewableEnergyTemplates();
-		await seedClimatizationTemplates();
-		await seedGlassTemplates();
+		console.log("⚡ Inicializando plantillas de instalaciones...");
+		await seedInstalacionesElectricasTemplates(); // Nueva
+		await seedTelecomunicacionesTemplates(); // Nueva
 
 		console.log(
 			"✅ Todas las plantillas NEC han sido inicializadas correctamente"

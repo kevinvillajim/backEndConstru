@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de vidrios según NEC-HS-VIDRIO
  */
-export async function seedGlassTemplates() {
+export async function seedVidriosTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

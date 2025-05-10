@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de cargas no sísmicas (NEC-SE-CG)
  */
-export async function seedCargasCalculations() {
+export async function seedCargasNoSismicasTemplates() {
 	const connection = AppDataSource.getInstance();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de estructuras de madera (NEC-SE-MD)
  */
-export async function seedMaderaCalculations() {
+export async function seedEstructurasMaderaTemplates() {
 	const connection = AppDataSource.getInstance();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity

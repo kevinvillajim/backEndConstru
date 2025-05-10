@@ -15,7 +15,7 @@ import {
 /**
  * Semillas para plantillas de cálculo de climatización según NEC-HS-CL
  */
-export async function seedClimatizationTemplates() {
+export async function seedClimatizacionTemplates() {
 	const connection = await AppDataSource.initialize();
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
