@@ -1,0 +1,192 @@
+Análisis Normativo: Bahareque Encementado para Implementación en App CONSTRU
+Resumen ejecutivo
+He analizado la "Norma Andina para Diseño y Construcción de Casas de Uno y Dos Pisos en Bahareque Encementado" para extraer información técnica que debe incorporarse al Módulo de Cálculos de la app CONSTRU. Este sistema constructivo, basado en un esqueleto de bambú Guadua recubierto con mortero de cemento, representa una alternativa sismoresistente y sostenible que complementa las normativas NEC-SE-DS y NEC-SE-CG analizadas previamente.
+1. Fórmulas matemáticas para implementar
+Control de calidad de materiales
+%con = (D+ - D-) / L * 100      [Ecuación 1]
+Donde:
+
+%con: Porcentaje de conicidad de la pieza (%)
+D+: Diámetro mayor (mm)
+D-: Diámetro menor (mm)
+L: Longitud de la pieza (mm)
+
+Juntas sísmicas
+J = h * j      [Ecuación 2]
+Donde:
+
+J: Junta sísmica entre edificaciones contiguas (m)
+h: Altura de edificación hasta parte media de cubierta (m)
+j: Valor de Tabla 3 (0.020 para fachadas con >25% aberturas, 0.015 para <25%)
+
+Dimensionamiento estructural
+Li ≥ CB * Ap      [Ecuación 3]
+Donde:
+
+Li: Longitud mínima de muros continuos sin aberturas en dirección i (m)
+CB: Coeficiente del bahareque según zona sísmica o viento (Tablas 5-8)
+Ap: Área de cubierta incluyendo aleros (m²) para viviendas de un piso o segundo piso
+
+Verificación de simetría
+|[Σ(Lmi*b)/ΣLmi - B/2]/B| ≤ 0.15      [Ecuación 4]
+Donde:
+
+Lmi: Longitud de cada muro en dirección i (m)
+b: Distancia perpendicular desde muro al extremo del rectángulo que contiene el área (m)
+B: Longitud del lado perpendicular a dirección i del rectángulo (m)
+
+Período fundamental
+Ta = 0.25 * h^0.75      [Ecuación 5]
+Donde:
+
+h: Altura hasta nivel medio de cubierta (m)
+
+Resistencia al corte global
+ΣLi * V > 0.7E      [Ecuación 6]
+Donde:
+
+ΣLi: Sumatoria de longitud efectiva de muros en dirección i (m)
+V: Cortante admisible (kN/m) de Tablas 16-17
+E: Vs/R, donde Vs es cortante basal y R es coeficiente de disipación de energía (kN)
+
+2. Tablas y valores para la aplicación
+Propiedades físicas de Guadua
+
+Conicidad admisible: Cepa (0.17%), Basa (0.33%), Sobrebasa (0.50%)
+Curvatura máxima: 1.5% de longitud (elementos principales), 2.0% (pie-derechos)
+Humedad máxima: 19%
+
+Coeficientes sísmicos por país
+
+Colombia: CB entre 0.12-0.38 según amenaza sísmica Aa (0.05-0.50)
+Ecuador: CB entre 0.15-0.38 según zona sísmica (I-VI) y factor Z (0.15-≥0.50)
+Perú: CB entre 0.15-0.30 según zona (1-3) y Z (0.15-0.40)
+Coeficientes por viento: CB entre 0.14-0.22 según velocidad (60-130 km/h)
+
+Dimensiones estructurales
+
+Cimentaciones:
+
+Un piso: 200×150 mm (ancho×alto)
+Dos pisos: 250×200 mm
+
+
+Cargas admisibles en columnas de Guadua:
+Altura (m)Diámetro 10 cmDiámetro 11 cmDiámetro 12 cmDiámetro 13 cm222.3 kN28.2 kN34.2 kN40.1 kN311.6 kN15.5 kN20.0 kN25.0 kN46.7 kN9.1 kN12.0 kN15.4 kN54.4 kN6.0 kN7.9 kN10.1 kN
+
+
+Resistencia de muros
+
+Con caña picada, malla gallinero y mortero: 7.0-18.0 kN/m según configuración
+Con malla expandida y mortero: 4.9-12.6 kN/m según configuración
+
+3. Parámetros de diseño y valores límite
+Restricciones geométricas
+
+Espaciamiento entre pie-derechos: 300-800 mm
+Relación largo/ancho máxima en planta: 3:1
+Dimensión máxima interior de anillo de cimentación: 4.0 m
+Altura mínima de sobrecimiento: 400 mm
+Separación máxima entre pilares en terreno inclinado: 4 m
+
+Requisitos de mortero
+
+Enlucido: 1:4 cemento/arena, resistencia mínima 7.5 MPa
+Relleno de cañutos: 1:3 cemento/arena, resistencia mínima 9.0 MPa
+
+Cargas de diseño
+
+Carga muerta máxima en cubierta: 1.2 kN/m² (acabado pesado), 0.5 kN/m² (liviano)
+Carga viva de cubierta: 0.7 kN/m² (incluye granizo)
+Carga de granizo (>1600 msnm): 0.5 kN/m² (cubiertas <15°), 1.0 kN/m² (>15°)
+
+4. Recomendaciones para manual de bolsillo
+Comprobaciones de calidad
+
+Verificar especie: solo Guadua angustifolia Kunth
+Comprobar edad de cosecha: 3-6 años
+Verificar contenido de humedad: <19%
+Evaluar curvatura: <1.5% para elementos estructurales principales
+Revisar conicidad según Tabla 1
+Asegurar ausencia de fisuras que excedan un cañuto completo o >20% de longitud
+
+Pasos para análisis estructural simplificado
+
+Determinar zonas sísmicas y de viento según ubicación
+Calcular área de cubierta y entrepisos
+Obtener coeficiente CB de tablas correspondientes
+Calcular longitud mínima de muros: Li ≥ CB * Ap
+Verificar simetría con Ecuación 4
+Comprobar resistencia al corte: ΣLi * V > 0.7E
+Verificar resistencia al vuelco con análisis de pie-derechos extremos
+
+Consideraciones de sitio y terreno
+
+Realizar calicatas (1 por cada 3 unidades o 300 m²)
+En pendientes >20%: usar pilares o refuerzos especiales
+En zonas sísmicas altas: verificar juntas sísmicas
+Incluir drenajes y limpieza del terreno
+Elevar sobrecimientos al menos 400 mm sobre el terreno
+
+5. Requisitos de documentación técnica
+Para proyectos <15 viviendas o <3000 m²
+
+Memorial de Responsabilidad con verificación de suelos
+Planos estructurales con ubicación de muros en ambas direcciones
+Detalles de cimentación, conexiones y juntas
+Certificados de calidad de Guadua y madera
+
+Para proyectos >15 viviendas o >3000 m²
+
+Estudio geotécnico completo
+Análisis estructural detallado con Anexo A
+Verificación completa de resistencia al vuelco
+Documentación de todas las cargas aplicadas
+
+Integración con módulo de cálculos de CONSTRU
+El módulo debería organizarse en los siguientes flujos de cálculo secuenciales:
+
+Evaluación del sitio y requisitos
+
+Determinación de zona sísmica y viento
+Análisis de calidad de suelo
+Requerimientos documentales
+
+
+Definición de materiales
+
+Selección de Guadua y verificación de requisitos
+Dosificación de morteros
+Cálculo de conicidad y control de calidad
+
+
+Diseño de cimentación
+
+Dimensionamiento de vigas de cimentación
+Cálculo de refuerzo según Tabla 4
+Detalles de sobrecimiento y refuerzos especiales
+
+
+Dimensionamiento de muros
+
+Cálculo de longitud mínima (Ecuación 3)
+Verificación de simetría (Ecuación 4)
+Determinación de resistencia al corte (Ecuación 6)
+
+
+Diseño de entrepisos y cubierta
+
+Selección de secciones de Guadua o madera según tablas
+Definición de separaciones y luces
+Detalles de diafragmas horizontales
+
+
+Verificación de resistencia
+
+Análisis de resistencia a cargas laterales
+Comprobación de vuelco
+Verificación de conexiones
+
+
+
+Esta normativa complementa perfectamente las previamente analizadas (NEC-SE-DS y NEC-SE-CG), añadiendo aspectos específicos para construcciones de bahareque encementado que representan una alternativa sostenible y sismoresistente para viviendas de uno y dos pisos en Ecuador y la región andina.

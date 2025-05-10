@@ -1,0 +1,190 @@
+Análisis de la Normativa NEC-SB-IE (Instalaciones Eléctricas) para la App CONSTRU
+He analizado detalladamente el documento NEC-SB-IE sobre Instalaciones Eléctricas Residenciales. A continuación, presento la información estructurada según los requisitos solicitados.
+1. Fórmulas Matemáticas Para Implementar
+1.1 Cálculo de Demanda Eléctrica
+
+Potencia de iluminación: Número de circuitos × Puntos de iluminación × 100W
+Demanda de iluminación: Potencia de iluminación × Factor de demanda (Tabla 2)
+Potencia de tomacorrientes: Número de circuitos × Puntos de tomacorriente × 200W
+Demanda de tomacorrientes: Potencia de tomacorriente × Factor de demanda (Tabla 2)
+Demanda de cargas especiales: Potencia de carga especial × Factor de demanda (Tabla 4)
+Demanda Total: Demanda de iluminación + Demanda de tomacorrientes + Demanda de cargas especiales
+
+1.2 Dimensionamiento de Conductores y Protecciones
+
+Los conductores deben dimensionarse para soportar ≥ 125% de la corriente de carga máxima
+Las protecciones deben dimensionarse según la capacidad del conductor (Tabla 5)
+
+2. Tablas de Valores, Coeficientes y Factores
+2.1 Clasificación de Viviendas y Circuitos Mínimos (Tabla 1)
+Tipo de ViviendaÁrea de Construcción (m²)Circuitos Mínimos de IluminaciónCircuitos Mínimos de TomacorrientesPequeñaA < 8011Mediana80 < A < 20022Mediana grande201 < A < 30033Grande301 < A < 40044EspecialA > 4001 por cada 100 m² o fracción1 por cada 100 m² o fracción
+2.2 Factores de Demanda (Tabla 2)
+Tipo de ViviendaFD IluminaciónFD TomacorrientesPequeña - mediana0.700.50Mediana grande - Grande0.550.40Especial0.530.30
+2.3 Cargas Especiales - Potencias Medias (Tabla 3)
+Equipo EléctricoPotencia Media (W)Ducha eléctrica3,500Horno eléctrico3,000Cocina eléctrica6,000Calefón eléctrico8,000Aire acondicionado2,500Calentador eléctrico3,000Cargador para vehículo eléctrico7,500
+2.4 Factores de Demanda para Cargas Especiales (Tabla 4)
+Cantidad y PotenciaFactor de DemandaPara 1 carga1.0Para 2 o más cargas (CE < 10kW)0.80Para 2 o más cargas (10kW < CE < 20kW)0.75Para 2 o más cargas (CE > 20kW)0.65
+2.5 Protecciones Según Calibre de Conductor (Tabla 5)
+Calibre del Conductor (AWG)Capacidad Máxima del Interruptor (Amperios)1415/1612201030/32840650
+2.6 Calibre de Conductor de Tierra (Tabla 6)
+Capacidad de Protección (A)Calibre Conductor de Cobre (AWG)Calibre Conductor de Aluminio (AWG)1514---2012---3010---4010---6010---10086200643004240021
+2.7 Capacidad de Corriente de Conductores (Tabla 8)
+La tabla completa muestra la capacidad de corriente según sección transversal, tipo de aislamiento y temperatura ambiente.
+2.8 Código de Colores para Conductores (Tabla 9)
+ConductorColorNeutroBlancoTierraVerde, verde con franja amarillaFaseRojo, azul, negro, amarillo o cualquier otro color diferente a neutro y tierra
+3. Parámetros de Diseño y Valores Límite
+3.1 Circuitos de Iluminación
+
+Carga máxima: 15 amperios
+Máximo 15 puntos de iluminación por circuito
+Conductor mínimo: 2.5 mm² (14 AWG) tipo THHN
+
+3.2 Circuitos de Tomacorrientes
+
+Capacidad máxima: 20 amperios por circuito
+Máximo 10 salidas por circuito
+Polarizados (fase, neutro y tierra)
+Conductor mínimo: 4 mm² (12 AWG) tipo THHN
+
+3.3 Circuitos de Cargas Especiales
+
+Cada equipo debe tener circuito independiente si supera 1,500W
+Obligatorio circuito exclusivo para cocina eléctrica
+Obligatorio circuito exclusivo para calentamiento de agua en baños con ducha
+Conductor mínimo: 5.26 mm² (10 AWG) tipo THHN
+
+3.4 Alimentadores a Tableros
+
+Calibre mínimo desde medidor a tablero principal: No. 6 AWG tipo THHN
+
+3.5 Alturas de Instalación Normalizadas
+
+Interruptores: 1.2 m sobre nivel de piso (lado de apertura de puerta)
+Tomacorrientes generales: 0.4 m del piso terminado
+Tomacorrientes en baños/cocinas: 0.1 m sobre mesones
+Tomacorrientes para cocinas eléctricas: entre 0.2 y 0.8 m del suelo
+Tablero de distribución: 1.6 m desde nivel de piso a base del tablero
+
+4. Recomendaciones Específicas para Manual de Bolsillo
+4.1 Instalación de Puesta a Tierra
+
+El tablero de distribución principal debe conectarse a su propia varilla de puesta a tierra
+Electrodo: varilla de acero recubierta de cobre de 16 mm de diámetro y 1.8 m de longitud
+Conductor de tierra independiente del neutro en todos los circuitos
+Puente equipotencial entre neutro y tierra solo en tablero principal
+En subtableros, barras de neutro y tierra deben permanecer aisladas entre sí
+
+4.2 Protecciones y Tableros
+
+Cada circuito debe tener su propia protección contra sobrecorrientes
+Interruptores termomagnéticos según IEC 60898-1
+Protección para cocina eléctrica: interruptor termomagnético bipolar de mínimo 40A
+Tablero en lugar seco, accesible, con diagrama unifilar en tapa interior
+Balancear cargas entre fases
+Por cada 5 salidas, dejar al menos una de reserva
+
+4.3 Recomendaciones de Instalación
+
+Tuberías independientes para circuitos de iluminación, tomacorrientes y cargas especiales
+Empalmes entre conductores solo en cajetines
+Cajas de revisión con tapa y tornillos de fijación
+Interruptores deben desconectar el conductor de fase
+Los conductores no deben ocupar más del 40% del área de la tubería
+No más de dos codos en un mismo tramo de tubería
+
+5. Requisitos de Documentación Técnica
+5.1 Memoria Técnica
+
+Criterios técnicos utilizados
+Resultados de cálculos efectuados
+Planos eléctricos conforme a norma IEC 60617
+Diagrama unifilar completo
+
+5.2 Documentación en Tablero
+
+Diagrama unifilar con listado de circuitos en tapa interior de tablero
+Especificar a qué circuito protege cada interruptor
+
+Integración con el Módulo de Cálculos Técnicos de CONSTRU
+Flujo de Trabajo Propuesto
+
+Entrada de Datos Básicos:
+
+Clasificación de vivienda según área (Tabla 1)
+Número de ambientes y plantas de la edificación
+Ubicación geográfica (para consideraciones normativas locales)
+
+
+Determinación de Puntos y Circuitos:
+
+Cálculo de puntos de iluminación según ambientes
+Cálculo de puntos de tomacorrientes según ambientes
+Identificación de cargas especiales requeridas (cocina, ducha, etc.)
+Asignación automática de número mínimo de circuitos según tipo de vivienda
+
+
+Cálculo de Demanda Eléctrica:
+
+Aplicación de fórmulas de potencia de iluminación y tomacorrientes
+Aplicación de factores de demanda según tipo de vivienda
+Cálculo de demanda de cargas especiales
+Cálculo de demanda total
+
+
+Dimensionamiento de Componentes:
+
+Cálculo de calibres de conductores para circuitos
+Dimensionamiento de protecciones según calibre
+Dimensionamiento de tubería según número de conductores
+Dimensionamiento de puesta a tierra
+
+
+Generación de Documentación:
+
+Diagrama unifilar automático
+Cuadro de cargas por circuito
+Memoria de cálculo con todos los valores utilizados
+Especificaciones técnicas de materiales
+
+
+Verificación Normativa:
+
+Comprobación automática de cumplimiento de valores límite
+Alertas sobre posibles incumplimientos de la norma
+Recomendaciones para optimizar el diseño
+
+
+
+Complemento con NEC-SE-DS y NEC-SE-CG
+Este módulo de instalaciones eléctricas se integra perfectamente con los módulos estructurales analizados previamente (NEC-SE-DS de Peligro Sísmico y NEC-SE-CG de Cargas No Sísmicas) para formar un sistema completo de cálculo para proyectos de construcción:
+
+Secuencia Lógica de Diseño:
+
+El usuario primero define aspectos estructurales (usando NEC-SE-DS y NEC-SE-CG)
+La geometría y distribución espacial ya establecida sirve como base para el diseño eléctrico
+El sistema puede sugerir ubicaciones óptimas para tableros y rutas de circuitos
+
+
+Interfaces Compartidas:
+
+Plano base común para todos los sistemas
+Identificación de zonas de intersección entre sistemas estructurales y eléctricos
+Verificación automática de interferencias entre sistemas
+
+
+Estimación de Costos Integrada:
+
+Los cálculos de demanda eléctrica junto con dimensionamiento de conductores y protecciones
+Generación automática de lista de materiales eléctricos
+Consolidación con materiales estructurales para presupuesto global
+
+
+Documentación Unificada:
+
+Exportación de planos integrados
+Memoria técnica consolidada que cumple todos los requisitos normativos
+Especificaciones técnicas completas para todos los sistemas
+
+
+
+Esta integración permitirá que los profesionales de la construcción cuenten con una herramienta completa que abarca tanto los aspectos estructurales como las instalaciones eléctricas, siguiendo fielmente la normativa ecuatoriana vigente y facilitando el cumplimiento regulatorio.

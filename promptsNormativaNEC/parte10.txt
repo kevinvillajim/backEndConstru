@@ -1,0 +1,246 @@
+Análisis de Normativa NEC para Muros Portantes y Cimentaciones - Módulo de Cálculos CONSTRU
+Basado en el análisis del documento proporcionado sobre normativa NEC relacionada con muros portantes, cimentaciones y mampostería confinada, he extraído sistemáticamente los elementos clave para implementar en el módulo de cálculos técnicos de la aplicación CONSTRU.
+1. FÓRMULAS MATEMÁTICAS PARA IMPLEMENTAR
+1.1. Densidad de Muros Portantes
+d% = Aw / Ap
+Donde:
+
+d = Índice de densidad de muros en cada dirección (%)
+Aw = Sumatoria de secciones transversales de muros confinados (m²)
+Ap = Área total en planta de la vivienda (m²)
+
+1.2. Cuantías de Acero de Refuerzo
+ρh + ρv ≥ 0.002
+ρh ≥ 0.0007
+ρv ≥ 0.0007
+
+ρh = Ash/(sh·t)
+ρv = Asv/(sv·t)
+Donde:
+
+ρh = Cuantía de refuerzo horizontal
+ρv = Cuantía de refuerzo vertical
+Ash = Área de refuerzo horizontal (mm²)
+Asv = Área de refuerzo vertical (mm²)
+sh = Separación horizontal (mm)
+sv = Separación vertical (mm)
+t = Espesor del muro (mm)
+
+1.3. Refuerzo en Extremos de Muros
+As = 0.2 × (f'c/fy) × t²
+Donde:
+
+As = Área de refuerzo longitudinal (mm²)
+f'c = Resistencia a compresión del concreto (MPa)
+fy = Resistencia a fluencia del acero (MPa)
+t = Espesor del muro (mm)
+
+1.4. Refuerzo Transversal de Viga
+Asc = (s)/(fy·hc)
+Donde:
+
+Asc = Área de refuerzo transversal (mm²)
+s = Separación de estribos (mm)
+fy = Resistencia a fluencia del acero (MPa)
+hc = Altura de la viga en el plano del muro (mm)
+
+1.5. Conectores para Muros Transversales
+Ast = 2.5(VmR + VsR)/(FR·L) × (s/fy)
+Donde:
+
+Ast = Área total de acero de refuerzo (mm²)
+FR = Factor de resistencia = 0.7
+VmR = Resistencia cortante de la mampostería (N)
+VsR = Resistencia cortante del refuerzo (N)
+L = Longitud del muro transversal (mm)
+s = Separación entre conectores (mm)
+fy = Resistencia a fluencia del acero (MPa)
+
+1.6. Factor de Reducción por Excentricidad y Esbeltez
+FE = (1 - 2e'/t)(1 - (kH/30t)²)
+Donde:
+
+FE = Factor de reducción
+e' = Excentricidad calculada + t/25 (mm)
+t = Espesor del muro (mm)
+k = Factor de altura efectiva
+H = Altura libre del muro (mm)
+
+1.7. Factor de Reducción con Restricciones Laterales
+FE = (1 - 2e'/t)(1 - (kH/30t)²)(1 - L') + L' ≤ 0.9
+Donde:
+
+L' = Separación de elementos rigidizantes transversales
+
+2. TABLAS DE VALORES Y COEFICIENTES
+2.1. Dimensiones de Cimentación Corrida
+Cimentación corridaUn pisoDos pisosResistencia mínimaAncho250 mm300 mmfy = 420 MPaAltura200 mm300 mmf'c = 18 MPaAcero longitudinal4 ø 10 mm4 ø 12 mm-Estribosø 8 mm @ 200mmø 8 mm @ 200mm-Acero para anclaje10 mm10 mm-
+2.2. Requisitos para Pórticos de Hormigón
+PisosElementoLuz máx. (m)Altura máx. (m)Sección mín. (cm)Cuantía long.Refuerzo transversal1Columnas4.02.5020x201%ø 8 mm @ 10 cm1Vigas4.02.5015x2014/fyø 8 mm @ 5 (extremos), 10 cm (centro)2Columnas P14.02.5025x251%ø 8 mm @ 10 cm2Columnas P24.02.5020x201%ø 8 mm @ 10 cm2Vigas4.02.5020x2014/fyø 8 mm @ 5 (extremos), 10 cm (centro)
+2.3. Índice de Densidad de Muros
+PisosSistema constructivoÍndice de densidad (d%)2Muros portantes reforzados≥ 1.5%1Muros portantes reforzados≥ 1.0%1 y 2Sistemas portantes livianos≥ 1.0%
+2.4. Resistencia Mínima de Unidades de Mampostería
+Tipo de unidadf'cu (MPa)Ladrillo macizo2Bloque perforación horizontal de arcilla3Bloque perforación vertical (hormigón/arcilla)3
+2.5. Separación de Estribos en Confinamiento
+ElementoZonaSeparación máximaVigaCrítica10 cmVigaIntermedia20 cmColumnaCrítica10 cm o hc/2ColumnaIntermedia20 cm
+3. PARÁMETROS DE DISEÑO Y VALORES LÍMITE
+3.1. Restricciones Geométricas
+
+Juntas sísmicas: requeridas con cambios de nivel >400 mm o cambios en calidad del suelo
+Longitud máxima no confinada: 25 veces el espesor del muro
+Espesor mínimo de muros portantes: 10 cm (incluido revestimiento)
+Espesor mínimo para muros no estructurales: 7 cm
+Profundidad mínima de riostras: 500 mm bajo nivel de acabado
+Recubrimiento mínimo para riostras: 5 cm
+
+3.2. Zapatas Aisladas
+
+Profundidad mínima: 1.0 m entre superficie de contrapiso y fondo
+Dimensión mínima: 1.0 m
+Espesor mínimo: 15 cm
+Cuantía mínima en cualquier dirección: 0.0018
+Distancia mínima entre barras: diámetro de barra pero ≥25 mm
+Distancia máxima entre barras: ≤3 veces espesor de zapata y ≤30 cm
+
+3.3. Muros Portantes
+
+Ranuras máximas en muros: profundidad ≤t/4, recorrido vertical, longitud ≤H/2
+Separación máxima de refuerzo vertical: 6t o 800 mm
+Separación máxima de estribos: 1.5t o 200 mm
+Separación máxima de conectores: 200 mm
+
+3.4. Hormigón y Refuerzo
+
+Resistencia mínima del hormigón para confinamiento: 21 MPa (28 días)
+Resistencia mínima para hormigón de muros portantes: f'c ≥ 18 MPa
+Área mínima para elementos de confinamiento: 200 cm²
+Cuantía mínima longitudinal: 0.0075 veces el área bruta
+Diámetro mínimo de estribos: 6 mm (acero normal) o 4.2 mm (electrosoldado)
+
+3.5. Muros de Hormigón Armado
+
+Espesor mínimo: 1/30 de altura o 80 mm (el mayor)
+Muros con alma de poliestireno: espesor mínimo 1/22 de altura o 100 mm
+
+4. RECOMENDACIONES ESPECÍFICAS PARA MANUAL DE BOLSILLO
+
+Peso en cubiertas: Evitar elementos pesados como tanques de agua >1 m³
+Adiciones y modificaciones:
+
+Deben evitarse o aislarse convenientemente
+Los muros portantes no pueden ser eliminados ni afectados con aberturas
+Toda adición debe contemplarse en el proyecto original y construirse aislada
+
+
+Preparación del terreno:
+
+Limpieza de material orgánico
+Implementación de drenajes necesarios
+Ejecución de calicatas (1 por cada 3 unidades o 300m²)
+
+
+Ubicación obligatoria de columnas de confinamiento:
+
+Extremos de muros portantes
+Intersecciones entre muros portantes
+Puntos intermedios a distancias ≤25t, ≤1.5 veces distancia vertical entre elementos horizontales, o ≤4m
+En aberturas significativas
+
+
+Ubicación de vigas de confinamiento:
+
+Nivel de cimentación
+Nivel de entrepisos
+Nivel de enrase de cubierta
+A distancias verticales ≤25t
+
+
+Instalaciones en muros portantes:
+
+Preferentemente en ductos o elementos no estructurales
+Si no hay alternativa: ranuras verticales limitadas a t/4 y H/2
+Prohibido en células con refuerzo o columnas estructurales
+
+
+Sistemas de anclaje:
+
+Refuerzo vertical de columnas debe anclarse al sistema de cimentación
+Uso de ganchos a 90° en extremos superiores
+Empalmes según ACI 318
+
+
+
+5. REQUISITOS DE DOCUMENTACIÓN TÉCNICA
+
+Para modificaciones estructurales:
+
+Planos estructurales
+Memoria de cálculo del diseño
+Documento de responsabilidad firmado por ingeniero civil
+Permisos municipales correspondientes
+
+
+Certificado de Responsabilidad para estudios de suelos que incluya:
+
+Verificación de comportamiento de viviendas similares
+Verificación de ausencia de riesgos geológicos
+Resultados de calicatas
+Determinación de estratos inadecuados
+
+
+Documentación para construcción de mampostería confinada:
+
+Especificaciones de resistencia de materiales
+Detalles de refuerzo y confinamiento
+Ubicación de juntas constructivas
+
+
+Documentación para enchapes estructurales:
+
+Proceso constructivo detallado
+Especificaciones de materiales
+Detalles de anclaje
+
+
+
+INTEGRACIÓN EN EL FLUJO DE CÁLCULO DE LA APLICACIÓN
+Este documento complementa los análisis previos de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas) agregando cálculos específicos para:
+
+Diseño de cimentaciones:
+
+Cimentaciones corridas para muros portantes
+Zapatas aisladas
+Riostras de cimentación
+
+
+Diseño de muros portantes:
+
+Verificación de densidad mínima de muros
+Cálculo de refuerzo horizontal y vertical
+Verificación de dimensiones mínimas
+
+
+Diseño de elementos de confinamiento:
+
+Cálculo de refuerzo para columnas y vigas de confinamiento
+Verificación de separaciones máximas
+Detallamiento de armaduras y estribos
+
+
+Verificación de excentricidad y esbeltez:
+
+Cálculo del factor de reducción por esbeltez
+Consideración de restricciones laterales
+
+
+
+Propongo implementar un flujo de cálculo secuencial donde:
+
+El usuario selecciona el tipo de sistema constructivo (pórticos, muros portantes, mampostería confinada)
+Ingresa las dimensiones básicas de la edificación y el número de pisos
+La aplicación verifica automáticamente los requisitos mínimos según NEC
+Se calculan las densidades de muros requeridas y se comparan con el diseño
+Se generan detalles de refuerzo y dimensiones mínimas para cada elemento
+Se integran los resultados con los análisis sísmicos y de cargas previos
+
+Este módulo permitirá a los usuarios de CONSTRU realizar rápidamente verificaciones de conformidad con la normativa NEC y optimizar sus diseños estructurales para viviendas de uno o dos pisos.

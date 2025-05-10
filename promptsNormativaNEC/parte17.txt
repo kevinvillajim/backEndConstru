@@ -1,0 +1,355 @@
+Análisis del documento NEC - Guía Práctica para Estudios Geotécnicos y Trabajos de Cimentación
+A continuación, presento el análisis sistemático del documento "Guía práctica para la ejecución de estudios geotécnicos y trabajos de cimentación de conformidad con la Norma Ecuatoriana de la Construcción NEC 2015". He organizado la información en categorías para facilitar su implementación en el módulo de cálculos técnicos de la app CONSTRU.
+1. ESTUDIOS GEOTÉCNICOS
+1.1 Clasificación de las Unidades de Construcción
+Tabla 1: Clasificación por categorías
+ClasificaciónSegún niveles de construcciónSegún cargas máximas en columnas (kN)BajaHasta 3 nivelesMenores de 800MediaEntre 4 y 10 nivelesEntre 801 y 4000AltaEntre 11 y 20 nivelesEntre 4001 y 8000EspecialMayor de 20 nivelesMayores de 8000
+1.2 Requisitos Mínimos de Exploración
+Tabla 2: Número mínimo de sondeos y profundidad
+CategoríaProfundidad MínimaNúmero mínimo de sondeosBaja6 m3Media15 m4Alta25 m4Especial30 m5
+Tabla 3: Profundidad mínima según tipo de cimentación
+Tipo de cimentaciónProfundidad de los sondeosLosa corrida1.5 veces el anchoZapata2.5 veces el ancho de la zapata de mayor dimensiónPilotesLongitud total del pilote más largo, más 4 veces el diámetro del piloteGrupo de pilotesLongitud total del pilote más largo, más 2 veces el ancho del grupo de pilotes, o 2.5 veces el ancho del cabezal de mayor dimensiónExcavacionesMínimo 1.5 veces la profundidad de excavaciónCaso de roca firmeCategoría Baja: se pueden suspender los sondeos al llegar a estos materiales<br>Categoría Media: penetrar mínimo 2 m en dichos materiales<br>Categoría Alta y Especial: penetrar mínimo 4 m
+1.3 Correcciones para Ensayos SPT
+Fórmulas de corrección:
+N₆₀ = Ncampo × CE × (CR × CB × CS)
+N₁,₆₀ = Ncampo × CE × CN × (CR × CB × CS)
+Donde:
+
+N₆₀ = número de golpes corregido al 60% de la energía teórica
+N₁,₆₀ = N₆₀ corregido a un esfuerzo de sobrecarga de 100 kPa
+Ncampo = número de golpes obtenido en campo
+CE = factor de corrección de energía
+CN = factor de corrección de sobrecarga
+CR = factor de corrección de longitud de barra
+CB = factor de corrección del diámetro de perforación
+CS = factor de corrección de línea
+
+Tabla 4: Factores de corrección por energía
+Tipo de martilloFactor CEAutomatic1.3Safety1.0Donut0.75
+2. ESTABILIDAD DE TALUDES
+2.1 Método Simplificado de Bishop (1955)
+Ecuación del factor de seguridad:
+FS = ∑[c'b + W tan φ' / mα] / ∑W sin α
+Donde:
+
+c' = cohesión efectiva
+b = ancho de la dovela
+W = peso de la dovela
+φ' = ángulo de fricción efectivo
+α = ángulo de inclinación de la base de la dovela
+mα = cos α + (sin α tan φ') / FS
+
+Para análisis de estabilidad sísmica:
+kh = 0.60 × (Z × Fa)
+Donde:
+
+kh = coeficiente horizontal pseudoestático
+Z = aceleración en roca para el sismo de diseño
+Fa = factor de amplificación sísmica de sitio
+
+Estimación de deformaciones laterales (Bray & Travasarou, 2007):
+ln(D) = -1.10 - 2.83ln(ky) - 0.333(ln(ky))² + 0.566ln(ky)ln(Sa) + 3.04ln(Sa) - 0.244(ln(Sa))² + 1.5Ts + 0.278(M-7) + ε
+Donde:
+
+D = deformación horizontal esperada en centímetros
+ky = coeficiente pseudoestático horizontal para el plano de falla cuando FS=1
+Sa = aceleración espectral (5% amortiguamiento) para 1.5Ts
+Ts = periodo del sistema (4H/Vs o 2.6H/Vs)
+M = magnitud del momento sísmico
+ε = variable aleatoria con media cero y desviación estándar 0.66
+
+2.2 Presiones Laterales en Muros
+Coeficiente de presión lateral en reposo:
+Ko = (1-sen φ') × OCR^(sen φ')
+Donde:
+
+Ko = coeficiente de presión lateral de la tierra en reposo
+φ' = ángulo de fricción efectivo del suelo
+OCR = relación de sobreconsolidación del suelo
+
+Coeficiente de presión activa (Coulomb):
+Ka = [sen²(α+φ')]/[sen²α × sen(α-δ) × [1 + √(sen(φ'+δ)×sen(φ'-β)/sen(α-δ)×sen(α+β))]²]
+Coeficiente de presión pasiva (Coulomb):
+Kp = [sen²(α-φ')]/[sen²α × sen(α+δ) × [1 - √(sen(φ'+δ)×sen(φ'+β)/sen(α+δ)×sen(α-β))]²]
+Movimiento requerido para alcanzar condición activa (Tabla 6):
+Tipo de SueloMovimiento HorizontalArena Densa0.001 HArena Suelta0.004 HArcilla Rígida0.010 HArcilla Blanda0.020 H
+Movimiento requerido para alcanzar condición pasiva (Tabla 7):
+Tipo de SueloMovimiento HorizontalArena Densa0.020 HArena Suelta0.060 HArcilla Rígida0.020 HArcilla Blanda0.040 H
+2.3 Factores de Seguridad
+Tabla 9: Factores de Seguridad Mínimos para Estabilidad Global
+CondiciónFS DiseñoFS ConstrucciónCarga Muerta + Carga Viva Nominal1.51.25Carga Muerta + Carga Viva Máxima1.251.1Carga Muerta + Carga Viva Nominal + Sismo de diseño Pseudo estático1.11.00Taludes – condición estática y Agua Subterránea Normal1.51.25Taludes – condición pseudo estática con agua Subterránea Normal1.051.00
+Tabla 10: Factores de Seguridad Indirectos Mínimos
+CondiciónConstrucciónEstáticoSismo Pseudo EstáticoDeslizamiento1.601.601.05 (Diseño)Volcamiento (Momento Resistente/Actuante)≥ 3.00≥ 3.00≥ 2.00 (Diseño)Excentricidad en sentido del momento (e/B)≤ 1/6≤ 1/6≤ 1/4 (Diseño)Estabilidad general permanente (>6 meses)1.201.501.05 (Diseño)Estabilidad general temporal (<6 meses)1.201.301.00 (50% Diseño)
+3. CIMENTACIONES SUPERFICIALES
+3.1 Definición y Capacidad de Carga
+Una cimentación se considera superficial cuando:
+Df/B < 2
+Donde:
+
+Df = Profundidad de desplante
+B = Ancho de la cimentación
+
+Capacidad de carga última (Terzaghi):
+qu = c'×Nc + γ×Df×Nq + 0.5×γ×B×Nγ
+Ecuación general con factores de corrección:
+qu = c'×Nc×λcs×λcd×λci + γ×Df×Nq×λqs×λqd×λqi + 0.5×γ×B×Nγ×λγs×λγd×λγi
+Donde:
+
+c' = cohesión efectiva
+γ = peso específico del suelo
+Df = profundidad de desplante
+B = ancho de la cimentación
+Nc, Nq, Nγ = factores de capacidad de carga
+λcs, λqs, λγs = factores de forma
+λcd, λqd, λγd = factores de profundidad
+λci, λqi, λγi = factores de inclinación
+
+Factores de forma (DeBeer, 1970):
+λcs = 1 + (Nq/Nc)×(B/L)
+λqs = 1 + (B/L)×tan φ'
+λγs = 1 - 0.4×(B/L)
+Capacidad de carga admisible:
+qadm = qu/FS
+Tabla 11: Factores de Seguridad Mínimos para capacidad portante
+CondiciónF.S.I.M.Carga Muerta + Carga Viva Normal3.0Carga Muerta + Carga Viva Máxima2.5Carga Muerta + Carga Viva Normal + Sismo de Diseño1.5
+3.2 Asentamientos
+3.2.1 Asentamientos Inmediatos (Elásticos)
+Ecuación básica:
+δi = (Δσ/E)×h
+Donde:
+
+δi = asentamiento inmediato para un estrato
+Δσ = incremento en el esfuerzo vertical
+E = módulo elástico del material
+h = espesor del estrato
+
+Asentamiento total:
+δtotal = Σ (Δσi/Ei)×hi
+Para arcillas saturadas (Janbu et al., 1971):
+δi = q×B×(1-μs²)/Es × I0×I1
+Donde:
+
+q = esfuerzo de contacto
+B = ancho de la cimentación
+I0, I1 = factores de asentamiento (Figura 53)
+Es = módulo de elasticidad del suelo
+μs = relación de Poisson
+
+Para arenas (Schmertmann & Hartman, 1978):
+δi = C1×C2×q×Σ(Iz×Δz/Es)
+Donde:
+
+C1 = 1 - 0.5×(q'/q)
+C2 = 1 + 0.2×log10(t/0.1)
+Iz = factor de influencia de deformación unitaria (Figura 55)
+t = tiempo en años
+
+3.2.2 Asentamientos por Consolidación Primaria
+Para arcillas normalmente consolidadas:
+δc = Cc×Hc/(1+e0) × log10[(σ'o + Δσprom)/σ'o]
+Para arcillas preconsolidadas (σ'o + Δσprom ≤ σ'p):
+δc = Cs×Hc/(1+e0) × log10[(σ'o + Δσprom)/σ'o]
+Para arcillas preconsolidadas (σ'o + Δσprom > σ'p):
+δc = Cs×Hc/(1+e0) × log10(σ'p/σ'o) + Cc×Hc/(1+e0) × log10[(σ'o + Δσprom)/σ'p]
+Donde:
+
+Cc = índice de compresión
+Cs = índice de expansibilidad
+Hc = espesor de la capa de arcilla
+e0 = relación de vacíos inicial
+σ'o = esfuerzo efectivo inicial
+Δσprom = incremento de esfuerzo promedio
+σ'p = esfuerzo de preconsolidación
+
+Tiempo de asentamiento:
+t = (TU×H²)/cv
+Donde:
+
+t = tiempo para U% de asentamiento
+TU = factor de tiempo (Figura 59)
+H = distancia a la frontera de drenaje
+cv = coeficiente de consolidación
+
+3.2.3 Asentamientos por Consolidación Secundaria
+δcs = Cα×Hc/(1+e0) × log10(t2/t1)
+Donde:
+
+Cα = índice de compresión secundaria = -Δe/Δlog(t)
+t1 = tiempo para completar 90% de consolidación primaria
+t2 = tiempo estimado para el final del asentamiento secundario
+
+3.2.4 Asentamiento Total
+δtotal = δi + δcp + δcs
+4. CIMENTACIONES PROFUNDAS
+4.1 Definición y Capacidad de Carga
+Una cimentación se considera profunda cuando:
+Df/B ≥ 2
+Capacidad de carga última de pilotes:
+Qu = Qs + Qt - Wp
+Donde:
+
+Qs = capacidad por fuste (fricción)
+Qt = capacidad por punta
+Wp = peso del pilote
+
+Capacidad por fuste:
+Qs = Σ(Asi×fsi)
+Donde:
+
+Asi = área perimetral del fuste en estrato i
+fsi = resistencia unitaria de fuste en estrato i
+
+Capacidad por punta:
+Qt = At×qt
+Donde:
+
+At = área de la punta
+qt = resistencia unitaria en la punta
+
+4.1.1 Método API Revisado
+Para suelos cohesivos (fricción):
+α = 0.5×ψ^-0.5 para ψ ≤ 1.0
+α = 0.5×ψ^-0.25 para ψ > 1.0
+Donde:
+
+ψ = c/p̄ (c = resistencia cortante no drenada)
+α ≤ 1.0
+
+fs = α×c
+Para suelos cohesivos (punta):
+qt = 9×c
+Para suelos no cohesivos (fricción):
+fs = K×σ̄o×tan(δ)
+Donde:
+
+K = coeficiente de presión lateral (0.8 para pilotes con punta abierta, 1.0 para pilotes de desplazamiento completo)
+σ̄o = esfuerzo efectivo
+δ = ángulo de fricción suelo-pilote
+
+Tabla 14: Guía para fricción lateral en suelos no cohesivos
+Tipo de Sueloδ (grados)Límite de f (kPa)Arenas y limos muy sueltas a medianamente sueltas1547.8Arenas y limos sueltas a densas2067Arenas y arenas limosas medianamente sueltas a densas2583.1Arenas y arenas limosas densas a muy densas3095.5Gravas y arenas densas a muy densas35114.8
+Para suelos no cohesivos (punta):
+qt = Nq×σ̄o
+Tabla 15: Guía para resistencia por punta en suelos no cohesivos
+Tipo de SueloNqLímite de q (MPa)Arenas y limos muy sueltas a medianamente sueltas81.9Arenas y limos sueltas a densas122.9Arenas y arenas limosas medianamente sueltas a densas204.8Arenas y arenas limosas densas a muy densas409.6Gravas y arenas densas a muy densas5012.0
+4.2 Asentamientos en Pilotes
+Método de Vesic (1977):
+δ = δep + δtp + δsp
+Donde:
+
+δep = asentamiento elástico del pilote
+δtp = asentamiento por carga en la punta
+δsp = asentamiento por carga en el fuste
+
+δep = (Qat×L)/(Ap×Ep) + (ξ×Qas×L)/(Ap×Ep)
+Donde:
+
+Qat = carga en la punta
+Qas = carga por fuste
+ξ = coeficiente de distribución de fricción (0.5-0.67)
+Ap = área de sección transversal
+L = longitud empotrada
+Ep = módulo de elasticidad del pilote
+
+δtp = Ct×qat×D/qt
+Donde:
+
+Ct = coeficiente empírico (Tabla 17)
+qat = carga unitaria en la punta
+D = diámetro del pilote
+qt = resistencia última en la punta
+
+Tabla 17: Valores típicos de Ct
+Tipo de sueloPilote hincadoPilote perforadoArena (densa a suelta)0.02 – 0.040.09 – 0.18Arcilla (firme a blanda)0.02 – 0.030.03 – 0.06Limo (denso a suelto)0.03 – 0.050.09 – 0.12
+4.3 Grupo de Pilotes
+Eficiencia del grupo:
+η = Qg(u)/(n×Qu)
+Donde:
+
+η = eficiencia del grupo
+Qg(u) = capacidad última del grupo
+Qu = capacidad última individual
+n = número de pilotes
+
+Capacidad última de grupo en arcillas:
+Qg(u) = 2c×(B+L)×L + Nc*×c×B×L
+Donde:
+
+c = cohesión del suelo
+B, L = dimensiones del grupo
+Nc* = factor de capacidad de carga (Figura 82)
+
+Asentamiento de grupo (Vesic, 1969):
+δg(e) = δ×(Bg/D)
+Donde:
+
+δg(e) = asentamiento elástico del grupo
+Bg = ancho del grupo
+D = diámetro del pilote
+δ = asentamiento individual
+
+5. CIMENTACIONES EN ROCA
+5.1 Capacidad de Carga
+Resistencia por punta (Rowe & Armitage, 1987):
+qt = 2.5×qu
+Donde:
+
+qu = resistencia a compresión no confinada de la roca
+
+Resistencia por fuste (Kulhawy & Phoon, 1993):
+fs = α×cu
+Donde:
+
+cu = resistencia al corte de la roca
+α = c*×tan(ψ×ln(qu/pa)+φr)
+ψ = factor de reducción (Figura 87)
+
+Alternativa (Rowe and Armitage, 1987):
+fs = 0.45×qu
+Capacidad de carga admisible:
+qadm = qu/FS
+Resumen de Integración para la App CONSTRU
+Los cálculos geotécnicos extraídos complementan el módulo técnico de la app CONSTRU y deben integrarse de manera coherente con los módulos de Peligro Sísmico (NEC-SE-DS) y Cargas No Sísmicas (NEC-SE-CG) previamente analizados.
+Flujo de Trabajo Propuesto
+
+Definición del Proyecto:
+
+Categoría de la construcción (Tabla 1)
+Tipo de cimentación requerida
+Dimensiones preliminares
+
+
+Estudio Geotécnico:
+
+Definición de número y profundidad de sondeos (Tablas 2 y 3)
+Procesamiento de datos SPT con correcciones (ecuaciones y Tabla 4)
+Clasificación de suelos según SUCS
+
+
+Análisis de Estabilidad (cuando aplique):
+
+Estabilidad de taludes (Método de Bishop)
+Cálculo de presiones laterales (Coeficientes de Coulomb)
+Verificación de factores de seguridad (Tablas 9 y 10)
+
+
+Diseño de Cimentaciones:
+
+Selección entre superficial o profunda según la relación Df/B
+Cálculo de capacidad de carga según el tipo de suelo
+Verificación con factores de seguridad (Tabla 11)
+Cálculo de asentamientos (inmediatos, consolidación y secundarios)
+Verificación de asentamientos permisibles
+
+
+Documentación Final:
+
+Informes de sondeos y ensayos
+Memoria de cálculo con parámetros utilizados
+Recomendaciones de construcción
+Planos de cimentación con especificaciones
+
+
+
+Esta estructura asegura que los cálculos geotécnicos se integren perfectamente con los análisis de cargas y peligro sísmico, creando un módulo técnico completo y coherente para la app CONSTRU.
+El enfoque modular permitirá al usuario seleccionar el tipo de análisis requerido mientras que los cálculos complejos se realizan internamente siguiendo estrictamente la normativa NEC-2015, manteniendo la simplicidad en la interfaz de usuario como se establece en el documento de contexto del proyecto.

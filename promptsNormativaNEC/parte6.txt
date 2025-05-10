@@ -1,0 +1,207 @@
+Análisis NEC-SE-AC: Estructuras de Acero para App CONSTRU
+1. FÓRMULAS MATEMÁTICAS CLAVE
+Propiedades de Materiales
+Esfuerzo de Fluencia Probable: Fyp = Ry × Fy
+Resistencia a la Fluencia Probable: Rfp = Fyp × Ag
+Resistencia a la Tensión Probable: Rtp = Rt × Fu
+Donde:
+
+Fy = Mínimo esfuerzo de fluencia especificado
+Fu = Resistencia mínima a tensión especificada
+Ry, Rt = Factores de esfuerzo de fluencia y tensión probables (ver Tabla 1)
+Ag = Área gruesa de la sección
+
+Arriostramiento de Vigas
+Resistencia a flexión probable (DFCR): Mr = Mu = Ry × Fy × Z
+Resistencia a flexión probable (DRA): Mr = Ma = (2/3) × (Ry × Fy × Z)
+Espaciamiento máximo: Lb = 0.17ry × (E/Fy)^0.5
+Criterio de Columna Fuerte - Viga Débil (PEM)
+∑M*pc / ∑M*pv ≥ 1.0
+Donde:
+DFCR: ∑M*pc = ∑Zc × (Fyc - Puc/Ag)
+DRA: ∑M*pc = ∑Zc × ((Fyc/1.5) - (Pac/Ag))
+
+DFCR: ∑M*pv = ∑(1.1 × Ry × Fyv × Zv + Muv)
+DRA: ∑M*pv = ∑((1.1/1.5) × Ry × Fyv × Zv + Mav)
+Resistencia Requerida a Cortante (PEM)
+DFCR: VE = 2(1.1Ry × Mp) / Lh
+DRA: VE = 2((1.1/1.5)Ry × Mp) / Lh
+Donde:
+
+Lh = Distancia entre articulaciones plásticas
+Mp = Resistencia plástica nominal (Fy × Z)
+
+Pórticos Arriostrados Excéntricamente (PAE)
+Resistencia al corte del vínculo: Vn = min{Vp, 2Mp/e}
+Mp = Fy × Z
+Vp = 0.6 × Fy × Aw
+Aw = (d - 2tf) × tw
+Conexión con Viga de Sección Reducida (VSR)
+Módulo Plástico en sección reducida: ZVSR = Zv - 2ctf(d - tf)
+Momento máximo probable: Mpr = Cpr × Ry × Fy × ZVSR
+Cpr = ((Fy + Fu)/2Fy) ≤ 1.2
+Momento en cara de columna: Mf = Mpr + VVSR × sh
+sh = a + b/2
+Donde:
+
+a, b, c = Dimensiones del corte en la viga (ver limitaciones)
+tf = Espesor del ala
+d = Peralte de la viga
+
+2. TABLAS Y COEFICIENTES ESENCIALES
+Tabla 1: Factores de Fluencia y Tensión Probables
+Especificación ASTMFactor de Fluencia Probable (Ry)Factor de Tensión Probable (Rt)ASTM A361.31.15ASTM A572 Gr. 501.11.25ASTM A588 Gr. 501.151.15
+Factores de Resistencia
+
+Estados límites dúctiles: φd = 1.00
+Estados límites no-dúctiles: φn = 0.90
+
+Máximas Relaciones Ancho-Espesor (λps)
+Para elementos a compresión sísmicamente compactos:
+
+Alas de vigas I: 0.30√(E/Fy)
+Almas de vigas I (Ca ≤ 0.125): 2.45√(E/Fy)
+Almas de vigas I (Ca > 0.125): (3.76-2.75Ca)√(E/Fy)
+Secciones HSS rectangulares: 0.55√(E/Fy)
+Secciones HSS circulares: 0.038E/Fy
+
+3. PARÁMETROS DE DISEÑO Y LÍMITES
+Materiales
+
+Mínimo esfuerzo de fluencia para comportamiento inelástico: ≤ 345 MPa (50 ksi)
+Para columnas: ≤ 450 MPa (65 ksi)
+
+Diagonales en PEAC
+
+Relación de esbeltez: KL/r ≤ 4√(E/Fy)
+Permitido hasta 200 con condiciones específicas
+
+Pórticos Especiales a Momento (PEM)
+
+Ángulo de deriva de entrepiso:
+
+Estructuras Tipo 1 (todos los pórticos son PEM): ≥ 0.035 radianes
+Estructuras Tipo 2 (solo pórticos perimetrales son PEM): ≥ 0.040 radianes
+
+
+
+Vínculos en PAE
+
+Clasificación por longitud:
+
+Vínculos cortos: e ≤ 1.6Mp/Vp (predomina fluencia por cortante)
+Vínculos largos: e ≥ 2.6Mp/Vp (predomina fluencia por flexión)
+Vínculos intermedios: 1.6Mp/Vp < e < 2.6Mp/Vp (combinación)
+
+
+Ángulo de rotación máximo:
+
+Vínculos cortos: 0.08 radianes
+Vínculos largos: 0.02 radianes
+Vínculos intermedios: valor interpolado
+
+
+
+Conexión con Viga de Sección Reducida (CVSR)
+
+Dimensiones del corte:
+
+0.5bf ≤ a ≤ 0.75bf (distancia desde columna)
+0.65d ≤ b ≤ 0.85d (longitud del corte)
+0.1bf ≤ c ≤ 0.25bf (profundidad del corte)
+
+
+Peralte máximo: W36 (W920)
+Peso máximo: 450 kg/m
+Espesor máximo de alas: 44.5 mm (1¾ pulg.)
+Relación mínima luz libre/peralte: 7
+
+4. RECOMENDACIONES CLAVE PARA LA APP
+Pórticos Especiales a Momento (PEM)
+
+Ambas alas de vigas deben tener arriostramiento lateral
+Las alas de columnas requieren arriostramiento en niveles de alas de vigas
+La zona protegida se extiende desde cara de columna hasta medio peralte más allá de articulación plástica
+
+Pórticos Especiales Arriostrados Concéntricamente (PEAC)
+
+Distribución de diagonales debe ser alternada
+Entre 30% y 70% de fuerza horizontal debe ser resistida por diagonales en tensión
+No permitidos: arriostramientos tipo K ni pórticos arriostrados únicamente a tensión
+
+Pórticos Arriostrados Excéntricamente (PAE)
+
+Vínculos: solo perfiles laminados en caliente o armados
+Sin placas de refuerzo ni aberturas en el alma
+Requieren arriostramiento en ambas alas y rigidizadores según longitud
+Clasificación crítica según longitud (cortos, intermedios o largos)
+
+Conexión con Viga de Sección Reducida (CVSR)
+
+La reducción debe realizarse mediante corte térmico con acabado suave
+Rugosidad máxima: 13 micrones
+Todas las transiciones deben ser redondeadas
+Tolerancia de corte térmico: ±6 mm desde línea teórica
+
+5. REQUISITOS DE DOCUMENTACIÓN
+Planos de Diseño Estructural
+
+Identificación del Sistema Resistente a Carga Sísmica (SRCS)
+Configuración de conexiones (soldaduras, pernos, agujeros)
+Especificaciones de materiales
+Localización de soldaduras de demanda crítica
+Dimensiones de zonas protegidas
+
+Planos de Taller
+
+Detalles de configuración y dimensiones
+Especificaciones de materiales
+Planillas con dimensiones y cantidades
+Ubicación de soldaduras críticas
+
+Planos de Montaje
+
+Ubicación de conexiones a realizarse en obra
+Requerimientos de soldadura en campo
+
+Control de Calidad
+
+Procedimientos de inspección para soldaduras y conexiones empernadas
+Ensayos no destructivos requeridos
+Documentación de verificaciones y pruebas
+
+INTEGRACIÓN EN LA APP CONSTRU
+Para implementar estos requisitos en la app CONSTRU, se recomienda:
+
+Módulo de Perfiles de Acero: Base de datos con propiedades estructurales de perfiles disponibles en Ecuador, incluyendo W, HSS, ángulos y placas.
+Calculadora de Elementos: Implementar verificaciones automáticas para:
+
+Relaciones ancho-espesor
+Arriostramiento lateral
+Criterio columna fuerte-viga débil
+Resistencias probables
+
+
+Verificador de Conexiones: Módulo específico para:
+
+Dimensionamiento de conexiones VSR
+Verificación de vínculos en PAE
+Requisitos de rigidizadores y placas de continuidad
+
+
+Generador de Informes: Plantillas que incluyan:
+
+Verificaciones sísmicas según NEC
+Cumplimiento de requisitos para SRCS
+Detalles constructivos para taller y obra
+
+
+Manual de Referencia: Sección con:
+
+Tablas de factores Ry y Rt
+Requisitos de zonas protegidas
+Esquemas gráficos de conexiones precalificadas
+
+
+
+Este análisis complementa los anteriores al incorporar requisitos específicos para estructuras de acero con comportamiento sísmico, un componente esencial para el módulo de cálculos técnicos de CONSTRU en Ecuador.

@@ -1,0 +1,286 @@
+Extracción Sistemática de Información Técnica de NEC-SE-GUADÚA para el Módulo de Cálculos de CONSTRU
+1. Fórmulas Matemáticas para Implementación
+1.1 Cálculo de Conicidad
+C = ((D+ - D-)/L) × 100
+Donde:
+
+C = Porcentaje de conicidad de la pieza (%)
+D+ = Diámetro mayor (mm)
+D- = Diámetro menor (mm)
+L = Longitud de la pieza (mm)
+
+1.2 Cálculos de Esfuerzos Admisibles
+Fki = 0.05(m - 1.645 × s)
+Donde:
+
+Fki = Valor característico en la solicitación i
+m = Valor promedio de los datos de pruebas de laboratorio
+s = Desviación estándar de los datos
+i = Subíndice según tipo de solicitación
+
+Fi = (FC × Fki) / (Fs × FDC)
+Donde:
+
+Fi = Esfuerzo admisible en solicitación i
+FC = Factor de reducción por calidad
+Fs = Factor de servicio y seguridad
+FDC = Factor de duración de carga
+
+1.3 Esfuerzos Admisibles Modificados
+F'i = Fi × CD × Cm × Ct × CL × Cf × Cr × Cp × Cv
+Donde:
+
+F'i = Esfuerzo admisible modificado
+CD, Cm, Ct, etc. = Coeficientes de modificación específicos
+
+1.4 Cálculo de Área y Sección
+A = π × (De × t - t²)
+Donde:
+
+A = Área neta de sección transversal (mm²)
+De = Diámetro exterior (mm)
+t = Espesor de pared (mm)
+
+1.5 Cálculo de Flexión
+fb = M/S ≤ F'b
+Donde:
+
+fb = Esfuerzo a flexión actuante (MPa)
+M = Momento actuante (N·mm)
+S = Módulo de sección (mm³)
+
+S = π(De³ - (De - 2t)³)/(32De)
+Para sección compuesta:
+I = Σ(Ii + Ai·Di²)
+1.6 Cálculo de Cortante
+fv = 3V/(2A) ≤ F'v
+Donde:
+
+fv = Esfuerzo cortante paralelo a fibras (MPa)
+V = Fuerza cortante (N)
+A = Área de sección transversal (mm²)
+
+1.7 Cálculo de Aplastamiento
+fp = R/(De·t·L) ≤ F'p
+Donde:
+
+fp = Esfuerzo a compresión perpendicular (MPa)
+R = Fuerza aplicada perpendicular a fibras (N)
+L = Longitud de apoyo (mm)
+
+1.8 Cálculo de Tensión Axial
+ft = T/A ≤ F't
+Donde:
+
+ft = Esfuerzo a tensión actuante (MPa)
+T = Fuerza de tensión axial (N)
+
+1.9 Cálculos para Columnas
+le = lu·k
+λ = le/r
+r = √((De² + (De - 2t)²)/8)
+Para columnas compuestas:
+r = √(I/A)
+Límite entre columnas intermedias y largas:
+Ck = 2·π²·E0.05/(F'c)
+Columnas cortas (λ < 30):
+fc = N/A ≤ F'c
+Columnas intermedias (30 < λ < Ck):
+fc = N/A ≤ F'c·[1-(1/3)·(λ/Ck)⁴]
+Columnas largas (Ck < λ < 150):
+fc = N/A ≤ 0.3·E0.05/(λ)²
+1.10 Elementos con Flexión y Carga Axial
+Flexión con tensión axial:
+ft/F't + fb/F'b ≤ 1
+Flexo-compresión:
+fc/F'c + km·fb/F'b ≤ 1
+Donde:
+km = 1/(1-1.5·(N/Ncr))
+Ncr = π²·E0.05·I/(le)²
+2. Tablas de Valores y Coeficientes
+2.1 Propiedades Mecánicas de Guadúa
+Tabla 4: Esfuerzos admisibles Fi (MPa), CH=12%Fb (Flexión)Ft (Tracción)Fc (Compresión ║)Fp* (Compresión ┴)Fv (Corte)1519141.41.2
+Tabla 5: Esfuerzos últimos Fu (MPa), CH=12%Fb (Flexión)Ft (Tracción)Fc (Compresión ║)Fv (Corte)45117377
+Tabla 6: Módulos de elasticidad Ei (MPa), CH=12%Módulo percentil 5 E0.5Módulo percentil 5 E0.05Módulo mínimo Emin12.0007.5004.000
+2.2 Factores de Modificación
+Tabla 7: Factores de reducción de resistenciaFactorFlexiónTracciónCompresión ║Compresión ┴CorteFC-0.5--0.6Fs2.02.01.51.81.8FDC1.51.51.21.21.1
+Tabla 8: Coeficientes de modificación por duración de cargaDuraciónFlexiónTracciónCompresión ║Compresión ┴CorteCarga de diseñoPermanente0.900.900.90.90.90MuertaDiez años1.001.001.00.91.00VivaDos meses1.151.151.150.91.15ConstrucciónSiete días1.251.251.250.91.25-Diez minutos1.601.601.60.91.60Viento y SismoImpacto2.002.002.00.92.00Impacto
+2.3 Coeficientes por Contenido de Humedad y Temperatura
+Tabla 9: Coeficientes de modificación por contenido de humedad (Cm)EsfuerzosCH ≤ 12%CH = 13%CH = 14%CH = 15%CH = 16%CH = 17%CH = 18%CH ≥ 19%Flexión Fb1.00.960.910.870.830.790.740.70Tracción Ft1.00.970.940.910.890.860.830.80Compresión ║ Fc1.00.960.910.870.830.790.740.70Compresión ┴ Fp1.00.970.940.910.890.860.830.80Corte Fy1.00.970.940.910.890.860.830.80Módulo elasticidad1.00.990.970.960.940.930.910.90
+Tabla 10: Coeficientes de modificación por temperatura (Ct)EsfuerzosCondicionesT ≤ 37°C37°C ≤ T ≤ 52°C52°C ≤ T ≤ 65°CFlexión FbHúmedo1.00.600.40Seco0.850.60Tracción FtHúmedo1.00.850.80Seco0.90Compresión ║ FcHúmedo1.00.650.40Seco0.800.60Compresión ┴ FpHúmedo1.00.800.50Seco0.900.70Corte FyHúmedo1.00.650.40Seco0.800.60Módulo elasticidadHúmedo1.00.800.80Seco0.90
+2.4 Tablas para Diseño Específico
+Tabla 1: Conicidad admisible de la GaKParte de la GuadúaConicidadCepa0.17%Basa0.33%Sobrebasa0.50%
+Tabla 11: Deflexiones admisibles δ (mm)Condición de servicioCargas vivas (l/k)Viento o Granizo (l/k)Cargas totales (l/k)Cielo rasos de pañete o yesol/360l/360l/240Otros cielo rasosl/240l/240l/180Sin cielo rasol/240l/240l/180Techos planosNota 1Nota 1l/300Techos industriales--l/200Elementos de entrepisol/360-l/240Entrepisos rígidos--l/360Muros con acabados frágiles-l/240-Muros con acabados flexibles-l/120-
+Tabla 15: Coeficientes CL para diferentes relaciones d/bd/bCL11.0020.9830.9540.9150.87
+Tabla 18: Clasificación de columnas por esbeltezColumnaEsbeltezCortaλ < 30Intermedia30 < λ < CkLargaCk < λ < 150
+3. Parámetros de Diseño y Valores Límite
+3.1 Requisitos de Calidad
+
+Edad de culmos: 4-6 años
+Contenido de humedad: ≤ humedad de equilibrio del lugar
+Deformación del eje longitudinal: ≤ 0.33%
+Conicidad según Tabla 1
+Fisuras limitadas según Tabla 2 (contenidas entre nudos)
+No se permiten:
+
+Arrugas perimetrales por compresión previa
+Perforaciones por insectos o aves
+Pudrición por hongos
+
+
+
+3.2 Parámetros Estructurales
+
+Método de diseño: Esfuerzos admisibles
+Coeficiente disipación de energía R0 = 2.0 (pórticos con diagonales)
+R0 = 1.5 (muros de madera laminada/bahareque)
+Temperatura máxima permitida: 65°C
+Relación de acción conjunta para 4+ elementos: Cr = 1.1
+Espaciamiento máximo para acción conjunta: 0.6 m
+Esbeltez máxima de columnas: 150
+
+3.3 Límites Dimensionales
+
+Diámetro mínimo de anclajes en culmos: 10 mm (3/8")
+Diámetro máximo de anclajes en culmos: 18 mm (3/4")
+Longitud mínima de anclajes sobresalientes: 300 mm
+Diámetro máximo para perforaciones de relleno: 26 mm
+Diámetro mínimo para pernos: 9.5 mm
+Espesor mínimo de pletinas: 5 mm (3/16")
+Altura mínima de sobrecimiento: 200 mm
+Espaciamiento máximo entre muros: 4 m
+Separación máxima entre anclajes: 2 m
+
+4. Recomendaciones para Manual de Bolsillo
+4.1 Selección e Identificación de GaK
+
+Identificar culmos maduros: color verde oscuro, manchas espaciadas de líquenes
+Evitar culmos con líquenes blanquecinos generalizados (sobremaduros)
+Descartar culmos con agujeros o muerte descendente
+Cortar a ras del primer nudo inferior para evitar acumulación de agua
+Usar corte con machete o sierra desde ángulo inferior hacia arriba para ramas
+
+4.2 Preservación y Secado
+
+Para inmersión: por cada 96 L de agua, usar 2 kg de bórax + 2 kg de ácido bórico
+Tiempo de inmersión: 5 días (temperatura ambiente) o 6 horas (60-80°C)
+Contenido mínimo de humedad para preservación: 30%
+Secado al ambiente: 2-6 meses dependiendo del clima
+Medir contenido de humedad con higrómetro (calibración baja para maderas duras tipo A)
+
+4.3 Prácticas Constructivas
+
+No permitir contacto directo de culmos con el suelo
+Proteger mediante sobrecimiento (mínimo 200 mm sobre nivel terreno)
+Usar aleros generosos y protección contra escorrentías
+Para regiones con termitas: colocar plancha metálica de 2 mm sobre sobrecimiento
+Para ambientes salinos: usar planchas de neopreno de 6-8 mm
+Rellenar con mortero (cemento 1:3) los canutos:
+
+En puntos de apoyo
+Donde pasan pernos de conexión
+En puntos de aplicación de cargas concentradas
+
+
+Ubicar pernos a 30-40 mm por debajo del nudo
+No usar clavos en elementos estructurales
+Reajustar pernos 6 meses después de construcción
+
+4.4 Uniones Recomendadas
+
+Uniones empernadas: diámetro mínimo 9.5 mm
+Distancia máxima del nudo a corte boca de pez: 40-60 mm
+Para mortero en uniones: cemento 1:3 con aditivo plastificante
+Protección anticorrosiva para elementos metálicos (en ambientes salinos):
+
+Imprimante epóxico (100 micrones)
+Pintura epóxica (100 micrones)
+Pintura anticorrosiva (100 micrones)
+Pintura de acabado (100 micrones)
+
+
+
+5. Requisitos de Documentación Técnica
+5.1 Documentación del Material
+
+Garantía de calidad del proveedor incluyendo:
+
+Cantidad, longitudes y diámetros de culmos
+Fechas de madurez y corte
+Contenido de humedad del material
+Preservante y método de inmunización
+Método de secado empleado
+
+
+
+5.2 Documentación de Diseño
+
+Memoria de cálculo estructural incluyendo:
+
+Análisis de cargas según NEC-SE-CG
+Diseño sismo-resistente según NEC-SE-DS
+Para valores experimentales: documentar laboratorio, fechas, equipos, número de pruebas
+Para uniones no especificadas: estudio con mínimo 30 ensayos
+
+
+Planos estructurales detallados
+Planos de detalles constructivos
+Especificaciones técnicas
+
+Integración con la Aplicación CONSTRU
+La información extraída del documento NEC-SE-GUADÚA complementa perfectamente los módulos existentes del proyecto CONSTRU basados en NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas), proporcionando un marco completo para el diseño y cálculo de estructuras con Guadúa angustifolia Kunth.
+Flujo de Cálculo Recomendado
+
+Módulo de Selección de Material:
+
+Implementar verificación de requisitos de calidad (sección 3)
+Calcular y verificar conicidad según Ecuación 1
+Verificar límites de fisuras
+
+
+Módulo de Propiedades Mecánicas:
+
+Integrar tablas de esfuerzos admisibles (Tablas 4-6)
+Implementar cálculo de esfuerzos modificados con todos los coeficientes (Tablas 7-10)
+Considerar condiciones ambientales locales (obtener humedad de equilibrio)
+
+
+Módulo de Análisis Estructural:
+
+Vincular con análisis de cargas (NEC-SE-CG)
+Implementar verificación sísmica (NEC-SE-DS)
+Calcular solicitaciones según combinaciones de carga (Tabla 3)
+
+
+Módulo de Diseño de Elementos:
+
+Desarrollar cálculos para:
+
+Elementos a flexión (sección 4.4)
+Elementos a compresión (sección 4.5)
+Elementos a tensión (sección 4.5.1)
+Elementos a flexo-compresión (sección 4.6)
+Muros de corte (sección 4.7)
+
+
+
+
+Módulo de Detalles Constructivos:
+
+Implementar verificaciones de:
+
+Anclajes a cimentación (sección 5.5)
+Uniones entre elementos (sección 5.7)
+Elementos estructurales (columnas, vigas, paneles, entrepiso, cubierta)
+
+
+
+
+Generador de Documentación:
+
+Crear plantillas para requisitos de documentación técnica (sección 5)
+Incluir recomendaciones de manual de bolsillo (sección 4)
+
+
+
+Esta información constituye la base completa para implementar un módulo de cálculo estructural específico para Guadúa en la aplicación CONSTRU, permitiendo realizar diseños sismorresistentes con este material siguiendo la normativa ecuatoriana vigente.

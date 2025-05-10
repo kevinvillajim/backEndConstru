@@ -1,0 +1,135 @@
+Análisis de las Normativas NEC para CONSTRU App
+Basado en los documentos proporcionados sobre la Norma Ecuatoriana de la Construcción (NEC), específicamente el NEC-SE-RE (Riesgo Sísmico, Evaluación, Rehabilitación de Estructuras), a continuación presento un análisis sistemático para implementar en el Módulo de Cálculos Técnicos de la aplicación CONSTRU.
+1. Fórmulas Matemáticas Clave para Implementación
+Combinaciones de Carga para Rehabilitación Sísmica
+1.1 (D + 0.25L) + E
+0.9 (D + 0.25L) + E
+Donde:
+
+D = Carga muerta total de la estructura
+E = Efectos de las fuerzas sísmicas
+L = Sobrecarga (carga viva)
+
+Velocidad Media de Onda de Cortante
+Vs30 = ∑ di / ∑(di/Vsi)
+Donde:
+
+Vsi = Velocidad media de onda cortante del suelo del estrato i (m/s)
+di = Espesor del estrato i, localizado dentro de los 30 m superiores del perfil
+∑ di = 30 m
+
+Contraste de Impedancia
+α = (ρs * Vs) / (ρ0 * V0)
+Donde:
+
+ρs = Densidad promedio del suelo que sobreyace al semi espacio
+Vs = Velocidad de onda cortante promedio del suelo que sobreyace al semi espacio
+ρ0 = Densidad del geomaterial del semi espacio
+V0 = Velocidad de la onda cortante del geomaterial en el semi espacio
+
+Número Medio de Golpes del Ensayo SPT
+N60 = ∑ di / ∑(di/Ni)
+Donde:
+
+Ni = Número de golpes obtenidos en el ensayo SPT
+di = Espesor del estrato i, dentro de los 30 m superiores
+
+Número Medio de Golpes en Suelos No Cohesivos
+Nch = ds / ∑(di/Ni)
+Donde:
+
+ds = Suma de los espesores de los m estratos de suelos no cohesivos
+di = Espesor del estrato i
+Ni = Número de golpes del ensayo SPT
+
+Resistencia Media al Corte No Drenado
+Su = dc / ∑(di/Sui)
+Donde:
+
+dc = Suma de los espesores de los k estratos de suelos cohesivos
+di = Espesor del estrato i
+Sui = Resistencia al corte no drenado del estrato i (kPa)
+
+2. Tablas y Coeficientes Importantes
+Niveles de Amenaza Sísmica (Tabla 2)
+Probabilidad de excedencia en 50 añosPeríodo de retorno Tr (años)Tasa de excedencia (1/Tr)2%25000.0004010%4750.0021120%2250.0044450%720.01389
+Criterios para Clasificar Suelos (Tabla 20)
+Tipo de perfilVsN o NchSuCentre 360 y 760 m/smayor que 50mayor que 100 kPaDentre 180 y 360 m/sentre 15 y 50entre 50 y 100 kPaEmenor de 180 m/smenor de 15menor de 50 kPa
+3. Parámetros de Diseño y Límites
+Niveles de Desempeño Sísmico para Verificación
+
+Estructuras esenciales:
+
+Seguridad de vida ante amenaza sísmica con Tr=475 años
+Prevención de colapso ante amenaza sísmica con Tr=2500 años
+
+
+Estructuras de ocupación especial:
+
+Prevención de colapso ante amenaza sísmica con Tr=2500 años
+
+
+
+Clasificación de Tipos de Suelo
+
+Arcilla blanda: resistencia al corte no drenado < 50 kPa, contenido de agua w > 40%, índice de plasticidad IP > 20
+Suelos no cohesivos: menos del 30% de finos por peso seco (pasante del tamiz #200)
+Suelos cohesivos: más del 30% de finos por peso seco y 15% ≤ IP ≤ 90%
+Suelos limosos: más del 30% de finos e IP < 15% (tratar como suelos cohesivos para clasificación)
+
+Criterios para Clasificación de Sitio
+
+Si existe un espesor total H ≥ 3m de arcilla blanda, el perfil se clasifica como tipo E
+Si el contraste de impedancia α ≤ 0.5 ocurre dentro de los 30m, se considera suelo Tipo F5
+
+4. Recomendaciones para Inclusión en el Manual de Bolsillo
+
+Para evaluación de riesgo sísmico: A menor nivel de investigación, mayor será el nivel de incertidumbre en los resultados. La selección del nivel debe considerar los recursos disponibles y el grado de aceptación del riesgo del usuario.
+Para rehabilitación sísmica: Se recomienda el uso de análisis no-lineales, ya que pueden minimizar la necesidad de rehabilitación y sus costos. Los edificios evaluados como deficientes mediante análisis lineal pueden cumplir los requerimientos si se analizan mediante procedimientos no-lineales.
+Para edificaciones patrimoniales: Seguir los procedimientos de la norma chilena NCh 3332 "Estructuras - Intervención de construcciones patrimoniales de tierra cruda - Requisitos del proyecto estructural".
+Para análisis de licuación de suelos: Utilizar métodos como los de Bray y Sancio (2006), Seed et al. (2003), Wu (2003), y para arcillas y limos, los procedimientos de Boulanger e Idriss (2007).
+Para microzonificación sísmica: Las poblaciones con más de 100,000 habitantes deberían disponer de estudios de microzonificación sísmica en su territorio, incluyendo efectos topográficos, amplificación o efecto de sitio en suelos, inestabilidad sísmica en zonas licuables y presencia de taludes inestables.
+
+5. Requisitos de Documentación Técnica
+Memoria de Diseño para Verificación del Desempeño Estructural
+
+Descripción del modelo no-lineal generado
+Propiedades de los materiales utilizados
+Curvas momento-curvatura, momento-rotación o modelos histeréticos utilizados
+Acciones gravitacionales y sísmicas
+Proceso de análisis, criterios de aceptación y su cumplimiento
+
+Memoria de Rehabilitación
+
+Descripción de la estructura y su configuración
+Deficiencias identificadas
+Estrategias de rehabilitación aplicadas
+Modelos generados con propiedades de materiales
+Acciones gravitacionales y sísmicas consideradas
+Proceso de análisis y cumplimiento de criterios de aceptación
+
+Informe de Riesgo Sísmico
+
+Lista exhaustiva de documentación y fuentes de información
+Descripción clara de la evaluación y representación del riesgo sísmico
+Bases técnicas de las conclusiones
+Personal involucrado con sus calificaciones
+Suposiciones realizadas y nivel cuantitativo de incertidumbres
+Declaración de quién puede utilizar los resultados
+
+Integración en el Flujo de Cálculo de CONSTRU
+La información extraída de los documentos NEC-SE-RE complementa el módulo de cálculos técnicos de CONSTRU App al proporcionar un marco normativo para:
+
+Evaluación sísmica de edificaciones existentes: Permite categorizar estructuras según su desempeño sísmico esperado, vital para decisiones de rehabilitación.
+Rehabilitación sísmica: Ofrece metodologías para mejorar la resistencia sísmica de estructuras existentes, con parámetros claros sobre niveles de desempeño requeridos.
+Evaluación de riesgo sísmico: Proporciona métodos para cuantificar pérdidas potenciales por sismo, útil para seguros y valuaciones inmobiliarias.
+Caracterización del suelo: Define métodos para clasificar suelos según su comportamiento sísmico, fundamental para el diseño de cimentaciones.
+
+Propongo un flujo de trabajo integrado en CONSTRU que incluya:
+
+Módulo de caracterización de suelos según NEC
+Calculador de desempeño sísmico para estructuras nuevas y existentes
+Evaluador de rehabilitación sísmica con estimación de costos
+Generador automático de documentación técnica según requisitos NEC
+
+Esto permitiría a los profesionales de la construcción en Ecuador realizar cálculos conformes a la normativa, documentarlos adecuadamente y tomar decisiones informadas sobre rehabilitación y gestión de riesgo sísmico.

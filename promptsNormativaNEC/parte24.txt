@@ -1,0 +1,378 @@
+Análisis de la Normativa NEC-HS-ER para Implementación en CONSTRU App
+Tras analizar el documento NEC-HS-ER sobre Energías Renovables (Sistemas Solares Térmicos para Agua Caliente Sanitaria), he extraído de manera sistemática las fórmulas matemáticas, tablas, parámetros de diseño y recomendaciones técnicas que deben implementarse en el módulo de cálculos de la aplicación CONSTRU.
+1. FÓRMULAS MATEMÁTICAS A IMPLEMENTAR
+1.1 Cálculo de Demanda Térmica
+La demanda energética diaria para ACS se calcula mediante:
+Qdia = ρ * cp * VACS * (TACS - Tred) / 3600 [kWh/día]
+Donde:
+
+QACS: demanda energética diaria en kWh
+VACS: caudal de ACS demandado en litros
+ρ: densidad del agua a 25°C (1 kg/l)
+cp: calor específico del agua a 25°C (4,184 kJ/kg·°C)
+TACS: temperatura del agua caliente
+Tred: temperatura del agua fría de red
+
+La demanda mensual se obtiene mediante:
+Lmes = Qdia * N * (TACS - Tred) [kWh/mes]
+Donde:
+
+Lmes: demanda energética mensual en kWh
+Qdia: consumo diario en litros
+N: número de días del mes
+TACS: temperatura de referencia en °C
+Tred: temperatura del agua fría de red en °C
+
+1.2 Método F-Chart para Dimensionado
+El método F-Chart determina la fracción solar mediante la fórmula:
+f = 1,029*Y - 0,065*X - 0,245*Y² + 0,0018*X² + 0,0215*Y³
+Válida para: 0 < Y < 3 y 0 < X < 18
+Donde:
+
+Y = cociente entre energía absorbida por el captador y carga térmica mensual
+X = cociente entre pérdidas del captador y carga térmica mensual
+
+El parámetro Y se calcula como:
+Y = [F'Rτα] * (Sc * EImes * N) / Lmes
+Donde:
+
+Sc: superficie útil de captación (m²)
+EImes: irradiación diaria media mensual sobre el plano del captador (kWh/m²)
+N: número de días del mes
+Lmes: carga térmica mensual (kWh)
+F'Rτα: factor de eficiencia óptica del captador modificado
+
+El parámetro X se calcula como:
+X = [F'RUL] * (Sc * (Tref - Ta) * Δt) / Lmes
+Donde:
+
+Tref: temperatura de referencia (100°C)
+Ta: temperatura ambiente media mensual (°C)
+Δt: número de segundos del mes (s)
+F'RUL: coeficiente global de pérdidas del captador modificado
+
+Factores de corrección para X:
+
+Para capacidad de almacenamiento: k1 = (V/(75*Sc))^-0.25 para 37,5 < V/Sc < 300
+Para aplicaciones exclusivas de ACS: k2 = (11,6 + 1,18TAC + 3,86Tred - 2,32Ta)/(100 - Ta)
+
+La energía útil mensual: EUmes = f * Lmes [kWh/mes]
+La fracción solar anual: F = Σ(EUmes) / Σ(Lmes)
+El rendimiento anual: ηanual = (Qsolar / (Hβ * S)) * 100 [%]
+1.3 Dimensionado del Acumulador
+La relación entre volumen de acumulación y área de captación:
+50 < V/A < 180
+Donde:
+
+V: volumen de acumulación (litros)
+A: suma de las áreas de los captadores (m²)
+
+Volumen en función de la demanda diaria:
+0,8*M ≤ V ≤ 1,2*M
+Donde:
+
+V: volumen de acumulación (litros)
+M: demanda diaria de ACS (litros)
+
+1.4 Dimensionado del Intercambiador
+Para intercambiadores externos:
+P = 500 * A [W]
+Para intercambiadores internos:
+Si/Sc ≥ 0,15
+Donde:
+
+P: potencia mínima del intercambiador (W)
+A: área de captadores (m²)
+Si: superficie de intercambio (m²)
+Sc: superficie de captación (m²)
+
+1.5 Cálculos Hidráulicos
+El caudal del fluido de trabajo se determina entre 43,2 y 72 l/h por cada m² de superficie de captación.
+Para el cálculo de pérdida de carga:
+ΔH = (Pe * λ * L * v²)/(2 * D * g) [N/m²]
+Donde:
+
+Pe: peso específico del fluido (N/m³)
+λ: coeficiente de rozamiento
+L: longitud del conducto (m)
+D: diámetro interior de la tubería (m)
+v: velocidad del fluido (m/s)
+g: aceleración de la gravedad (m/s²)
+
+1.6 Cálculo del Vaso de Expansión
+El volumen del vaso de expansión:
+Vt = (V * Ce * Cpre) + Vvap
+Donde:
+
+Vt: volumen total del vaso de expansión (litros)
+V: contenido total del fluido en el circuito (litros)
+Ce: coeficiente de expansión (0,05 para agua, 0,065 para mezcla anticongelante)
+Cpre: coeficiente de presión = Pmax/(Pmax-Pmin)
+Vvap: volumen susceptible de evaporarse (litros)
+
+El coeficiente de presión:
+Cpre = Pmax/(Pmax - Pmin)
+La presión mínima:
+Pmin = Patm + 0,5 + ρgh/10000 [bar]
+La presión máxima:
+Pmax = Pvs - 0,5 [bar]
+1.7 Climatización de Piscinas
+El balance energético:
+Q = P - 0,85*H*S [MJ]
+Las pérdidas totales:
+P = S*p = S*(prad + pevap + pconv + ptrans + pren) [MJ]
+La superficie de captación necesaria:
+Scap = Q/(η*Hβ) [m²]
+Donde:
+
+Q: energía a suministrar por captadores (MJ)
+P: pérdidas totales (MJ)
+H: irradiación solar sobre superficie horizontal (MJ/m²)
+S: superficie de la piscina (m²)
+p: pérdidas totales por unidad de superficie (MJ/m²)
+prad: pérdidas por radiación (MJ/m²)
+pevap: pérdidas por evaporación (MJ/m²)
+pconv: pérdidas por convección (MJ/m²)
+ptrans: pérdidas por conducción (MJ/m²)
+pren: pérdidas por renovación de agua (MJ/m²)
+η: rendimiento medio del captador
+Hβ: irradiación sobre el plano del captador (MJ/m²)
+
+2. TABLAS DE VALORES, COEFICIENTES Y FACTORES
+2.1 Clasificación de Zonas Climáticas
+Tabla 2. Rango de valores de irradiación diaria para las regiones del Ecuador
+Zona climáticakWh/m²MJ/m²IH < 3,8H < 13,68II3,8 ≤ H < 4,213,68 ≤ H < 15,12III4,2 ≤ H < 4,615,12 ≤ H < 16,56IV4,6 ≤ H < 5,016,56 ≤ H < 18,00V5,0 ≤ H < 5,418,00 ≤ H < 19,44VIH ≥ 5,4H ≥ 19,44
+2.2 Contribución Solar Mínima
+Tabla 3. Contribución solar mínima para la obtención de ACS
+Demanda ACS del edificio (l/d)Zona IZona IIZona IIIZona IVZona VZona VI50 – 5.00030%40%50%55%60%65%5.001 – 10.00035%45%55%60%65%70%> 10.00040%50%60%65%70%75%
+Tabla 4. Contribución mínima para climatización de piscinas
+Demanda total (l/d)Zona IZona IIZona IIIZona IVZona VZona VIPiscinas40%50%60%60%60%70%
+2.3 Demandas de Referencia
+Tabla 9. Demanda de referencia a 60 ºC
+Criterio de demandaLitros/día personaVivienda unifamiliar28Hospitales y clínicas55Ambulatorio y centro de salud41Hotel *****69Hotel ****55Hotel ***41Hotel/hostal **34Camping21Hostal/pensión *28Residencia multifamiliar41Centro penitenciario28Albergue24Vestuarios/Duchas colectivas21Escuela sin ducha4Escuela con ducha21Cuarteles28Fábricas y talleres21Oficinas2Gimnasios21Restaurantes8Cafeterías1
+Tabla 10. Valores mínimos de ocupación de cálculo en uso residencial
+Número de dormitorios123456≥6Número de personas1,5345667
+Tabla 11. Valor del factor de centralización
+Número de viviendasN≤34≤N≤1011≤N≤2021≤N≤5051≤N≤7576≤N≤100N≥101Factor de centralización1,000,950,900,850,800,750,70
+2.4 Tablas para Dimensionado de Aislamiento
+Tabla 8. Espesor de referencia
+Diámetro exterior (mm)Temperatura del fluido (°C)40 a 65D≤352035≤D≤602060≤D≤903090≤D≤14030140≤D30
+2.5 Tablas para Cálculos Hidráulicos
+Tabla 7. Factores de corrección para temperaturas medias del agua distintas de 45°C
+Temperatura del agua (ºC)5102040455060809095Factor corrector k11,241,181,091,021,000,990,960,920,910,91
+2.6 Tablas para Climatización de Piscinas
+Tabla 12. Temperaturas recomendadas
+Tipo de piscinaTemperatura del agua (°C)Temperatura del ambiente (°C)Humedad relativa (%)Competición24 (±1)2-3°C superior a la del agua65Entrenamiento26 (±1)2-3°C superior a la del agua65Enseñanza25 (±1)2-3°C superior a la del agua65Recreo25 (±1)2-3°C superior a la del agua65Infantil28 (±1)2-3°C superior a la del agua65Para bebés32 (±2)3°C superior a la del agua60Terapéuticas36 (±1)3°C superior a la del agua60
+Tabla 13 a 19. Pérdidas por radiación, evaporación y convección
+Estas tablas extensas contienen valores para calcular las pérdidas térmicas en piscinas según:
+
+Temperatura ambiente
+Uso de manta térmica
+Velocidad del viento
+Grado de humedad
+
+3. PARÁMETROS DE DISEÑO Y VALORES LÍMITE
+3.1 Condiciones Generales del Sistema
+
+El rendimiento anual del sistema debe ser superior al 20%
+El rendimiento instantáneo del captador debe ser superior al 40%
+La energía producida no debe superar el 110% de la demanda en ningún mes, ni el 100% durante más de tres meses consecutivos
+
+3.2 Parámetros para Captadores Solares
+
+Ángulo de inclinación: entre 10° y 25° respecto al plano horizontal
+Orientación: preferentemente hacia el sur o norte, según ubicación geográfica
+Pérdidas máximas por orientación, inclinación y sombras: especificadas en apartado 4.3.2.3
+Conexión en serie máxima: 10 m² en zonas I y II, 8 m² en zona III y 6 m² en resto de zonas
+Distancia mínima entre filas de colectores: depende de la altura solar
+Distancia mínima para mantenimiento: 0,8 metros
+
+3.3 Parámetros para Sistema de Acumulación
+
+Relación volumen/área: 50 < V/A < 180 litros/m²
+Se recomienda un solo depósito en configuración vertical
+Aislamiento mínimo: 30 mm para superficies < 2 m², 50 mm para superficies > 2 m²
+Ubicación de las conexiones:
+
+Entrada de agua caliente: entre 50% y 75% de la altura
+Salida de agua fría: por la parte inferior
+Extracción de agua caliente: por la parte superior
+
+
+
+3.4 Parámetros para Intercambiadores
+
+Tasa mínima de transferencia: 40 W/m²K entre circuito de captadores y acumulador
+Para intercambiadores internos: Si/Sc ≥ 0,15
+Pérdida de carga máxima: 3 m.c.a.
+Diferencia de caudales primario/secundario: < 10%
+
+3.5 Parámetros para Circuito Hidráulico
+
+Velocidad máxima de circulación: < 2,0 m/s en locales habitados, < 3,0 m/s en exterior
+Velocidad mínima: > 0,3 m/s para evitar entrada de aire
+Pérdida de carga máxima: 40 mm columna agua por metro lineal
+Pendiente mínima tuberías horizontales: 1% en sentido de circulación
+
+3.6 Parámetros para Aislamiento Térmico
+
+Basados en diámetro y temperatura (Tabla 8)
+10 mm adicional para tuberías exteriores
+5 mm adicional para circuitos de funcionamiento continuo
+Pérdida térmica máxima: 4% de potencia transportada para sistemas < 70 kW, 15% para sistemas ≥ 70 kW
+
+3.7 Parámetros para Piscinas
+
+Temperatura recomendada: 24-27°C
+Temperatura máxima: 28°C para piscinas normales
+Temperatura ambiente para piscinas cubiertas: 2-3°C sobre temperatura del agua (mín 26°C, máx 28°C)
+Humedad relativa máxima: 65%
+
+4. RECOMENDACIONES ESPECÍFICAS PARA MANUAL
+4.1 Protección del Sistema
+Contra heladas:
+
+Usar anticongelante no tóxico (propilenglicol, máx 30%)
+Métodos alternativos: drenaje automático con recuperación, drenaje al exterior, recirculación
+Diseñar para temperatura 5°C por debajo de la mínima histórica
+
+Contra sobrecalentamiento:
+
+Implementar dispositivos de control manual o automático
+Disipar excedentes mediante equipos específicos
+Considerar tapado parcial o total de captadores en períodos de bajo uso
+Implementar sistemas de drenaje de emergencia
+
+Contra quemaduras:
+
+Instalar sistemas automáticos de mezcla para limitar temperatura de suministro a 60°C
+
+Contra problemas de presión:
+
+Probar sistema a 1,5 veces la presión máxima de servicio
+Dimensionar correctamente los vasos de expansión
+Instalar válvulas de seguridad calibradas adecuadamente
+
+4.2 Instalación del Sistema
+Instalación de captadores:
+
+Seguir instrucciones del fabricante
+Asegurar orientación e inclinación adecuadas
+Mantener distancias mínimas para evitar sombras
+Realizar montaje seguro que resista cargas de viento
+Equilibrar hidráulicamente mediante retorno o impulsión invertida
+
+Instalación del acumulador:
+
+Preferir orientación vertical
+Asegurar accesibilidad a todas las conexiones
+Incluir placas deflectoras para conexiones de entrada
+Posicionar para optimizar estratificación
+
+Instalación del circuito hidráulico:
+
+Usar materiales compatibles
+Instalar purgadores de aire en puntos altos
+Implementar equilibrado hidráulico adecuado
+Incluir todas las válvulas necesarias (corte, seguridad, retención, vaciado)
+
+4.3 Mantenimiento del Sistema
+Plan de mantenimiento:
+
+Plan de vigilancia (mantenimiento predictivo)
+Plan de mantenimiento preventivo
+Plan de mantenimiento correctivo
+Frecuencias de inspección según tamaño del sistema:
+
+< 20 m²: revisión anual
+
+
+20 m²: revisión semestral
+
+
+
+
+
+Inspección visual:
+
+Realizar a 300-600 mm de distancia a ángulo > 30°
+Verificar fugas, deformaciones, corrosión
+Monitorear valores de presión y temperatura
+
+5. REQUISITOS DE DOCUMENTACIÓN TÉCNICA
+Manual de Uso:
+
+Documentación del proyecto con memoria de cálculo actualizada
+Características de funcionamiento
+Instrucciones de operación
+Medidas de seguridad
+Programa de vigilancia y mantenimiento
+Condiciones de garantía
+Diagrama del sistema con identificación de equipos
+Valores nominales y rangos operativos
+Límites funcionales de componentes
+
+Documentación de Diseño:
+
+Método de cálculo utilizado (recomendado F-chart)
+Valores mensuales de demanda energética y contribución solar
+Métricas anuales de desempeño (fracción solar, eficiencia)
+Medidas de protección contra sobrecalentamiento
+Esquema hidráulico completo
+Esquema eléctrico completo
+Especificaciones de componentes
+
+Documentación de Instalación:
+
+Certificaciones de cumplimiento
+Resultados de pruebas (pruebas de presión, pruebas de eficiencia)
+Fichas técnicas de captadores
+Especificaciones del sistema de acumulación
+Diagramas as-built
+
+RESUMEN DE INTEGRACIÓN
+La normativa NEC-HS-ER complementa perfectamente los capítulos previamente analizados (NEC-SE-DS y NEC-SE-CG) al aportar los criterios técnicos para el dimensionamiento e implementación de sistemas solares térmicos para agua caliente sanitaria y climatización de piscinas.
+Para integrar este contenido en un flujo coherente de cálculo dentro de la aplicación CONSTRU, se recomienda la siguiente estructura:
+
+Módulo de Datos Iniciales:
+
+Ubicación geográfica → determina zona climática y radiación solar
+Tipo de edificación → determina demanda de ACS
+Ocupación → cálculo de consumo total diario
+
+
+Módulo de Cálculo de Demanda Energética:
+
+Cálculo diario y mensual según fórmulas
+Determinación de fracción solar mínima requerida según tabla
+
+
+Módulo de Dimensionamiento F-Chart:
+
+Implementación completa del método para obtener número de captadores
+Cálculos mensuales y anuales de cobertura solar
+
+
+Módulo de Dimensionamiento de Componentes:
+
+Acumulador según relaciones V/A
+Intercambiador según potencia y superficie
+Circuito hidráulico con cálculos de diámetros y pérdidas de carga
+Vaso de expansión según volumen y presiones
+
+
+Módulo de Verificación:
+
+Comprobación de límites y parámetros de diseño
+Alertas sobre posibles problemas (sobrecalentamiento, etc.)
+
+
+Módulo de Documentación:
+
+Generación de memoria técnica con todos los cálculos
+Fichas de componentes
+Plan de mantenimiento personalizado
+
+
+
+Esta estructura permite un flujo lógico desde los datos iniciales hasta la documentación final, asegurando que todos los cálculos y verificaciones se realicen conforme a la normativa NEC.

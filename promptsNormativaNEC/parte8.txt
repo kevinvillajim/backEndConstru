@@ -1,0 +1,190 @@
+Análisis Normativo NEC-SE-MD: Estructuras de Madera
+A continuación presento un análisis sistemático de la normativa NEC-SE-MD sobre estructuras de madera, extrayendo los elementos clave que deben implementarse en el módulo de cálculos técnicos de la app CONSTRU.
+1. Fórmulas Matemáticas para Implementación
+1.1. Cálculo del Contenido de Humedad (CH)
+C.H.% = (P.V. - P.S.) / P.S. * 100
+Donde:
+
+C.H.: Contenido de humedad de la madera (%)
+P.V.: Peso de la madera en estado verde o peso inicial (g)
+P.S.: Peso de la madera seco al horno o anhidro (g)
+
+1.2. Cálculo de Expansión o Contracción por Cambios de Humedad
+E o C % = (CHf - CHi) / PSF × K
+Donde:
+
+E, C: Expansión o contracción (%)
+CHf: Contenido de humedad final (%)
+CHi: Contenido de humedad inicial (%)
+PSF: Punto de saturación de las fibras (30%)
+K: Coeficiente de contracción o expansión (total, radial o tangencial)
+
+1.3. Coeficiente de Estabilidad Dimensional
+Ced = CT/CR
+Donde:
+
+Ced: Coeficiente de estabilidad dimensional
+CT: Contracción tangencial
+CR: Contracción radial
+
+1.4. Cálculo de Absorción del Preservante
+Al = (P1 - P0) / Vp
+As = C(P1 - P0) / Vp
+Donde:
+
+Al: Absorción líquida (l/m³)
+As: Absorción sólida (kg/m³)
+P0: Peso antes del tratamiento (kg)
+P1: Peso después del tratamiento (kg)
+Vp: Volumen de la pieza (m³)
+C: Concentración del preservante (%)
+
+1.5. Requisitos de Resistencia Estructural
+Esfuerzos aplicados < esfuerzos admisibles
+Esfuerzo admisible = (FC × FT) / (FS × FDC) × Esfuerzo último
+Donde:
+
+FC: Factor de reducción por calidad
+FT: Factor de reducción por tamaño
+FS: Factor de servicio y seguridad
+FDC: Factor de duración de carga
+
+2. Tablas de Valores y Coeficientes
+2.1. Clasificación por Densidad Básica (DB)
+
+Grupo A: DB entre 0.71 y 0.90 g/cm³
+Grupo B: DB entre 0.56 y 0.70 g/cm³
+Grupo C: DB entre 0.40 y 0.55 g/cm³
+
+2.2. Esfuerzos Admisibles por Grupo Estructural (MPa)
+GrupoFlexión (fm)Tracción paralela (ft)Compresión paralela (fc)Compresión perpendicular (fc⊥)Corte paralelo (fv)A2114.514.541.5B1510.5112.81.2C107.581.50.8
+2.3. Módulo de Elasticidad por Grupo Estructural (MPa)
+GrupoEmin (E0.05)EpromedioA950013000B750010000C55009000
+2.4. Estabilidad Dimensional según Relación CT/CR
+EstabilidadValor Ced = CT/CRMuy estableMenor de 1.5Estable1.5 - 1.8Moderadamente estable1.8 - 2.4InestableMayor de 2.5
+2.5. Escala de Absorción para Clasificación de Maderas
+Tipo de absorciónPentaclorofenol (kg/m³)Sales de CCA (kg/m³)Absorción alta+ de 150+ de 200Absorción moderada101 a 150151 a 200Absorción pobre51 a 100101 a 150Absorción nula- de 50- de 100
+2.6. Contenido de Humedad de Equilibrio (CHE)
+La norma incluye tablas detalladas del CHE para 140 localidades del Ecuador, organizadas por provincias (ver Apéndice 6.1 del documento), con valores que deben ser incluidos en la base de datos de la aplicación para cálculos específicos según la ubicación.
+3. Parámetros de Diseño y Valores Límite
+3.1. Humedad
+
+Contenido máximo para madera estructural: 19%
+Contenido para madera laminada: 12%
+Punto de saturación de las fibras (PSF): 27-32%
+
+3.2. Protección por Diseño
+
+Distancia mínima entre elementos de madera y suelo: 200 mm
+Inclinación mínima para madera exterior expuesta: 10°
+Separación mínima entre edificaciones adyacentes: 1.20 m
+Proyección mínima de muro cortafuego: 0.50 m en parte superior y 1.00 m en extremos
+
+3.3. Protección contra Fuego
+
+Velocidad de combustión de la madera: 0.7 mm/min
+Temperatura de inflamación aproximada: 270°C
+Sobredimensionamiento recomendado: 3-5 mm en espesor
+
+4. Recomendaciones para Manual de Bolsillo
+4.1. Selección de Madera Estructural
+
+Verificar que sea material clasificado como calidad estructural
+Confirmar que provenga de especies de los grupos A, B o C
+Verificar contenido de humedad máximo del 19% (o 12% para madera laminada)
+Comprobar durabilidad natural o preservación adecuada
+Verificar que los elementos metálicos tengan protección anticorrosiva
+
+4.2. Protección por Diseño
+
+Usar zócalos o pedestales para evitar contacto directo con agua
+Emplear barreras anticapilaridad en uniones con cimentación
+Asegurar ventilación adecuada para prevenir condensación
+Inclinar elementos exteriores mínimo 10° para escorrentía
+Evitar que extremos o cabezas queden expuestos hacia arriba
+
+4.3. Preservación
+
+Seleccionar método según exposición (interior, exterior, contacto con suelo)
+Preferir métodos a presión para mayor durabilidad
+Descartar métodos caseros ineficientes (aceite quemado, diesel, gasolina)
+Verificar compatibilidad preservante-método-especie
+
+4.4. Secado
+
+Secar hasta CH cercano al CHE local (consultar tabla provincial)
+Rango recomendado: 12-15% para elementos estructurales
+Evitar exposición directa al sol durante secado
+Verificar ausencia de defectos de secado antes de usar
+
+4.5. Diseño Sismoresistente
+
+Asegurar flexibilidad en uniones
+Fijar todos los elementos entre sí mediante soleras, riostras y travesaños
+Preferir techos ligeros para menor inercia
+Usar pletinas metálicas para anclaje a cimentación
+Reforzar esquinas con riostras diagonales en ambos lados
+Reforzar unión techo/muro con pletinas o zunchos
+
+5. Requisitos de Documentación Técnica
+5.1. Certificación de Proveedores
+
+Identificación completa de la madera (nombre común y científico)
+Contenido de humedad certificado
+Densidad básica promedio y grupo estructural
+Características de durabilidad o especificaciones de preservación
+Certificación de cumplimiento de Norma de Clasificación Visual
+
+5.2. Documentación de Diseño
+
+Memoria de cálculo con dimensionamiento de elementos principales
+Especificación de especies utilizadas y grupo estructural
+Detalle de uniones y elementos de conexión
+Verificaciones de resistencia y deformación
+Tratamientos de preservación requeridos
+
+5.3. Documentación de Mantenimiento
+
+Especificaciones para revisiones periódicas
+Procedimientos para reajuste de elementos
+Calendario de repintado y protección
+Protocolo de inspección para detección de humedad y ataques biológicos
+Verificación periódica de sistemas eléctricos y protección contra incendios
+
+Integración con el Módulo de Cálculos de CONSTRU
+Para implementar estas especificaciones en la app CONSTRU, propongo el siguiente flujo de trabajo:
+
+Selección de Proyecto: El usuario define ubicación geográfica (para determinar CHE local) y tipo de construcción.
+Selección de Material: El usuario elige especies de madera disponibles y el sistema muestra automáticamente sus propiedades según grupo estructural.
+Cálculo Estructural:
+
+Dimensionamiento de elementos (vigas, columnas, entramados) según cargas aplicadas
+Verificación automática de esfuerzos admisibles según grupo estructural
+Cálculo de deformaciones y comparación con límites admisibles
+Diseño de uniones (clavadas, empernadas)
+
+
+Verificaciones Especiales:
+
+Protección contra humedad según exposición
+Resistencia al fuego según requerimientos
+Comportamiento sísmico según ubicación
+
+
+Recomendaciones Automáticas:
+
+Sugerencias de preservación según uso
+Recomendaciones de secado según CHE local
+Detalles constructivos para protección por diseño
+
+
+Documentación Generada:
+
+Memorias de cálculo detalladas
+Especificaciones técnicas completas
+Manual de mantenimiento personalizado
+Lista de verificación para control de calidad en obra
+
+
+
+Esta normativa complementa perfectamente los análisis previos de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas), añadiendo los criterios específicos para estructuras de madera que permitirán a la app CONSTRU ofrecer soluciones integrales de diseño estructural basadas en la normativa vigente en Ecuador.

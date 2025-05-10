@@ -1,0 +1,197 @@
+Análisis Normativo NEC-HS-EE: Eficiencia Energética en Edificaciones Residenciales
+A continuación, presento el análisis sistemático de la normativa NEC-HS-EE (Norma Ecuatoriana de la Construcción - Habitabilidad y Salud - Eficiencia Energética) para su implementación en el módulo de cálculos técnicos de la app CONSTRU.
+1. Fórmulas matemáticas a implementar
+Cálculo del coeficiente global de transferencia de calor (G)
+G = (∑Um × Sm + ∑Ut × St + ∑Up × Sp + ∑Uv × Sv) / VT
+Donde:
+
+Um = coeficiente de transferencia de calor de muros exteriores (W/m²K)
+Ut = coeficiente de transferencia de calor de techo (W/m²K)
+Up = coeficiente de transferencia de calor de piso (W/m²K)
+Uv = coeficiente de transferencia de calor de ventanas (W/m²K)
+Sm, St, Sp, Sv = superficies totales correspondientes (m²)
+VT = volumen interior total de la edificación (m³)
+
+Cálculo del valor mínimo de resistencia térmica (R)
+R = e / λ
+Donde:
+
+e = Espesor del material (m)
+λ = Conductividad térmica (W/mK)
+
+Cálculo de opacidad del dispositivo de sombreado
+Os = (Ai × Oi) + (Af × Of)
+Donde:
+
+Os = porcentaje de opacidad del dispositivo de sombreado
+Ai = porcentaje de área con relleno parcialmente opaco
+Oi = porcentaje de opacidad del relleno (Oi = 100% - TS)
+Af = porcentaje del área de elementos del marco
+Of = porcentaje de opacidad de los elementos del marco
+
+Requerimiento de aire fresco
+Qtot = 0.15 × Apiso + 3.5 × (Ndorm + 1)
+Donde:
+
+Qtot = requerimiento de aire fresco (l/s)
+Apiso = área de la vivienda (m²)
+Ndorm = número de dormitorios (mínimo 1)
+
+Valor de Eficiencia Energética de la Instalación (VEEI)
+VEEI = (P × 100) / (Si × Em)
+Donde:
+
+P = Potencia total instalada (W)
+Si = Superficie iluminada (m²)
+Em = Iluminancia promedio horizontal mantenida (lux)
+
+Cálculo de Factor de Luz Natural (FLN)
+FLN (%) = (Iluminancia interior media / Iluminancia exterior horizontal sin obstáculos) × 100%
+Cálculo de Grados Día
+HDD18 = ∑(18°C - Ti)⁺    (donde Ti < 18°C)
+CDD10 = ∑(Ti - 10°C)⁺    (donde Ti > 10°C)
+2. Tablas de valores y coeficientes
+Zonificación climática
+ZonaNombreCriterio Térmico1Húmeda muy calurosa5000 < CDD10°C2Húmeda calurosa3500 < CDD10°C ≤ 50003Continental lluviosaCDD10°C ≤ 2500 y HDD18°C ≤ 20004Continental templado2000 < HDD18°C ≤ 30005FríaCDD10°C ≤ 2500 y HDD18°C ≤ 2000, 2000 < HDD18°C ≤ 3000, 3000m < Altura ≤ 5000m6Muy fríaCDD10°C ≤ 2500 y HDD18°C ≤ 2000, 2000 < HDD18°C ≤ 3000, 5000m < Altura
+Valores límite para elementos constructivos por zona climática
+Se implementarán las tablas 4-9 que contienen los requisitos detallados para:
+
+Techos (U-valor, R-mínimo)
+Paredes sobre/bajo nivel terreno
+Pisos
+Puertas opacas
+Elementos translúcidos (U-valor, SHGC)
+
+Multiplicadores SHGC para elementos de sombra
+Factor de proyecciónMultiplicador SHGC (este/oeste)Multiplicador SHGC (norte/sur)0-0.101.001.00>0.10-0.200.910.95>0.20-0.300.820.91>0.30-0.400.740.87>0.40-0.500.670.84>0.50-0.600.610.81>0.60-0.700.560.78>0.70-0.800.510.76>0.80-0.900.470.75>0.90-1.000.440.73
+Tasas de infiltración máxima permitidas
+DescripciónLímite de infiltración de aireVentanas con marco de aluminio y puertas deslizantes25 m³/h mVentanas con marco de PVC y puertas deslizantes25 m³/h mVentanas con marco de madera y puertas deslizantes23 m³/h mPuertas de madera23 m³/h mVentanas fijas6.22 m³/h m² (área de ventana)Puertas giratorias9.2 m³/h m² (área de la puerta)
+Niveles mínimos de iluminación
+ÁreasMínimo (lux)Recomendado (lux)Óptimo (lux)Dormitorios100150200Cuartos de aseo/baños100150200Cuartos de estar200300500Cocinas100150200Cuartos de estudio o trabajo300500750Zonas de circulación y pasillos50100150Escaleras, roperos, lavabos, almacenes100150200
+Factores de luz natural recomendados
+AmbientePorcentaje FLNSalas0.625Cocinas2.5Dormitorios0.313Estudios1.9Circulaciones0.313
+Valores VEEI máximos
+Zona de actividadVEEI máximo (W/m²)Dormitorios12.0Salas7.5Cocina/comedor10Cuarto de estudio10Baños12.0Bodega6.0
+Propiedades térmicas de materiales
+La normativa aporta tablas completas con:
+
+Conductividad térmica (W/mK)
+Resistencia térmica (m²K/W)
+Calor específico (J/kg K)
+Densidad (kg/m³)
+para distintos materiales constructivos (piedra, hormigón, aislantes, ladrillos, yesos, madera, plásticos, etc.)
+
+3. Parámetros de diseño y valores límite
+Limitaciones de áreas
+
+Área de elementos translúcidos verticales: < 40% del área neta del muro
+Área de elementos translúcidos horizontales: < 5% del área neta del techo
+
+Reflectividad en techos (zona climática 1)
+PendienteReflectancia solar inicialReflectancia solar envejecidaBaja (≤ 2:12)≥ 0.65≥ 0.50Inclinada (> 2:12)≥ 0.25≥ 0.15
+Índice de Reflectancia Solar (SRI)
+
+SRI inicial mínimo de 78 para techos baja pendiente
+SRI inicial mínimo de 29 para techos inclinados
+
+Criterio de espacios climatizados
+Zona ClimáticaPotencia de Calefacción (W/m²)3304 y 545660
+Condición para coeficiente global de transferencia
+Gcal ≤ Gbase
+4. Recomendaciones para manual de bolsillo
+Proceso de determinación de zona climática
+
+Verificar si la ciudad está en la tabla de referencia
+Si no está, calcular HDD18 y CDD10 usando datos meteorológicos
+Ubicar la zona según los rangos de la tabla de zonificación
+
+Pasos para verificar cumplimiento
+
+Identificar zona climática
+Determinar si espacios son habitables o no habitables
+Verificar requisitos según las tablas correspondientes
+Comprobar valores U, R y SHGC
+Verificar áreas de elementos translúcidos
+
+Alternativa de cumplimiento por coeficiente global
+
+Calcular G de edificación propuesta
+Definir edificación base
+Verificar que Gcal ≤ Gbase
+
+Recomendaciones de iluminación eficiente
+
+Aprovechar luz natural según FLN recomendados
+Utilizar luminarias con VEEI menor al máximo establecido
+Verificar niveles mínimos de iluminación en cada espacio
+
+Sistemas pasivos recomendados
+
+Usar elementos de sombra con factores de proyección adecuados
+Implementar materiales con propiedades térmicas apropiadas
+Garantizar ventilación natural eficiente
+
+5. Requisitos de documentación técnica
+Documentación general
+
+Planos con identificación de espacios habitables y no habitables
+Memoria técnica de cumplimiento de requisitos de envolvente
+
+Documentación de aislamientos
+
+Certificados que identifiquen el valor R nominal
+Certificación firmada para materiales sin etiqueta
+Verificación de instalación según recomendaciones del fabricante
+
+Documentación de elementos translúcidos
+
+Etiquetas con valores U, SHGC e infiltración
+Certificaciones para productos sin etiqueta
+
+Documentación de materiales
+
+Fichas técnicas de comportamiento térmico
+Memoria técnica de cumplimiento de requisitos mínimos
+
+Integración en el flujo de cálculo de la aplicación
+La normativa NEC-HS-EE complementa perfectamente los documentos anteriores (NEC-SE-DS y NEC-SE-CG) añadiendo componentes críticos de eficiencia energética que se integran así:
+
+Módulo de zonificación climática
+
+Implementar base de datos de ciudades con su zona climática
+Desarrollar calculadora de grados-día para ubicaciones no listadas
+Incluir mapa interactivo de zonas climáticas
+
+
+Módulo de cálculo de envolvente
+
+Integrar con los cálculos estructurales existentes
+Verificar cumplimiento según zona climática
+Permitir ingresar propiedades de materiales o seleccionar de base de datos
+Calcular coeficiente global G y comparar con Gbase
+
+
+Módulo de iluminación natural y artificial
+
+Calcular factores de luz natural
+Verificar niveles mínimos de iluminación
+Calcular VEEI y comprobar cumplimiento
+
+
+Módulo de ventilación
+
+Calcular requerimientos de aire fresco
+Verificar tasas de infiltración
+Dimensionar aberturas para ventilación natural
+
+
+Informe integrado de cumplimiento normativo
+
+Generar documentación técnica requerida
+Presentar verificación de todas las normativas
+Sugerir mejoras para optimizar el diseño
+
+
+
+Este enfoque permite que el usuario pueda realizar un proceso de diseño integral que contemple tanto los aspectos estructurales como los de eficiencia energética, aprovechando sinergias entre ambos (por ejemplo, la masa térmica de los elementos estructurales contribuye al comportamiento térmico).
+La aplicación debería ofrecer un flujo de trabajo que guíe al usuario desde la ubicación del proyecto, pasando por el diseño estructural, hasta la verificación de eficiencia energética, con retroalimentación en cada paso para optimizar el diseño final.

@@ -43,7 +43,7 @@ import {ApproveMaterialRequestUseCase} from "../../application/project/ApproveMa
 import {ProgressReportController} from "../webserver/controllers/ProgressReportController";
 import {MaterialRequestController} from "../webserver/controllers/MaterialRequestController";
 import {TypeOrmMaterialRequestRepository} from "../database/repositories/TypeOrmMaterialRequestRepository";
-
+import {MaterialController} from "../webserver/controllers/MaterialController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -89,6 +89,7 @@ let approveMaterialRequestUseCase: ApproveMaterialRequestUseCase;
 let materialRequestRepository: TypeOrmMaterialRequestRepository;
 let progressReportController: ProgressReportController;
 let materialRequestController: MaterialRequestController;
+let materialController: MaterialController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -255,6 +256,8 @@ export function initializeServices() {
 			materialRequestRepository
 		);
 
+		materialController = new MaterialController(materialRepository);
+
 		console.log("Services initialized successfully");
 	} catch (error) {
 		console.error("Failed to initialize services:", error);
@@ -351,4 +354,13 @@ export function getMaterialRequestController() {
 		);
 	}
 	return materialRequestController;
+}
+
+export function getMaterialController() {
+	if (!materialController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return materialController;
 }

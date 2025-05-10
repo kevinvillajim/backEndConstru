@@ -1,0 +1,140 @@
+Análisis NEC-SB-TE: Infraestructura Civil Común de Telecomunicaciones (ICCT)
+1. Fórmulas y Cálculos para Implementar
+Este documento normativo es principalmente descriptivo y establece requerimientos dimensionales y técnicos específicos, sin contener fórmulas matemáticas complejas. Sin embargo, se deben implementar los siguientes cálculos:
+
+Dimensionamiento de cuartos técnicos según cantidad de pisos/viviendas
+Cálculo de ventilación mínima: 5% de las superficies de las paredes del cuarto
+Dimensionamiento de canalizaciones según distancia
+Verificación de resistencia del sistema de tierra: ≤ 5 ohm
+
+2. Tablas de Valores y Dimensiones Críticas
+Tabla 1: Dimensiones del CCTI (Cuarto Común de Telecomunicaciones Inferior)
+NÚMERO DE PISOSLARGO (m)ANCHO (m)ALTO (m)Menor a 42.01.02.3Entre 4 y 102.02.02.3Mayor a 10 (o más de 50 abonados)3.02.02.3
+Tabla 2: Dimensiones del CCTS (Cuarto Común de Telecomunicaciones Superior)
+NÚMERO DE PISOSLARGO (m)ANCHO (m)ALTO (m)Menor a 102.02.02.3Mayor a 10 (o más de 50 abonados)3.02.02.3
+Tabla 3: Características de Canalizaciones y Escalerillas
+CaracterísticasCanales/BandejasResistencia al impactoMedia/ 2 JoulesTemperatura de instalación y servicio-5 ≤ T ≤ 60 °CContinuidad eléctricaAislanteResistencia a la corrosiónProtección interior y exterior mediaResistencia a la propagación de la llamaNo propagador
+3. Parámetros de Diseño y Valores Límite
+Dimensiones Mínimas de Elementos ICCT
+
+Caja de Acceso (CA): 0.60 x 0.60 x 0.60 m (interior)
+Caja de Paso (CP) en áreas comunales: 0.80 x 0.80 x 0.80 m (interior)
+Caja de Paso (CP) en edificios: 0.20 x 0.20 x 0.06 m (empotrada)
+Caja de Paso (CP) en canalización de abonado: 0.10 x 0.10 x 0.05 m
+Ducto Vertical (DVT): 0.80 x 1.00 m con escalerilla de 0.30 x 0.05 m
+Canalización Externa (CE): Mínimo 2 ductos PVC de 110 mm (4")
+Canalización Interna (CI) en edificios: Escalerilla de 0.30 x 0.05 m
+Canalización Secundaria (CS): Mínimo 2 mangueras de 25.40 mm (1")
+Caja Terminal de Red (CTR): 0.30 x 0.30 x 0.10 m
+Canalización de Abonado (CU): Mínimo 2 mangueras de 19.00 mm (¾")
+Cajetín Terminal (CT): 0.05 x 0.10 x 0.05 m
+Pozo de Entrada (PE): 1.20 x 1.20 x 1.20 m
+
+Requisitos Técnicos
+
+Resistencia eléctrica del sistema de tierra: ≤ 5 ohm
+Resistencia mecánica de tapas para CA y CP: ≥ 5 kN
+Grado de protección para cajas exteriores: IP 55, IK 10
+Grado de protección para cajas interiores: IP 33, IK 5
+Separaciones mínimas entre instalaciones:
+
+Paralelas: 0.10 m
+Cruces: 0.03 m
+
+
+Rigidez dieléctrica de tabiques de separación: ≥ 15 kV/mm
+Nivel de iluminación en cuartos técnicos: 300 lux
+
+4. Recomendaciones para Manual de Bolsillo
+
+Topología y Disposición General
+
+Respetar la zonificación: área exterior (PE, CA) y área común (PA, CP, cuartos, etc.)
+Instalación obligatoria de CA: Mínimo una por cada cuatro predios
+Ubicación de cuartos en áreas comunales, nunca por debajo de última planta
+
+
+Recomendaciones Específicas
+
+Distancia mínima entre cuartos técnicos y transformadores: 2.00 m
+Evitar ubicar cuartos en la proyección vertical de desagües
+Garantizar protección contra humedad y campo electromagnético
+
+
+Instalaciones Complementarias
+
+Ventilación: Rejillas reforzadas en dos paredes opuestas, a 0.10 m bajo el techo
+Electricidad: Canalización desde tablero general, protecciones adecuadas
+Iluminación: 300 lux + iluminación autónoma de emergencia
+Sumidero: Para evitar acumulación de agua
+
+
+Seguridad y Accesibilidad
+
+Implementar medidas de seguridad y señalización para restringir acceso
+Acceso al ducto vertical: puertas de 0.80 x 1.00 m en cada piso
+Instalación de escalerillas adecuadas para el cableado
+
+
+Compatibilidad Electromagnética
+
+Sistema general de tierra: ≤ 5 ohm
+Red de conexión común: Tipo Mallado
+Anillo interior y cerrado de cobre en cada cuarto
+
+
+
+5. Requisitos de Documentación Técnica
+Según la normativa, los proyectos que incluyan ICCT deben considerar:
+
+Planos detallados que muestren:
+
+Ubicación de cajas, ductos, cuartos y demás elementos
+Dimensiones y especificaciones de cada componente
+Relación con las demás instalaciones del edificio
+
+
+Memorias técnicas que incluyan:
+
+Especificación de materiales a utilizar
+Cumplimiento de requisitos mínimos establecidos
+Sistemas de protección, tierra y compatibilidad electromagnética
+
+
+Identificación clara en planos y memorias de:
+
+Características técnicas de los elementos
+Grados de protección (IP, IK)
+Instalaciones eléctricas y de iluminación
+Sistemas de ventilación
+
+
+
+Integración con el Módulo de Cálculos Técnicos de CONSTRU
+La normativa NEC-SB-TE sobre Infraestructura Civil Común de Telecomunicaciones complementa las normativas estructurales previas (NEC-SE-DS y NEC-SE-CG) añadiendo requisitos específicos para instalaciones de telecomunicaciones que deben considerarse en el diseño integral de edificaciones.
+Para integrar esto en el flujo de trabajo de la aplicación CONSTRU, se recomienda:
+
+Crear un nuevo submódulo específico para ICCT dentro del módulo de Cálculos Técnicos
+Implementar calculadoras automáticas para:
+
+Dimensionamiento de cuartos técnicos según número de pisos/viviendas
+Cálculo de elementos necesarios según tipo de edificación
+Verificación de cumplimiento de distancias y separaciones mínimas
+
+
+Desarrollar herramientas de verificación que permitan:
+
+Validar que los diseños cumplen con las dimensiones mínimas
+Comprobar que se respetan las separaciones con otras instalaciones
+Verificar la conformidad general con la normativa
+
+
+Implementar sistema de reportes que genere:
+
+Memorias técnicas automáticas de cumplimiento normativo
+Listas de materiales con especificaciones requeridas
+Esquemas gráficos de disposición de elementos
+
+
+
+Este enfoque permitirá que los profesionales utilicen CONSTRU para diseñar edificaciones que cumplan integralmente con los aspectos estructurales y también con los requisitos para instalaciones de telecomunicaciones, facilitando la obtención de aprobaciones y garantizando infraestructuras adecuadas para los servicios modernos de telecomunicaciones.

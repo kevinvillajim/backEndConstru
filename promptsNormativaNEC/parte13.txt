@@ -1,0 +1,409 @@
+ANÁLISIS NORMATIVO NEC PARA MÓDULO DE CÁLCULOS TÉCNICOS - APP CONSTRU
+1. FÓRMULAS MATEMÁTICAS PARA IMPLEMENTACIÓN
+1.1 Propiedades de los Materiales
+1.1.1 Hormigón
+
+Módulo de elasticidad para cálculos estáticos:
+Ec [GPa] = 1.15 * (Ea)^(1/3) * (f'c)^(1/2)
+Donde:
+
+Ec: Módulo de elasticidad del hormigón (GPa)
+Ea: Módulo de elasticidad del agregado (GPa)
+f'c: Resistencia a la compresión del hormigón (MPa)
+
+
+Módulo de elasticidad para análisis sísmico:
+Ec [GPa] = 4.7 * √(f'c)
+
+
+1.1.2 Acero
+
+Es = 200000 MPa (Módulo de elasticidad del acero)
+fy = Resistencia a la fluencia (fy ≤ 550 MPa para cálculos de diseño)
+
+1.2 Diseño Sísmico para Viviendas
+
+Cortante basal:
+V = Z * C * W / R
+Donde:
+
+Z: Factor de zona sísmica
+C: Coeficiente de respuesta sísmica
+
+2.4 para Costa y Galápagos
+3.0 para Sierra y Oriente
+
+
+W: Peso sísmico efectivo (carga muerta total)
+R: Factor de reducción de resistencia sísmica
+
+3.0 para pórticos de hormigón armado con secciones menores a NEC-SE-HM
+2.5 para pórticos con armadura electrosoldada de alta resistencia
+
+
+
+
+
+1.3 Diseño a Flexión
+
+Acero de refuerzo requerido:
+As = (0.85 * f'c * b * d / fy) * [1 - √(1 - 2 * Mu / (0.85 * φ * f'c * b * d²))]
+Donde:
+
+φ = 0.9 para flexión
+b = ancho de la sección
+d = altura efectiva
+
+
+Acero mínimo (el mayor de):
+Asmín = 1.4 * b * d / fy
+Asmín = 0.333 * √f'c * b * d / fy
+
+Cuantía máxima para zonas sísmicas:
+ρmax = 0.5 * ρb
+ρb = 0.85 * β1 * f'c / fy * 0.003 / (0.003 + fy/Es)
+
+β1 = 0.85 para f'c ≤ 28 MPa
+β1 = 0.85 - 0.05(f'c - 28)/7 para f'c > 28 MPa, con β1 ≥ 0.65
+
+
+Acero por temperatura:
+Astemp = 0.0018 * b * h
+
+
+1.4 Diseño a Corte
+
+Resistencia nominal al cortante:
+Vn = Vc + Vs
+Vc = 0.17 * √f'c * b * d [MPa]
+Vs = Av * fy * d / s
+Donde:
+
+Av = área de refuerzo transversal
+s = espaciamiento del refuerzo transversal
+
+
+Corte por capacidad (hiperestático):
+Vp = (Mi- + Mj+ + Mi+ + Mj-) / L
+Donde:
+
+Mi-, Mj+, Mi+, Mj-: Momentos resistentes en los extremos de la viga
+L: Luz libre de la viga
+
+
+Corte último:
+Vu = Vp + Va
+
+Si Vp ≥ 0.50Vu, entonces Vc = 0
+
+
+
+1.5 Diseño a Torsión
+
+Umbral de torsión:
+Tth = Tcr / 4
+Tcr = 0.33 * λ * √f'c * (Acp²/Pcp)
+Donde:
+
+λ = 1.0 (hormigón de peso normal)
+Acp = área encerrada por el perímetro exterior
+Pcp = perímetro exterior
+Si Tu ≤ φTth, se puede despreciar la torsión
+
+
+
+1.6 Diseño a Flexo-Compresión
+
+Verificación de esbeltez:
+KLu/r ≤ 22 (pórticos arriostrados)
+KLu/r ≤ 35 (pórticos no arriostrados)
+
+r = 0.3h para secciones rectangulares
+
+
+Factor de amplificación de momentos:
+δb = Cm / (1 - Pu/(0.75*Pc))
+Cm = 0.6 + 0.4 * M1/M2 ≥ 0.4
+
+M1/M2 negativo para curvatura simple, positivo para doble curvatura
+
+
+Confinamiento en columnas:
+Lo = max(Lu/6, máxima dimensión de sección, 450 mm)
+s = min(dimensión mínima/4, 6*db, s0)
+s0 = 100 + (350 - hx)/3
+
+Área de refuerzo transversal:
+Ash = max(0.3*s*bc*f'c/fyt * (Ag/Ach - 1), 0.09*s*bc*f'c/fyt)
+
+Verificación columna fuerte - viga débil:
+ΣMnc ≥ 1.2 * ΣMnb
+
+
+1.7 Diseño de Cimentaciones
+
+Excentricidad:
+e = M / P
+
+Esfuerzos en el suelo:
+qmax = P/A * (1 + 6*e/B)
+qmin = P/A * (1 - 6*e/B)
+
+Si e < B/6: distribución trapezoidal
+Si e > B/6: distribución triangular
+
+
+Corte unidireccional:
+vcu = 0.17 * √f'c [MPa]
+vuu = Vuu / Au
+
+Sección crítica a distancia 'd' de la cara de la columna
+
+
+Corte bidireccional (punzonamiento):
+vcb = min(0.33*√f'c, 0.17*(1+2/β)*√f'c, 0.083*(2+αs*d/bo)*√f'c) [MPa]
+Donde:
+
+β = relación lado largo a lado corto de la columna
+αs = 40 para columnas interiores, 30 para borde, 20 para esquina
+
+
+
+1.8 Diseño de Mampostería Armada
+
+Módulo de elasticidad:
+Em = 750 * f'm [MPa]
+
+Módulo de corte:
+Gm = 0.4 * Em [MPa]
+
+Resistencia a compresión efectiva (con esbeltez):
+Pa = [1-(h/42t)³]*0.80*f'm*Ae [para h/t ≤ 30]
+Pa = [0.80*f'm*Ae]/(h/t) [para h/t > 30]
+
+Resistencia a cortante:
+Vnm = 0.42 * √f'm * Amv [MPa]
+Vns = Av * fy * d / s
+
+
+1.9 Diseño de Muros de Contención
+
+Empuje activo:
+Ea = 0.5 * ka * γs * y²
+ka = (1 - sen φ) / (1 + sen φ)
+
+Factores de seguridad:
+FSvolcamiento = Momento resistente / Momento volcante ≥ 1.5
+FSdeslizamiento = μ*W / Eah ≥ 1.5
+
+
+2. TABLAS DE VALORES Y COEFICIENTES
+2.1 Coeficientes de respuesta sísmica
+Zona geográficaCCosta y Galápagos2.4Sierra y Oriente3.0
+2.2 Sistemas estructurales de vivienda resistentes a cargas sísmicas
+Sistema estructuralMaterialesRLimitación en altura (pisos)Pórticos resistentes a momentoHormigón armado con secciones menores a NEC-SE-HM3.02(b)Pórticos resistentes a momentoHormigón armado con armadura electrosoldada2.52
+(b): Si tienen más de 2 pisos y luces > 3.50m, aplicar NEC-SE-DS, NEC-SE-HM, NEC-SE-AC, NEC-SE-MP
+2.3 Dimensiones mínimas para viviendas con pórticos de hormigón y losas
+PisosElementoLuz máx. (m)Altura máx. entrepiso (m)Sección mín. (cm×cm)Cuantía long. mín.Refuerzo transversal mín.1Columnas4.02.5020×20 (a)1%Ø8mm @ 10cm1Vigas4.02.5015×20 (b)14/fy sup. y inf.Ø8mm @ 5cm en L/4 (extremos) y 10cm (centro)2Columnas4.02.50P1: 25×25, P2: 20×201%Ø8mm @ 10cm2Vigas4.02.5020×20 (b)14/fy sup. y inf.Ø8mm @ 5cm en L/4 (extremos) y 10cm (centro)
+(a): 40% mínimo de columnas en cada dirección ortogonal
+(b): Para vigas banda
+2.4 Dimensiones y refuerzos mínimos de cimentación corrida
+Cimentación corridaUn pisoDos pisosResistencia mínimaAcero: fy=420MPa, Hormigón: f'c=18MPaAncho250mm300mmAltura200mm300mmAcero longitudinal4Ø10mm4Ø12mmEstribosØ8mm @ 200mmØ8mm @ 200mmAcero para anclaje de murosØ10mmØ10mm
+2.5 Combinaciones de carga (NEC-SE-CG)
+CombinaciónFórmula11.4D21.2D + 1.6L + 0.5max[Lr;S;R]31.2D + 1.6max[Lr;S;R] + max[L;0.5W]41.2D + 1.0W + L + 0.5max[Lr;S;R]51.2D + 1.0E + L + 0.2S60.9D + 1.0W70.9D + 1.0E
+2.6 Factores de reducción de resistencia (φ)
+CondiciónFactor φFlexión0.9Cortante0.75Torsión0.75Compresión (estribos)0.65Compresión (espiral)0.75Aplastamiento0.65
+3. PARÁMETROS DE DISEÑO Y VALORES LÍMITE
+3.1 Hormigón Armado
+
+Resistencia mínima hormigón normal: f'c = 21MPa (214kg/cm²)
+Resistencia máxima hormigón liviano: f'c = 35MPa (357kg/cm²)
+Resistencia a la fluencia del acero: fy ≤ 550MPa
+√f'c para cálculos de cortante: no debe exceder 8.3MPa
+
+3.2 Requisitos para elementos a flexión
+
+Ancho mínimo: 250mm
+Luz libre > 4 veces altura efectiva
+Cuantía máxima: ρmax = 0.5ρb
+
+3.3 Requisitos para elementos en flexo-compresión
+
+Fuerzas axiales > 0.1f'c·Ag
+Dimensión menor/dimensión ortogonal > 0.40
+Dimensión mínima: 300mm
+Cuantía longitudinal: 1% ≤ ρ ≤ 6%
+
+3.4 Requisitos para confinamiento
+
+Longitud Lo: ≥ max(Lu/6, dimensión máxima, 450mm)
+Separación en Lo: ≤ min(dimensión mínima/4, 6db, s0)
+s0 ≤ 150mm, s0 ≥ 100mm
+Separación fuera de Lo: ≤ min(6db, 150mm)
+
+3.5 Configuración estructural
+
+Relación largo/ancho ≤ 4
+Dimensión máxima ≤ 30m
+Aberturas ≤ 50% del área total
+Cada abertura ≤ 25% del área total
+
+3.6 Juntas constructivas
+
+Espesor mínimo: 2.5cm
+Requeridas cuando:
+
+Relación longitud/ancho > 4:1
+Pendiente del terreno > 30%
+Dimensión mayor > 30m
+Desnivel > 400mm
+Cambio significativo en calidad del suelo
+Diferencia en niveles entre edificaciones contiguas
+
+
+
+3.7 Mampostería
+
+Índice densidad muros: d% ≥ 1.5% (área muros/área planta)
+Espesor máximo de junta: 20mm
+Resistencia mínima bloques para mampostería armada: f'b = 7MPa
+Resistencia mínima bloques para mampostería confinada: f'b = 10MPa
+Área mínima sección elementos confinantes: 200cm²
+
+3.8 Cimentaciones y Muros de Contención
+
+Factores de seguridad:
+
+Volcamiento ≥ 1.5
+Deslizamiento ≥ 1.5
+
+
+Excentricidad para distribución trapezoidal: e < B/6
+
+4. RECOMENDACIONES PARA MANUAL DE BOLSILLO
+4.1 Verificaciones Generales
+
+Verificar limitaciones de altura y luz para viviendas (≤ 2 pisos, luces ≤ 5m)
+Comprobar altura máxima (6m para cubierta plana, 8m para cubierta inclinada)
+Asegurar altura máxima entrepiso ≤ 3m
+Verificar continuidad vertical de elementos estructurales
+Comprobar regularidad en planta (relación largo/ancho ≤ 4)
+Evaluar necesidad de juntas constructivas
+
+4.2 Diseño de Pórticos
+
+Dimensión mínima columnas: según tabla 2.3
+Orientación columnas: 40% mínimo en cada dirección
+Cuantía longitudinal mínima: 1%
+Verificar refuerzo transversal mínimo
+Comprobar condición columna fuerte - viga débil
+Considerar efectos de esbeltez según criterios normativos
+
+4.3 Diseño de Elementos Estructurales
+
+Diseñar por capacidad para corte en vigas
+Considerar momentos reversibles en apoyos
+Verificar confinamiento especial en zonas críticas
+Calcular refuerzo por temperatura según requerimientos
+
+4.4 Diseño de Mampostería
+
+Verificar densidad mínima de muros en cada dirección (≥ 1.5%)
+Asegurar resistencia mínima de materiales
+Verificar separaciones máximas del refuerzo
+Comprobar proporciones h/t para esbeltez
+
+4.5 Diseño de Cimentaciones
+
+Verificar dimensiones y refuerzos mínimos
+Comprobar corte unidireccional y bidireccional
+Verificar longitudes de desarrollo para refuerzo
+Evaluar presiones sobre el suelo en diferentes combinaciones
+
+4.6 Proceso Constructivo
+
+Control de calidad para hormigón (ensayos requeridos)
+Verificación de armaduras (posición, recubrimiento)
+Curado adecuado del hormigón (≥ 7 días)
+Separación y traslape adecuado de refuerzo
+
+5. REQUISITOS DE DOCUMENTACIÓN TÉCNICA
+5.1 Planos Estructurales
+
+Especificación de materiales (resistencias, tipos)
+Detalles geométricos y dimensiones de elementos
+Despiece de armaduras (diámetros, separaciones, longitudes)
+Ubicación de juntas constructivas
+Detalles de conexiones y elementos especiales
+Detalles de confinamiento en columnas y nudos
+
+5.2 Memoria de Cálculo
+
+Análisis de cargas gravitacionales y sísmicas
+Cálculo del cortante basal
+Verificación de resistencia lateral (Vbase ≤ VMR)
+Diseño a flexión y corte de elementos principales
+Verificación de condición columna fuerte - viga débil
+Diseño de cimentaciones
+Verificación de efectos de esbeltez cuando aplique
+
+5.3 Especificaciones Técnicas
+
+Características detalladas de materiales
+Procesos constructivos recomendados
+Mecanismos de control de calidad
+Requisitos de durabilidad según zona de exposición
+Recubrimientos mínimos según elemento y ambiente
+
+INTEGRACIÓN DE NORMATIVA EN EL MÓDULO DE CÁLCULOS TÉCNICOS
+La normativa analizada complementa la información ya extraída de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas) al proporcionar:
+
+Parámetros específicos para viviendas de 1 y 2 pisos, lo que permite implementar calculadoras específicas para este tipo de edificaciones de manera simplificada.
+Criterios de diseño detallados para diferentes sistemas constructivos (pórticos de hormigón armado, mampostería armada y mampostería confinada), ampliando la capacidad de la aplicación para abordar diversos métodos constructivos.
+Fórmulas, tablas y procedimientos de diseño estructural que se adaptan a la normativa ecuatoriana, permitiendo cálculos precisos y conformes a la NEC-2015.
+
+Flujo de Cálculo Propuesto para la App CONSTRU
+Para integrar eficientemente estas normativas, se recomienda el siguiente flujo de cálculo:
+
+Módulo de definición del proyecto:
+
+Tipo de edificación y uso
+Ubicación geográfica (define zona sísmica)
+Sistema estructural a emplear
+Número de pisos y alturas
+
+
+Módulo de pre-dimensionamiento:
+
+Luces de vigas y dimensiones en planta
+Cálculo de secciones mínimas según tablas
+Verificación de relaciones y limitaciones geométricas
+
+
+Módulo de análisis de cargas:
+
+Cálculo de cargas gravitacionales
+Determinación del cortante basal
+Distribución de fuerzas sísmicas
+
+
+Módulo de diseño estructural:
+
+Diseño a flexión de vigas
+Diseño a cortante por capacidad
+Diseño de columnas (considerando flexo-compresión)
+Verificación columna fuerte - viga débil
+Diseño de muros de mampostería cuando aplique
+Diseño de cimentaciones
+
+
+Módulo de verificación y documentación:
+
+Lista de verificación de requisitos normativos
+Generación de resumen de cálculos
+Exportación de resultados para documentación técnica
+
+
+
+Esta estructura permitirá que el usuario pueda realizar un diseño estructural completo y conforme a la normativa ecuatoriana, con opciones adaptadas específicamente para viviendas pequeñas, que constituyen la mayor parte de las construcciones en Ecuador.
+La app CONSTRU, al implementar este módulo de cálculos técnicos basado en la NEC-2015, se convertirá en una herramienta valiosa para profesionales de la construcción, facilitando la implementación correcta de la normativa vigente y contribuyendo a mejorar la calidad y seguridad de las edificaciones en el país.

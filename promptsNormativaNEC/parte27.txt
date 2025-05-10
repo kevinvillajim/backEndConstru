@@ -1,0 +1,166 @@
+Análisis Normativo NEC-SB-IG: Instalaciones de Gases Combustibles
+He analizado el documento NEC-SB-IG sobre "Instalaciones de Gases Combustibles para Uso Residencial, Comercial e Industrial" y a continuación presento la extracción sistemática de los elementos solicitados.
+1. Fórmulas Matemáticas
+El documento NEC-SB-IG no presenta fórmulas matemáticas explícitas para cálculos técnicos. Esta normativa se enfoca principalmente en requisitos técnicos, disposiciones de seguridad y normativas para instalaciones de gases combustibles, sin incluir ecuaciones específicas para dimensionamiento o cálculo.
+2. Tablas de Valores, Coeficientes y Factores
+Si bien el documento no contiene tablas formales con valores numéricos, se identifican los siguientes parámetros importantes que deben organizarse en tablas para la aplicación:
+ParámetroValorReferenciaCapacidades nominales de cilindros GLP11-110 dm³ (5 kg, 10 kg, 15 kg y 45 kg)2.1.1.1Área mínima efectiva de ventilación200 cm² (directa superior e inferior)2.1.1.1.1Ubicación ventilación inferiorMáximo a 15 cm del piso2.1.1.1.1Ubicación ventilación superiorMenor o igual a 40 cm del techo2.1.1.1.1Capacidad máxima por unidad habitacionalTres cilindros de 15 kg (total 45 kg)2.1.1.1.1Capacidad máxima en edificaciones verticales residenciales180 kg2.1.1.1.1Longitud máxima de mangueras2 m2.1.1.1.2
+3. Parámetros de Diseño y Valores Límite
+Los parámetros de diseño y valores límite que deben verificarse son:
+
+Ubicación de cilindros:
+
+Edificaciones nuevas: cilindros al exterior obligatoriamente
+Remodelaciones: se permite un solo cilindro al interior con ventilación adecuada previa autorización
+
+
+Limitaciones de capacidad:
+
+Máximo tres cilindros de 15 kg por unidad habitacional (45 kg total)
+Capacidad máxima en edificaciones verticales residenciales: 180 kg
+
+
+Requisitos para mangueras:
+
+Longitud máxima: 2 m
+No deben extenderse entre áreas habitables
+No deben estar empotradas en paredes, techos o pisos
+
+
+Instalación de calefones:
+
+Ubicación: al exterior de la edificación con ventilación directa
+Cuando el calefón se ubique sobre el cilindro: división fija de material incombustible
+
+
+Reguladores:
+
+Obligatorio intercalar un regulador de presión entre cilindros y aparatos
+
+
+
+4. Recomendaciones para Manual de Bolsillo
+Las siguientes recomendaciones clave deben incluirse en el manual de bolsillo de la app:
+
+Ubicación de cilindros:
+
+Edificaciones nuevas: siempre al exterior
+Remodelaciones: preferentemente al exterior; si es interior, un solo cilindro con ventilación adecuada
+
+
+Ventilación:
+
+Área mínima: 200 cm²
+Ventilación inferior: máximo a 15 cm del piso
+Ventilación superior: máximo a 40 cm del techo
+
+
+Capacidades máximas permitidas:
+
+Por unidad habitacional: 45 kg (tres cilindros de 15 kg)
+Edificaciones verticales residenciales: 180 kg total
+
+
+Conexiones y mangueras:
+
+Longitud máxima: 2 m
+Para distancias mayores: usar tubería según NTE INEN 2260
+No extender entre áreas habitables
+No empotrar en estructuras
+
+
+Instalación de calefones:
+
+Ubicar al exterior con ventilación directa
+Separar de cilindros con material incombustible
+
+
+Regulación:
+
+Utilizar siempre regulador de presión entre cilindro y aparato
+Debe cumplir NTE INEN 1682
+
+
+
+5. Requisitos de Documentación Técnica
+El documento establece los siguientes requisitos de documentación:
+
+Permisos previos:
+
+Permiso de factibilidad del Cuerpo de Bomberos antes de la implantación
+Certificado definitivo del Cuerpo de Bomberos antes del suministro de gas
+
+
+Responsabilidades documentales del propietario/administrador:
+
+Mantener registros de medidas de seguridad
+Documentar mantenimientos y modificaciones
+Tramitar permisos de operación, cambios y ampliaciones
+
+
+Lista de verificación (según Apéndice 2):
+
+Planos aprobados
+Pruebas de presión
+Certificados y actas de instalación
+Documentación específica para cada componente (almacenamiento, regulación, tuberías, etc.)
+
+
+
+Integración en el Módulo de Cálculos de la App CONSTRU
+Este capítulo NEC-SB-IG complementa los análisis previos de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas) añadiendo los requisitos de seguridad para instalaciones de gases combustibles, un componente crítico en la construcción.
+Propuesta de Implementación
+
+Submódulo de Verificación de Instalaciones de Gas:
+
+Implementar la lista de verificación interactiva basada en el Apéndice 2
+Generar automáticamente informes de cumplimiento normativo
+
+
+Calculadora de Ventilación:
+
+Calcular dimensiones de aberturas según volumen del espacio y cantidad de gas
+Verificar cumplimiento del mínimo de 200 cm² y ubicaciones correctas
+
+
+Verificador de Capacidades:
+
+Calcular y validar si la cantidad planificada cumple con límites normativos
+Alertar cuando se excedan capacidades máximas permitidas
+
+
+Generador de Diagrama de Instalación:
+
+Crear representación visual basada en el Apéndice 1
+Mostrar componentes necesarios según tipo de instalación
+
+
+Asistente de Documentación:
+
+Generar automáticamente la documentación requerida para trámites
+Incluir listas de verificación precompletadas
+
+
+
+Flujo de Trabajo Integrado
+El flujo de trabajo en la aplicación podría estructurarse de la siguiente manera:
+
+Diseño estructural (basado en NEC-SE-DS y NEC-SE-CG)
+Cálculo de cargas (basado en NEC-SE-CG)
+Diseño de instalaciones de gas (basado en NEC-SB-IG):
+
+Selección del tipo de instalación
+Verificación de capacidades y ubicaciones
+Cálculo de ventilaciones requeridas
+Validación de distancias de seguridad
+
+
+Generación de documentación técnica:
+
+Planos de instalación
+Memoria técnica
+Lista de verificación de cumplimiento
+
+
+
+Esta implementación permitirá a los profesionales realizar un diseño integral que cumpla con todos los aspectos de la normativa ecuatoriana, mejorando la seguridad y calidad de las edificaciones, manteniendo la filosofía de la app CONSTRU de "mantener las cosas simples, modulares y funcionales".

@@ -1,0 +1,258 @@
+Análisis del Documento NEC-SE-GC (Geotecnia y Cimentaciones) para App CONSTRU
+A continuación presento un análisis estructurado de la normativa NEC-SE-GC para su implementación en el módulo de cálculos técnicos de la app CONSTRU.
+1. Fórmulas Matemáticas a Implementar
+Clasificación de cimentaciones
+
+Cimentaciones superficiales:
+Df/B ≤ 4
+
+Cimentaciones profundas:
+Df/B > 4
+Donde:
+
+Df: Profundidad de desplante
+B: Ancho de la cimentación
+
+
+
+Criterios de Estabilidad y Resistencia
+
+Factor de seguridad por corte:
+FScorte = τf/τA
+Donde:
+
+τf: Esfuerzo cortante a la falla
+τA: Esfuerzo cortante actuante
+
+
+Modelo de falla de Mohr-Coulomb:
+τf = c' + σ' tan φ'
+Donde:
+
+c': Cohesión efectiva
+φ': Ángulo de fricción efectivo
+σ': Esfuerzo normal efectivo (σ' = σ - u)
+σ: Esfuerzo normal total
+u: Presión de poro
+
+
+Esfuerzo cortante actuante:
+τA = (c' + σ' tan φ') / FScorte
+
+Coeficiente sísmico horizontal (para análisis pseudoestáticos):
+kh = 0.6(amax)/g
+Donde:
+
+amax = ZFa
+Z: Factor de zona sísmica (NEC-SE-DS)
+Fa: Coeficiente de amplificación del suelo (NEC-SE-DS)
+
+
+
+Condiciones para Suelos Cohesivos (Arcillas)
+
+Resistencia no drenada:
+c = cohesión total = Cu = Su = resistencia no drenada
+φ = ángulo de fricción aparente = 0.0
+τf = Cu = Su
+τA = Su/FScorte
+
+Factor de seguridad para evitar reptación no drenada:
+Para τA/Su < 75% → FScorte > 1.33
+
+
+Capacidad de Carga
+
+Capacidad de carga última de pilotes:
+Qult = Qs + Qt = ∑fs,iAs,i + qt·At
+Donde:
+
+Qs: Capacidad última por fuste
+Qt: Capacidad última de punta
+At: Área de la punta del pilote
+As,i: Área del fuste del pilote i (perimetral)
+fs,i: Resistencia unitaria de fuste i
+qt: Resistencia unitaria de punta
+
+
+Capacidad de carga admisible:
+qadm = qunet/FS
+
+Capacidad de carga admisible con excavación:
+qadm = qnet/FS + qob
+Donde:
+
+qnet: Capacidad de carga neta (qnet = qu - qob)
+qu: Capacidad de carga última
+qob: Esfuerzo geoestático removido a nivel del desplante
+FS: Factor de Seguridad (Tabla 6)
+
+
+
+2. Tablas de Valores, Coeficientes y Factores
+Clasificación de Unidades de Construcción
+ClasificaciónSegún los niveles de construcciónSegún las cargas máximas de servicio en columnas (kN)BajaHasta 3 nivelesMenores de 800MediaEntre 4 y 10 nivelesEntre 801 y 4 000AltaEntre 11 y 20 nivelesEntre 4 001 y 8 000EspecialMayor de 20 nivelesMayores de 8 000
+Número Mínimo de Sondeos y Profundidad
+CATEGORÍA DE LA UNIDAD DE CONSTRUCCIÓN-BajaProfundidad Mínima de sondeos: 6 m. Número mínimo de sondeos: 3MediaProfundidad Mínima de sondeos: 15 m. Número mínimo de sondeos: 4AltaProfundidad Mínima de sondeos: 25 m. Número mínimo de sondeos: 4EspecialProfundidad Mínima de sondeos: 30 m. Número mínimo de sondeos: 5
+Profundidad Mínima de Sondeos por Tipo de Cimentación
+Tipo de obra civil subterráneaProfundidad de los sondeosLosa corrida1.5 veces el anchoZapata2.5 veces el ancho de la zapata de mayor dimensiónPilotesLongitud total del pilote más largo, más 4 veces el diámetro del piloteGrupos de pilotes• Longitud total del pilote más largo, más 2 veces el ancho del grupo de pilotes<br>• 2.5 veces el ancho del cabezal de mayor dimensiónExcavacionesMínimo 1.5 veces la profundidad de excavación a menos que el criterio del ingeniero geotécnico señale una profundidad mayor según requerimiento del tipo de sueloCaso particular: roca firmeEn los casos donde se encuentre roca firme, o aglomerados rocosos o capas de suelos firmes asimilables a rocas, a profundidades inferiores a las establecidas, el 50% de los sondeos deberán alcanzar las siguientes penetraciones en material firme, de acuerdo con la categoría de la unidad de construcción:<br>• Categoría Baja: los sondeos pueden suspenderse al llegar a estos materiales;<br>• Categoría Media, penetrar un mínimo de 2 metros en dichos materiales, o dos veces el diámetro de los pilotes en éstos apoyados;<br>• Categoría Alta y Especial, penetrar un mínimo de 4 metros o 2.5 veces el diámetro de pilotes respectivos, siempre y cuando se verifique la continuidad de la capa o la consistencia adecuada de los materiales y su consistencia con el marco geológico local.
+Factores de Seguridad por Corte Mínimos
+CondiciónFScorte MínimoDiseñoCarga Muerta+Carga Viva Nominal1.5Carga Muerta+ Carga Viva Máxima1.25Carga Muerta+ Carga Viva Nominal + Sismo de diseño Pseudo estático1.1Taludes - condición estática y Agua Subterranea Normal1.5Taludes - condición pseudo estática con agua Subterranea Normal y Coeficiente Sísmico de diseño1.05
+Factores de Seguridad Indirectos Mínimos (Estructuras de Contención)
+CONDICIÓNCONSTRUCCIÓNESTÁTICOSISMO PSEUDO ESTÁTICODeslizamiento1.601.60Diseño 1.05Volcamiento: el que resulte más crítico de:Momento Resistente/Momento Actuante≥ 3.00≥ 3.00Diseño ≥ 2.00Excentricidad en el sentido del momento (e/B)≤1/6≤1/6Diseño ≤1/4Capacidad PortanteVer Tabla 6Estabilidad general del sistema:Permanente o de Larga duración (> 6 meses)1.201.50Diseño 1.05Temporal o de Corta duración (< 6 meses)1.201.3050% de Diseño 1.00
+Factores de Seguridad Indirectos Mínimos para Capacidad Portante
+CONDICIÓNF.S.I.M. ADMISIBLECarga Muerta + Carga Viva Normal3.0Carga Muerta + Carga Viva Máxima2.5Carga Muerta + Carga Viva Normal + Sismo de Diseño pseudo estático1.5
+Asentamientos Diferenciales Máximos
+TIPO DE CONSTRUCCIÓNΔmax(a) Edificaciones con muros y acabados susceptibles de dañarse con asentamientos menoresL/1000(b) Edificaciones con muros de carga en concreto o en mamposteríaL/500(c) Edificaciones con pórticos en concreto, sin acabados susceptibles de dañarse con asentamientos menoresL/300(d) Edificaciones en estructura metálica, sin acabados susceptibles de dañarse con asentamientos menoresL/160
+Número Mínimo de Ensayos de Carga en Pilotes
+CATEGORÍAN° DE PRUEBASBaja≥ 1Media≥ 2Alta≥ 3Especial≥ 5
+3. Parámetros de Diseño y Valores Límite
+Criterios para Estados Límite
+
+Estado límite de falla (capacidad de carga):
+
+En excavaciones: Estabilidad de taludes, paredes, sistemas de entibado, construcciones adyacentes.
+En cimentaciones: Capacidad de carga última o resistencia al cortante del suelo.
+
+
+Estado límite de servicio (asentamientos):
+
+En excavaciones: Movimientos verticales y horizontales por descarga.
+En cimentaciones: Asentamientos inmediatos, por consolidación, secundarios y por sismo.
+
+
+
+Asentamientos Totales Permisibles
+
+Para construcciones aisladas: 20 cm.
+Para construcciones entre medianeros: 10 cm.
+(Considerando cargas muertas de servicio y 50% de cargas vivas máximas, en un lapso de 25 años)
+
+Criterios de Verificación de Pilotes
+
+La capacidad estructural debe soportar la carga correspondiente al estado límite de falla.
+Cuando se realicen pruebas dinámicas en campo (High Strain Dynamic pile testing) se deben realizar según la norma ASTM D4945-00.
+Para pruebas de baja deformación (Ensayo Sónico, PIT) se debe realizar según la norma ASTM D5882.
+
+4. Recomendaciones para Manual de Bolsillo
+Clasificación de Suelos
+
+Suelos no cohesivos o granulares (SUCS):
+
+Gravas: GW, GP, GM, GC, GC-GM, GW-GM, GW-GC, GP-GM, GP-GC.
+Arenas: SW, SP, SM, SC, SC-SM, SW-SM, SW-SC, SP-SM, SP-SC, donde ≤30% pasa por tamiz No. 200 y tienen límite líquido wL ≤ 30% e índice plástico IP ≤ 15%.
+
+
+Suelos cohesivos o finos:
+
+Todos aquellos que no cumplan con las condiciones de suelos no cohesivos o granulares.
+
+
+
+Procedimiento General para Diseño de Cimentaciones
+
+Reunir información sobre la estructura propuesta y del sitio.
+Formular especificaciones del desempeño requerido.
+Analizar posibilidades de cimentación y evaluación económica preliminar.
+Investigación de campo y laboratorio.
+Selección del tipo de cimentación.
+Decidir profundidad de cimentación considerando factores que afectan la estabilidad.
+Calcular dimensiones verificando estados límite de falla y servicio.
+Propuesta de diseño y desempeño esperado.
+Construcción y monitoreo.
+
+Ensayos Mínimos Recomendados
+
+Características básicas de suelos:
+
+Peso unitario, humedad natural, límites de Atterberg, clasificación SUCS.
+Resistencia al esfuerzo cortante (compresión simple, triaxial UU, veleta, etc.).
+Compresibilidad (ensayos de consolidación unidimensional).
+
+
+Características básicas de rocas:
+
+Peso unitario, densidad, porosidad.
+Compresión simple o carga puntual.
+Alterabilidad (ensayos de durabilidad).
+
+
+
+5. Requisitos de Documentación Técnica
+Contenido del Estudio Geotécnico Definitivo
+
+Contenido del proyecto: Nombre, localización, objetivo, descripción, sistema estructural, evaluación de cargas.
+Aspectos relativos al subsuelo: Reconocimiento de campo, morfología, origen geológico, características físico-mecánicas, niveles freáticos.
+Aspectos relativos a cada unidad geológica: Identificación, espesor, distribución, parámetros obtenidos.
+Aspectos relativos a los análisis geotécnicos: Análisis y justificación de criterios, problemas constructivos, alternativas, estabilidad.
+Aspectos relativos a las recomendaciones para diseño: Parámetros geotécnicos, tipo de cimentación, profundidad, capacidad portante, asentamientos.
+Recomendaciones para protección de edificaciones vecinas: Cuando sea necesario.
+Recomendaciones para construcción: Sistema constructivo con alternativas técnicamente factibles.
+Anexos: Planos, registros de perforación, resultados de ensayos, perfil geotécnico, memorias de cálculo.
+
+Requisitos Adicionales para Categorías Media, Alta o Especial
+
+Asesoría en diseño: Por ingeniero civil especialista en geotecnia.
+Acompañamiento durante ejecución: Aprobación de niveles de cimentación, procedimientos y comportamiento.
+Acta de vecindad: Documento previo al inicio que registre el estado de edificaciones adyacentes.
+
+Integración en la Aplicación CONSTRU
+La información extraída de la normativa NEC-SE-GC complementa perfectamente los módulos relacionados con NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas), permitiendo desarrollar un flujo de trabajo integral para el cálculo y diseño de cimentaciones dentro de la app CONSTRU.
+Propuesta de Flujo de Implementación:
+
+Módulo de Clasificación del Proyecto:
+
+Interfaz para determinar la categoría (Baja, Media, Alta, Especial) según niveles y cargas.
+Generación automática de requisitos de exploración (número y profundidad de sondeos).
+
+
+Módulo de Caracterización del Suelo:
+
+Formularios para ingreso de resultados de ensayos de campo y laboratorio.
+Clasificación automática del tipo de suelo según SUCS.
+Cálculo de parámetros geotécnicos a partir de correlaciones y ensayos.
+
+
+Módulo de Selección de Cimentación:
+
+Asistente guiado para evaluar opciones de cimentación según condiciones del terreno.
+Cálculo de la relación Df/B para clasificar automáticamente como superficial o profunda.
+
+
+Módulo de Cálculo de Capacidad Portante:
+
+Implementación de fórmulas para diferentes tipos de suelo y cimentación.
+Aplicación automática de factores de seguridad según condición de carga.
+Verificación del estado límite de falla.
+
+
+Módulo de Cálculo de Asentamientos:
+
+Estimación de asentamientos inmediatos, por consolidación y sísmicos.
+Verificación de límites permisibles según tipo de estructura.
+Verificación del estado límite de servicio.
+
+
+Módulo de Diseño Estructural de Cimentaciones:
+
+Diseño de zapatas, losas, pilotes según resultados previos.
+Consideración de interacción suelo-estructura.
+Generación de detalles constructivos.
+
+
+Módulo de Documentación:
+
+Generación automática de informes técnicos según requisitos de la normativa.
+Exportación de memorias de cálculo.
+Lista de verificación de cumplimiento normativo.
+
+
+Módulo de Asistencia en Obra:
+
+Herramientas para el seguimiento durante la construcción.
+Formularios para documentar aprobaciones y observaciones del especialista.
+Registro de modificaciones respecto al diseño original.
+
+
+
+Esta estructura modular asegura la implementación correcta de la normativa NEC-SE-GC en la aplicación CONSTRU, manteniendo la filosofía de simplicidad y funcionalidad destacada en el documento de contexto del proyecto.

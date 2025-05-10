@@ -1,0 +1,120 @@
+Análisis de la Norma NEC-HS-CI: Contra Incendios para Implementación en CONSTRU App
+1. Fórmulas Matemáticas a Implementar
+A diferencia de las normativas estructurales previamente analizadas (NEC-SE-DS y NEC-SE-CG), la normativa NEC-HS-CI no contiene fórmulas matemáticas explícitas. Este documento es principalmente referencial y remite a las normas NFPA específicas para los distintos cálculos y dimensionamientos. La implementación en CONSTRU debería enfocarse en verificar el cumplimiento de los requisitos mínimos basados en parámetros específicos.
+2. Tablas de Valores, Coeficientes y Factores
+El documento no incluye tablas específicas de valores. Los coeficientes y factores necesarios para el diseño de sistemas contra incendios se encuentran en las referencias normativas mencionadas, principalmente en los diferentes documentos NFPA. La aplicación deberá incorporar estas referencias para consulta.
+3. Parámetros de Diseño y Valores Límite a Verificar
+Parámetros para Medios de Egreso
+ParámetroValor LímiteAplicabilidadAltura de edificación≤ 28 metrosUn solo medio de egreso como mínimoAltura de edificación> 28 metrosMínimo dos medios de egresoAltura de edificación> 28 y ≤ 36 metrosPosibilidad de escalera tipo tijera (previa aprobación)Distancia máxima de recorrido de evacuación25 metrosHasta una salida de planta
+Clasificación de Ocupaciones (Según NFPA 101, Cap. 6)
+
+Reuniones Públicas (≥ 50 personas)
+Educacionales (≥ 6 personas, ≥ 4 horas diarias o ≥ 12 horas semanales)
+Guarderías (≥ 4 clientes, < 24 horas diarias)
+Cuidado de la Salud (≥ 4 pacientes en régimen de internación)
+Cuidado de la Salud de Pacientes Ambulatorios
+Detención y Correccional
+Residencial y Alojamiento (subcategorías: unifamiliar/bifamiliar, pensiones, hoteles, hostales/dormitorios, edificios de apartamentos)
+Asilos y Centros de Acogidas Residenciales (≥ 4 residentes)
+Mercantil/Comercial
+Negocios/Oficinas/Servicios
+Industrial/Manufactura
+Almacenamiento
+Ocupaciones Múltiples
+Parqueaderos
+Otras ocupaciones
+
+4. Recomendaciones Específicas para Manual de Bolsillo
+Definiciones Clave
+
+Medios de egreso: Recorrido continuo desde cualquier punto hasta una vía pública, consistente en: (1) acceso a salida, (2) salida, y (3) descarga de salida.
+
+Requisitos Generales
+
+Todo sistema contra incendios debe proporcionar un ambiente razonablemente seguro considerando:
+
+Mejoramiento de supervivencia de ocupantes relacionados con el desarrollo inicial del fuego
+Protección de ocupantes no relacionados con la zona de iniciación
+Equipamiento adecuado según niveles de seguridad NFPA 101
+
+
+Para parqueaderos se debe cumplir NFPA 101 y NFPA 88A
+Sistemas de prueba y mantenimiento:
+
+Sistemas deben ser probados individualmente según normas correspondientes
+Pruebas integradas conforme a NFPA 4
+Plan de inspección, prueba y mantenimiento según NFPA 25
+
+
+
+Criterios para Materiales
+
+Se permiten tuberías plásticas de PVC, PVC-O y PE para servicio privado de incendios en instalaciones enterradas (NFPA 24 y NTE INEN 3083)
+Se permiten tuberías y accesorios de CPVC para rociadores automáticos en edificaciones de riesgo leve (NFPA 13, 13R, 13D y NTE INEN 3131)
+
+5. Requisitos de Documentación Técnica
+Responsabilidades
+
+Proyectista: Responsable del diseño del sistema contra incendios
+Constructor: Responsable de la correcta instalación
+GAD municipal/metropolitano: Responsable de:
+
+Revisión y aprobación del diseño previo a construcción
+Inspección periódica del funcionamiento
+Definición de procedimientos para aplicación de regulaciones
+
+
+Propietario/administrador/usuario: Responsables del correcto funcionamiento y mantenimiento
+
+Referencias Normativas Principales
+
+NFPA 101: Código de Seguridad Humana
+NFPA 1: Código de prevención de incendios
+NFPA 4: Pruebas integradas de sistemas
+NFPA 10: Extintores Portátiles
+NFPA 13: Instalación de Sistemas de Rociadores
+NFPA 14: Instalación de sistemas de tuberías verticales y mangueras
+NFPA 15: Sistemas fijos aspersores de agua
+NFPA 20: Instalación de bombas estacionarias
+NFPA 24: Instalación de tuberías para servicio privado de incendios
+NFPA 25: Inspección, prueba y mantenimiento
+NFPA 72: Código Nacional de Alarmas
+NFPA 88A: Estructuras de Estacionamientos
+NTE INEN 3083, 3131 e ISO 13943
+
+Integración en el Flujo de Trabajo de CONSTRU App
+Propuesta de Implementación
+La normativa NEC-HS-CI difiere significativamente de las normativas estructurales analizadas previamente. Mientras las normas sísmicas y de cargas contienen numerosos cálculos y fórmulas específicas, esta normativa contra incendios es principalmente referencial. Para su integración efectiva en CONSTRU, se recomienda:
+
+Módulo de Verificación de Cumplimiento:
+
+Implementar un sistema de chequeo basado en los parámetros de diseño (altura de edificación, distancias de recorrido, etc.)
+Incorporar clasificación de ocupaciones según NFPA 101 para determinar requisitos aplicables
+
+
+Sistema de Referencias Cruzadas:
+
+Crear una biblioteca digital de consulta que enlace a las normativas NFPA específicas
+Implementar un mecanismo para actualizar esta biblioteca cuando las normas cambien
+
+
+Lista de Verificación por Tipo de Edificación:
+
+Generar automáticamente requisitos mínimos basados en la clasificación de ocupación
+Crear informes de cumplimiento para presentación ante autoridades competentes
+
+
+Integración con Módulos Existentes:
+
+Vincular con el módulo de cálculos estructurales para facilitar el diseño integral
+Compartir datos de proyecto entre módulos (dimensiones, materiales, etc.)
+
+
+Asistente de Diseño:
+
+Proporcionar recomendaciones de diseño basadas en los requisitos identificados
+Generar automáticamente especificaciones para sistemas contra incendios
+
+
+
+Esta implementación complementará los módulos estructurales ya analizados, proporcionando una solución integral que abarca tanto aspectos de resistencia estructural como de seguridad contra incendios, cumpliendo con el objetivo de CONSTRU de mantener "las cosas simples, modulares y funcionales".

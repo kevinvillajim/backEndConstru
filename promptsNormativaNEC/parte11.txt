@@ -1,0 +1,184 @@
+Análisis Normativa NEC para Módulo de Cálculos Técnicos - App CONSTRU
+De acuerdo con los documentos proporcionados, he extraído la información técnica relevante para implementar en el módulo de cálculos de la aplicación CONSTRU, organizados en los cinco aspectos solicitados. Los documentos analizados corresponden a secciones sobre mampostería confinada, Steel Framing (SEL) y reforzamiento de estructuras existentes.
+1. FÓRMULAS MATEMÁTICAS PARA IMPLEMENTACIÓN
+Análisis Sísmico para Mampostería Confinada
+Factor de Área Efectiva (FAE)
+FAE = 1                 ; si H/L ≤ 1.33
+FAE = (1.33·L/H)²       ; si H/L > 1.33
+Donde:
+
+H: Altura libre de la pared
+L: Longitud efectiva del muro
+
+Excentricidad Torsional Estática
+es,j = |∑(Xi·FAE·AT)|/∑(FAE·AT) ≤ 0.1Bj
+Donde:
+
+AT: Área bruta de la sección transversal del muro (m²)
+B: Dimensión en planta del entrepiso, medida paralelamente a la excentricidad
+Xi: Distancia entre centro de cortante y el muro, con signo, ortogonal a dirección de análisis (m)
+
+Fuerza Cortante Resistente
+VR = (∑Am)·vm
+Donde:
+
+∑Am: Suma de áreas transversales de muros en dirección considerada
+vm: Resistencia a cortante de la mampostería
+
+Resistencia a Cortante Global
+VMR = FR·(∑AT)·(0.5vm* + 0.3fa) ≤ 1.5FR·vm*·(∑AT)
+Donde:
+
+FR: Factor de reducción de resistencia = 0.7
+vm*: Resistencia de diseño a compresión diagonal (≤ 1.5kg/cm² o 0.30f'm)
+fa: Esfuerzo por carga axial mínima probable (carga total/áreas de muros)
+
+Resistencias para Elementos de Confinamiento
+Resistencia Nominal a Compresión Axial
+Pnc = 0.80[0.85f'c(Aci-Ast) + fyAst]
+Resistencia Nominal a Tracción Axial
+Pnt = -fyAst
+Resistencia a Compresión de Mampostería (sin confinamiento)
+Pnd = 0.80(0.85f'm)Amd·Re
+Re = 1-[h'/40t]³
+Cálculo de Fuerzas en Elementos de Confinamiento
+Para dos columnas iguales en bordes:
+Puc = Pu/2 + ΔPu
+Put = -Pu/2 + ΔPu ≤ 0
+ΔPu = M/lw
+Caso general (múltiples columnas):
+Puc = Pu·Aci/Act + ΔPui
+Put = Pu·Aci/Act - ΔPui ≤ 0
+ΔPui = M·Aci·(xi-x̄)/Ict
+Act = ∑Aci
+x̄ = ∑(Aci·xi)/Act
+Ict = ∑Aci·(xi-x̄)²
+Verificación por aplastamiento del alma:
+Pud = Vu·h'/lw
+Fuerzas cortantes en elementos de confinamiento:
+En columna: Vuc = Vu·lc/(2·lw)
+En viga: Vuc = Vu·hp/(2·lw)
+Fuerza de tracción en viga de confinamiento:
+Put = -Vu·lc/lw
+2. TABLAS DE VALORES, COEFICIENTES Y FACTORES
+Factores de Reducción de Resistencia (Ø)
+SolicitaciónFactor ØCarga axial de compresión (con/sin flexión)0.70Carga axial de tracción0.90Flexión sin carga axial0.90Cortante0.60
+Límites de Aplicabilidad del Steel Framing (SEL)
+AtributoLimitaciónGENERALDimensiones máximasAncho: 12m, Largo: 18mNiveles máximos2 con baseVelocidad del vientoHasta 210 km/hCategoría sísmicaPGA ≤ 0.4gPISOSPeso propioMáximo 0.5 KN/m²Sobrecarga primer piso2 KN/m²Sobrecarga segundo piso1.5 KN/m²Voladizos60 cmMUROSPeso propio0.5 KN/m²Altura máxima3 mCUBIERTASPeso propio (cubierta+cielo)0.6 KN/m²Recubrimientos0.34 KN/m²Pendiente25-100% general, 25-50% zona sísmicaAlerosFrontal: 30cm, Laterales: 60cm
+Especificaciones Técnicas en Planos Estructurales (Casa Tipo)
+MaterialResistenciafy5000 kg/cm² (acero electrosoldado)f'c210 kg/cm² (hormigón armado y contrapiso)fm100 kg/cm² (mampostería)fms15 kg/cm² (mortero de mampostería)
+3. PARÁMETROS DE DISEÑO Y VALORES LÍMITE
+Para Método Simplificado de Análisis Sísmico
+
+Al menos 75% de cargas gravitacionales soportadas por muros en primera planta
+Relación longitud/ancho de planta ≤ 1:3
+Mínimo dos muros perimetrales paralelos por dirección y piso
+Longitud de cada muro ≥ 50% de dimensión de planta en dirección de análisis
+Excentricidad torsional ≤ 10% de dimensión en planta
+Esfuerzo cortante resistente vm* ≤ 1.5 kg/cm² (0.20 MPa) o 0.30f'm
+
+Para Traslapes y Uniones
+
+Traslapes de barras: ≤ 50% del acero longitudinal en misma sección
+No permitidos traslapes en extremos de columnas de planta baja
+Longitud mínima en piezas huecas: 50db para fy ≤ 412 MPa, 60db para fy mayor
+Ubicación: en tercio medio de altura del muro
+Traslapes mallas electrosoldadas: ≥ 2 veces separación entre alambres + 50mm
+
+Para Sistema Steel Framing (SEL)
+
+Tolerancia máxima entre muro y cimentación: 6.4 mm
+Separación máxima entre miembros estructurales alineados verticalmente: 19 mm
+Separación de vigas y armaduras: no exceder ancho del material de recubrimiento
+
+Para Refuerzo con Mallas Electrosoldadas
+
+Separación máxima de conectores: 450 mm
+Espesor mínimo de mortero: 15 mm (tipo 12.5 MPa/125 Kg/cm²)
+Extensión mínima de malla en bordes: dos veces separación entre alambres verticales
+Para mallas no doblables: refuerzo en C con calibre mínimo 3.5 mm de diámetro
+
+4. RECOMENDACIONES PARA MANUAL DE BOLSILLO
+Método Simplificado de Análisis Sísmico
+
+Verificar cumplimiento de requisitos mínimos
+Calcular excentricidad torsional estática
+Determinar área efectiva de muros considerando factor FAE
+Calcular resistencia a cortante global
+Verificar que resistencia supere demanda sísmica
+
+Construcción de Mampostería Confinada
+
+Construir primero paños de mampostería y luego elementos de confinamiento
+Usar endentado o conectores (chicotes) para trabazón entre mampostería y confinamiento
+Espaciar conectores máximo cada tres hiladas o 60cm
+Empotramiento: 15cm en hormigón, 50cm en pared
+Curar juntas de mampostería con agua
+
+Sistemas de Reforzamiento para Viviendas Existentes
+
+Opciones para rehabilitar:
+
+Enchapado con mallas metálicas/plásticas y mortero
+Encamisado con ferrocemento
+Recubrimiento con materiales plásticos adheridos con resinas
+
+
+Para añadir muros, verificar compatibilidad de rigidez y conexiones
+Para materiales con resinas expuestos al sol, usar protección contra UV
+
+Steel Framing (SEL)
+
+Alinear verticalmente todos los miembros estructurales
+Evitar contacto del entramado con el suelo
+Instalar vigas y armaduras a nivel y verticales
+Reemplazar o reparar miembros dañados según diseño aprobado
+
+5. REQUISITOS DE DOCUMENTACIÓN TÉCNICA
+Para Mampostería Confinada
+
+Planos estructurales con especificaciones de materiales y resistencias básicas
+Detalles mínimos de empalmes:
+
+Encuentro de vigas confinantes en dos direcciones
+Encuentro de viga con losa
+Encuentro de columnas confinantes con vigas confinantes
+
+
+
+Control de Calidad y Ensayos
+
+Para mortero: 3 muestras por cada 500m² de muro (mínimo 1 por piso)
+
+Confeccionar según ASTM C109
+Ensayar 2 cubos a los 28 días
+
+
+Para mampostería: 3 muestras por cada 2500m² de muros
+Criterio de aceptabilidad: X̄-f/se ≥ 0.90
+Mantener archivo de resultados durante obra y 5 años después
+
+Tolerancias para Sistemas Livianos (SEL)
+
+Desplome máximo para muros: ±1.5‰ de altura
+Separación máxima entre muro y cimentación: 6.4mm
+Documentar cualquier modificación a los límites de aplicabilidad
+
+RESUMEN DE INTEGRACIÓN EN FLUJO DE CÁLCULO
+Los documentos analizados complementan significativamente la información previa de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas) al proporcionar:
+
+Métodos específicos de análisis estructural para mampostería confinada, incluyendo un método simplificado que optimiza el proceso para edificaciones de menor complejidad.
+Parámetros para reforzamiento de estructuras existentes, que permiten realizar evaluaciones y cálculos de intervención en construcciones ya existentes.
+Especificaciones para sistemas constructivos livianos (Steel Framing), ampliando las opciones de diseño más allá del hormigón y mampostería tradicional.
+
+Para integrar estos cálculos en la aplicación CONSTRU, se recomienda un flujo de cálculo que:
+
+Comience con la selección del sistema constructivo: Mampostería confinada, Steel Framing, o reforzamiento de estructura existente.
+Verificación de aplicabilidad: Preguntar datos básicos para confirmar si se cumplen los requisitos para método simplificado o si requiere método detallado.
+Entrada de datos geométricos: Dimensiones, número de niveles, distribución de muros.
+Cargas y demanda sísmica: Integrar con cálculos previos de NEC-SE-DS y NEC-SE-CG.
+Cálculo de resistencia estructural: Según el método apropiado para el sistema seleccionado.
+Verificación de resultados: Comparar demanda vs capacidad, mostrar nivel de cumplimiento.
+Generación de documentación: Producir reporte con resultados y recomendaciones específicas.
+
+Esta implementación permitirá a los profesionales de la construcción ecuatorianos realizar cálculos ajustados a la normativa vigente, optimizando tiempo y reduciendo errores, especialmente en el contexto de construcciones pequeñas y medianas que representan gran parte del sector en Ecuador.

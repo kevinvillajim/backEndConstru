@@ -1,0 +1,191 @@
+Análisis de la Normativa NEC-HS-VIDRIO para Implementación en CONSTRU App
+Basado en el análisis del documento NEC-HS-VIDRIO, he extraído sistemáticamente la información necesaria para implementar en el módulo de cálculos técnicos de CONSTRU App, manteniendo total fidelidad a la normativa oficial.
+1. Fórmulas Matemáticas para Implementar
+Cálculo de Espesor Equivalente para Vidrio Laminado
+e = ∛(e₁³ + e₂³)
+Donde:
+
+Si e₁=e₂, entonces e=e₁×1.26
+e₁: Espesor primera lámina (mm)
+e₂: Espesor segunda lámina (mm)
+
+Ancho de Contacto para Cordón de Silicona Estructural
+b = [Pv (kg/m²) × Ic (mm)] / 14000 (kg/m²)
+Donde:
+
+b: Ancho de contacto (mm) ≥ 6 mm
+Pv: Carga de viento de diseño (kg/m²)
+Ic: Mayor lado menor panel (mm)
+
+Deformación (Flecha) del Elemento Vertical en Fachadas
+f = (5 × W × L⁴) / (384 × E × I)
+Donde:
+
+f: Deformación (flecha)
+W: Carga uniformemente repartida
+L: Longitud entre apoyos (mm)
+E: Módulo de elasticidad (710.000 kg/cm²)
+I: Inercia del elemento (cm⁴)
+
+Deformación en Elementos Horizontales (por peso del vidrio)
+f = (Pvi × a / 24 × E × I) × (3L² - 4a²)
+Donde:
+
+Pvi: Peso del vidrio (2.5 kg/m²/mm)
+a: Distancia de extremos al apoyo (L/10)
+E: Módulo de elasticidad (71000.0 MPa)
+I: Inercia del elemento (cm⁴)
+
+Fuerzas Sísmicas en Muros Cortina
+Fuerza horizontal:
+Fh = Qp × Cp × Kd
+Fuerza vertical:
+Fv = 0.67 × (Ao × Pp / g)
+Donde:
+
+Qp: Esfuerzo de corte en la base del elemento
+Cp: Coeficiente sísmico (muro cortina = 2)
+Kd: Factor de desempeño (superior = 1.35; bueno = 1; mínimo = 0.75)
+Ao: Aceleración efectiva máxima del suelo
+Pp: Peso total del elemento secundario
+g: Aceleración de gravedad
+
+Momento de Inercia para Perfilería
+Para lado A:
+Si A>L: IA = (P × L⁵) / (2.4 × 10¹² × E × f)
+Si A≤L: IA = (P × L⁴ × A) / (3.84 × 10¹³ × E × f) × [25 - 40 × (A/2L)² + 16 × (A/2L)⁴]
+Para lado B:
+Si B>L: IB = (P × L⁵) / (2.4 × 10¹² × E × f)
+Si B≤L: IB = (P × L⁴ × B) / (3.84 × 10¹³ × E × f) × [25 - 40 × (B/2L)² + 16 × (B/2L)⁴]
+2. Tablas de Valores y Coeficientes Clave
+Clasificación de Estanquidad al Agua
+Velocidad viento (km/h)Presión viento (Pa)Elemento expuestoElemento protegido75272ECEA1ECEB190391ECEA2ECEB2105532ECEA3ECEB3120695ECEA4ECEB4
+Zonas Pluviométricas y Clasificaciones Exigibles
+Zona PluviométricaPrecipitación anualZona 1≤ 2000 mmZona 2>2000 mm y ≤ 4000 mmZona 3>4000 mm y ≤ 6000 mmZona 4>6000 mm
+Espesores y Tolerancias de Vidrios
+Implementar tabla completa (Tabla 5) con espesores desde 1mm hasta 25mm y sus tolerancias mínimas y máximas.
+Carga para Pisos de Vidrio
+Nivel de SeguridadCarga (kg/m²)AplicaciónSeguridad 1300Departamentos, oficinas, hospitalesSeguridad 2400Teatros, salas de conferencias, comerciosSeguridad 3500Talleres, fábricas, áreas para vehículos
+Configuraciones de Cristal Laminado Recomendadas
+Implementar tabla 10 completa con diferentes configuraciones y áreas máximas para niveles de seguridad S1, S2 y S3.
+3. Parámetros de Diseño y Valores Límite
+Vidrios y Fachadas
+
+Velocidad mínima de viento para cálculo: 75 km/h
+Flecha máxima para vidrios monolíticos/laminados: L/175
+Flecha máxima para vidrio cámara: L/225
+Deformación máxima absoluta: 19 mm
+Deformación residual máxima: 1 mm
+Rango térmico de diseño: 0°C a +80°C
+Coeficiente de dilatación del aluminio: 24×10⁻⁶/°C
+
+Sellos Estructurales
+
+Ancho de contacto mínimo: 6 mm
+Espesor mínimo de línea de pegado: 6 mm
+Tensión de cálculo para silicona: 0.14 MPa (20 psi)
+Capacidad de movimiento: ±12.5%
+
+Seguridad
+
+Altura mínima de pasamanos: 1.07 m
+Altura mínima en lugares públicos con caída >6.10 m: 1.22 m
+Criterio de vidrio en fachadas:
+
+Edificaciones hasta 10m con antepechos <0.80m: vidrio de seguridad
+Edificaciones >10m: vidrio de seguridad en todas las fachadas
+
+
+
+4. Recomendaciones para Manual de Bolsillo
+Proceso de Selección de Vidrio
+
+Determinar valores de transmisión de luz y ganancia solar
+Seleccionar color/aspecto (reflejante o no)
+Verificar coeficiente de transmisión térmica K
+Para áreas de riesgo, elegir vidrio de seguridad (templado/laminado)
+Calcular espesor según presión de viento
+Verificar aislamiento térmico y acústico
+
+Áreas de Riesgo que Requieren Vidrio de Seguridad
+
+Puertas de acceso y lugares de paso
+Paneles laterales que puedan confundirse con accesos (hasta 1.50m)
+Áreas de circulación (<0.90m del acristalamiento y borde inferior <0.50m del piso)
+Vidrios adyacentes a áreas resbaladizas (baños, piscinas)
+Vidrios a menos de 0.80m del piso
+Pasamanos y barandas
+Pisos de vidrio
+Vidrios inclinados (>15° respecto al plano vertical)
+
+Instalación
+
+Colocar calzos a L/10 de cada esquina
+Vidrios monolíticos: cubrir 100% del espesor
+Vidrios laminados o cámara: cubrir al menos 50% del cristal exterior
+Dureza de calzos: entre 85 y 95 Shore A
+
+Materiales y Compatibilidad
+
+Evitar contacto directo entre aluminio y hierro/acero (usar separador de polivinilo)
+Evitar contacto directo del aluminio con cemento, cal o yeso
+Usar selladores estructurales que cumplan ASTM C1184
+Aleaciones de aluminio recomendadas: AA6063-T5, AA6063T6
+
+5. Requisitos de Documentación Técnica
+Documentación para Aprobación
+
+Cálculos de cargas de viento según NEC-SE-CG
+Determinación de espesores y tipos de vidrio
+Planos con detalles de sistemas de sujeción
+Especificaciones de sellado estructural y climático
+Documento de responsabilidad firmado por la empresa instaladora
+Firma del profesional responsable (arquitecto/ingeniero) en todos los documentos
+
+Información Técnica Requerida
+
+Tipo y espesor de vidrio para cada aplicación
+Cálculos estructurales de soporte para fachadas
+Especificación de anclajes y elementos de fijación
+Detalles de juntas de dilatación
+Para vidrio en áreas de riesgo: certificación de cumplimiento de normas INEN 2067
+
+Integración con el Flujo de Trabajo en CONSTRU App
+La implementación de la normativa NEC-HS-VIDRIO complementa perfectamente los módulos existentes sobre cálculos sísmicos (NEC-SE-DS) y cargas no sísmicas (NEC-SE-CG). Propongo el siguiente flujo de trabajo:
+
+Entrada de datos del proyecto:
+
+Ubicación geográfica (para determinar zona pluviométrica y presión de viento)
+Tipo de edificación y altura
+Configuración arquitectónica
+
+
+Cálculo de cargas:
+
+Integración con módulo NEC-SE-CG para determinar presión de viento
+Cálculo de cargas sísmicas para elementos secundarios
+
+
+Selección y verificación de vidrios:
+
+Asistente para selección según características deseadas
+Verificación de espesores según tablas incorporadas
+Cálculo de vidrios laminados y configuraciones especiales
+
+
+Diseño de sistemas de sujeción:
+
+Cálculo de perfiles según geometría y cargas
+Verificación de deformaciones máximas
+Dimensionamiento de sellos estructurales
+
+
+Generación de documentación:
+
+Memorias de cálculo con normativa aplicable
+Especificaciones técnicas según requerimientos
+Lista de verificación para cumplimiento normativo
+
+
+
+Este módulo permitirá a los profesionales de la construcción seleccionar y diseñar correctamente los sistemas de acristalamiento, garantizando seguridad y cumplimiento normativo, mientras mantiene la filosofía de simplicidad y funcionalidad de CONSTRU App.

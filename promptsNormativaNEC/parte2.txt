@@ -1,0 +1,187 @@
+Análisis de Normativa NEC-SE-DS para Módulo de Cálculos Técnicos - CONSTRU App
+Tras analizar los documentos proporcionados de la Norma Ecuatoriana de la Construcción sobre Peligro Sísmico (NEC-SE-DS), he extraído la información técnica necesaria para implementar el módulo de cálculos de la aplicación CONSTRU.
+1. Fórmulas Matemáticas a Implementar
+Cortante Basal de Diseño
+V = (I × Sa(Ta)) / (R × ΦP × ΦE) × W
+Donde:
+
+Sa(Ta): Espectro de diseño en aceleración
+ΦP y ΦE: Coeficientes de configuración en planta y elevación
+I: Coeficiente de importancia
+R: Factor de reducción de resistencia sísmica
+W: Carga sísmica reactiva
+Ta: Período de vibración
+
+Espectro de Diseño Sa
+Para 0 ≤ T ≤ Tc:
+Sa = η × Z × Fa
+Para T > Tc:
+Sa = η × Z × Fa × (Tc/T)^r
+Donde:
+
+η: Razón entre la aceleración espectral y PGA (η=1.80 para provincias de la Costa, excepto Esmeraldas; η=2.48 para provincias de la Sierra, Esmeraldas y Galápagos; η=2.60 para provincias del Oriente)
+r: Factor usado en espectro (r=1.0 para todos los suelos, excepto r=1.5 para suelo tipo E)
+Tc: Período límite de la meseta del espectro = 0.55 × Fs × (Fd/Fa)
+
+Período de Vibración Fundamental
+Método 1:
+T = Ct × hn^α
+Para estructuras con muros estructurales o mampostería:
+Ct = 0.0055/√Cw
+Cw = (1/AB) × ∑[((hn/hwi) × Awi)/(1.33) × (hwi/lwi)²]
+Método 2:
+Ta = 2π × √(∑(wi × δi²) / (g × ∑(fi × δi)))
+Distribución de Fuerzas Sísmicas en Altura
+V = ∑Fi
+Vx = ∑Fi
+Fx = (wx × hx^k) / (∑(wi × hi^k)) × V
+Donde k depende del período:
+
+T ≤ 0.5s: k = 1
+0.5s < T ≤ 2.5s: k = 0.75 + 0.50T
+T > 2.5s: k = 2
+
+Verificación de Derivas
+ΔM = 0.75 × R × ΔE
+Donde:
+
+ΔM: Deriva máxima inelástica
+ΔE: Desplazamiento elástico obtenido con fuerzas reducidas
+R: Factor de reducción de resistencia sísmica
+
+Efectos P-Δ
+Qi = (Pi × Δi) / (Vi × hi)
+Factor de mayoración cuando 0.1 < Qi < 0.3:
+fP-Δ = 1 / (1 - Qi)
+Separación entre Estructuras
+Para estructura colindante con separación previa (entrepisos coinciden):
+∆E ≥ 0.25∆Mup + 0.01Hev - ∆vn
+Para estructura colindante con separación previa (entrepisos no coinciden):
+∆E ≥ 0.5∆Mup + 0.01Hev - ∆vn
+Para estructura colindante sin separación (entrepisos coinciden):
+∆E ≥ 0.2∆Mup + 0.01Hev
+Para estructura colindante sin separación (entrepisos no coinciden):
+∆E ≥ 2 × (0.2∆Mup + 0.01Hev)
+2. Tablas de Valores y Coeficientes
+Valores de Ct y α para Diferentes Tipos de Estructura
+Tipo de estructuraCtαEstructuras de acero sin arriostramientos0.0720.8Estructuras de acero con arriostramientos0.0730.75Pórticos de hormigón armado sin muros0.0550.9Pórticos con muros estructurales o mampostería0.0550.75
+Factor de Importancia I
+Tipo de uso, destino e importanciaFactor IEdificaciones esenciales1.5Estructuras de ocupación especial1.3Otras estructuras1.0
+Factor de Reducción de Resistencia Sísmica R
+Sistemas Estructurales Dúctiles
+SistemaRPórticos especiales sismoresistentes de hormigón armado con vigas descolgadas y muros estructurales8Pórticos especiales sismoresistentes de acero laminado en caliente con diagonales o muros8Pórticos con columnas de hormigón y vigas de acero con diagonales8Pórticos especiales sismoresistentes de hormigón con vigas banda y muros7Pórticos especiales sismoresistentes de hormigón con vigas descolgadas8Pórticos especiales de acero laminado en caliente8Sistemas de muros estructurales dúctiles de hormigón5Pórticos especiales de hormigón con vigas banda5
+Sistemas Estructurales de Ductilidad Limitada
+SistemaRHormigón armado con secciones de dimensión menor (≤ 2 pisos, luces ≤ 5m)3Hormigón armado con secciones menores y armadura electrosoldada2.5Estructuras de acero conformado en frío, aluminio, madera (≤ 2 pisos)2.5Mampostería no reforzada (≤ 1 piso)1Mampostería reforzada o confinada (≤ 2 pisos)3Muros de hormigón armado (≤ 4 pisos)3
+Factores de Sitio
+La norma incluye tablas para los factores Fa, Fd y Fs según el tipo de suelo y la zona sísmica.
+Valores de Z por Población
+La norma incluye una extensa tabla con valores del factor Z para todas las poblaciones del Ecuador, que varían entre 0.15 y 0.50.
+3. Parámetros de Diseño y Valores Límite
+Derivas Máximas Permitidas
+EstructuraDeriva máxima ΔMHormigón armado, estructuras metálicas y madera0.02Mampostería0.01
+Coeficientes de Irregularidad en Planta (ΦP)
+TipoDescripciónValor1Irregularidad torsional: Δmáx > 1.2(Δ1+Δ2)/20.92Retrocesos excesivos en esquinas: A > 0.15B y C > 0.15D0.93Discontinuidades en sistema de piso: CxD > 0.5AxB0.94Ejes estructurales no paralelos0.9
+Coeficientes de Irregularidad en Elevación (ΦE)
+TipoDescripciónValor1Piso flexible: Rigidez Kc < 0.70 Rigidez KD0.92Distribución de masa: mD > 1.50 mE o mD > 1.50 mC0.93Irregularidad geométrica: a > 1.3b0.9
+Índice de Estabilidad
+Debe cumplirse: Qi ≤ 0.30
+Reducción de Inercia para Cálculos de Rigidez
+ElementoFactor de reducciónVigas de hormigón0.5 IgColumnas de hormigón0.8 IgMuros estructurales0.6 Ig (primeros pisos)
+4. Recomendaciones para el Manual de la App
+
+Configuración Estructural: Privilegiar estructuras simples y regulares para mejor desempeño sísmico.
+Evitar Irregularidades: Cambios abruptos de rigidez y resistencia pueden acumular daño en componentes específicos.
+Separación entre Estructuras: Verificar las separaciones mínimas entre estructuras adyacentes para evitar golpeteo durante un sismo.
+Verificación de Derivas: Controlar las derivas de piso para garantizar que no excedan los valores máximos permitidos.
+Efectos P-Δ: Considerar efectos de segundo orden cuando el índice de estabilidad Qi > 0.1.
+Selección de Sistema Estructural: Determinar correctamente el factor R según el sistema estructural elegido.
+Modelación Estructural: Aplicar reducción de inercia por agrietamiento en elementos de hormigón armado.
+Métodos de Análisis:
+
+Usar método estático como mínimo para todo tipo de estructura
+Para estructuras irregulares, usar métodos dinámicos de análisis
+Verificar que el cortante dinámico no sea menor que el porcentaje establecido del cortante estático
+
+
+
+5. Requisitos de Documentación Técnica
+La aplicación debe generar documentación que incluya:
+
+Características del Proyecto:
+
+Ubicación y zona sísmica (valor Z)
+Tipo de suelo y factores de sitio
+Factor de importancia (I)
+Sistema estructural y factor R
+
+
+Análisis de Regularidad:
+
+Verificación de regularidad en planta (coeficiente ΦP)
+Verificación de regularidad en elevación (coeficiente ΦE)
+
+
+Cálculos Sísmicos:
+
+Determinación del período fundamental
+Cálculo del espectro de diseño
+Cálculo del cortante basal
+Distribución vertical de fuerzas sísmicas
+
+
+Verificaciones de Desempeño:
+
+Cálculo de derivas de piso
+Verificación de efectos P-Δ
+Control de desplazamientos laterales
+
+
+Resumen de Resultados:
+
+Tabla de fuerzas por piso
+Gráfico del espectro de diseño
+Verificación del cumplimiento de derivas máximas
+Conclusiones sobre el desempeño esperado
+
+
+
+Integración con el Flujo de Trabajo de CONSTRU
+La información extraída de la normativa NEC-SE-DS puede integrarse en el módulo de cálculos técnicos de CONSTRU siguiendo esta secuencia:
+
+Determinación de parámetros iniciales:
+
+Identificación automática del valor Z según ubicación del proyecto
+Selección del tipo de suelo y obtención de factores Fa, Fd, Fs
+Definición del uso de la estructura y factor de importancia (I)
+
+
+Definición del sistema estructural:
+
+Selección del sistema estructural y factor R correspondiente
+Identificación de irregularidades y cálculo de coeficientes ΦP y ΦE
+
+
+Cálculo de fuerzas sísmicas:
+
+Determinación del espectro de diseño
+Estimación del período fundamental
+Cálculo del cortante basal
+Distribución de fuerzas por nivel
+
+
+Verificaciones de desempeño:
+
+Cálculo de derivas y verificación contra límites permitidos
+Análisis de efectos P-Δ
+Verificación de separaciones entre estructuras
+
+
+Reportes y documentación:
+
+Generación de memorias de cálculo según requerimientos normativos
+Gráficos de espectro y distribución de fuerzas
+Lista de verificación de requisitos normativos
+
+
+
+Esta estructura permitirá a los usuarios de CONSTRU realizar cálculos sísmicos completos conforme a la normativa ecuatoriana, mejorando la eficiencia y precisión en el diseño estructural.

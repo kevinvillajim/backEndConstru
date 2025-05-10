@@ -1,0 +1,176 @@
+Análisis Normativo NEC-SE-AC: Diseño de Estructuras de Acero
+Tras analizar la "Guía práctica para el diseño de estructuras de acero de conformidad con la Norma Ecuatoriana de la Construcción NEC 2015", he extraído los elementos fundamentales para implementar en el módulo de cálculos técnicos de la app CONSTRU.
+1. Fórmulas Matemáticas Fundamentales
+Ecuaciones de Análisis Sísmico
+
+Ecuación de movimiento: mü + cú + ku = -müg(t)
+Parámetro de estabilidad: θ = (Px·Δ·I)/(Vx·hsx·Cd)
+Valor máximo de θ: θmax = 0.5/(β·Cd)
+Derivas de piso: Δ = (Cd·δxe)/I
+Deriva máxima permitida: Δa = (0.020·hsx)/ρ
+
+Verificación de Secciones
+
+Relación ancho-espesor para patines: λ = bf/(2·tf)
+Límite para elementos dúctiles: λps = 0.3·√(E/Fy)
+Parámetro de carga axial: Ca = Pu/(φc·Fy·Ag)
+Límite para almas (Ca > 0.125): λps = 0.77·√(E/Fy)·(2.93 - Ca)
+Límite para almas (Ca < 0.125): λps = 2.45·√(E/Fy)
+Esbeltez global: KxLx/rx y KyLy/ry
+
+Resistencia de Diseño
+
+Resistencia a flexión: Mcx = φb·Mpx = φb·Fy·Zx
+Resistencia a cortante: φVn = 0.6·Fy·Aw
+Arriostramiento lateral máximo: Lb = 0.086·ry·√(E/Fy)
+
+Conexiones con Sección Reducida (VSR)
+
+Módulo sección en zona reducida: ZVSR = Zx - 2·c·tf·(d - tf)
+Momento probable máximo: Mpr = Cpr·Ry·Fy·ZVSR
+Factor de amplificación: Cpr = (Fy + Fu)/(2·Fy) ≤ 1.2
+Fuerza cortante en sección reducida:
+
+VVSR = (2·Mpr/Lh) + (wu·Lh/2)
+V'VSR = (2·Mpr/Lh) - (wu·Lh/2)
+
+
+Momento en cara de columna:
+
+Mf = Mpr + VVSR·Sh
+M'f = Mpr + V'VSR·Sh
+
+
+Cortante requerido: Vu = VVSR + wu·Sh
+Radio de corte: R = (4c² + b²)/(8c)
+Ancho del patín reducido: bf_VSR = 2(R-c) + bf - √(R²-b²/9)
+
+Diseño de Columnas y Zonas de Panel
+
+Criterio columna fuerte-viga débil: ΣM*pc/ΣM*pr ≥ 1.0
+Resistencia zona del panel: Vc = (Mf + M'f)/((hb + ht)/2)
+Resistencia requerida del panel: Ru = (Mf + M'f)/(dc - tf) - Vc
+
+2. Tablas de Valores y Coeficientes
+Propiedades de Materiales
+Tipo de AceroFy (MPa)Fu (MPa)ASTM A36250400-550ASTM A572 Gr. 50345450ASTM A588345450
+Factores de Diseño Sismorresistente
+FactorValorFactor de Zona Z0.4Factor de importancia, I1.5Coeficiente de modificación, R8Factor de Sobrerresistencia, Ωo3Factor de amplificación, Cd5.5Factor de redundancia ρ1.3
+Factores de Fluencia Probable
+
+Ry = 1.1 para ASTM A572 Gr. 50
+Factores K para columnas: Kx = 1, Ky = 1
+
+3. Parámetros de Diseño y Valores Límite
+Límites Generales
+
+Deriva máxima de piso: 2% de la altura del piso
+Relación luz libre-peralte para vigas: > 7
+
+Límites para Secciones Reducidas
+
+Ancho de recorte: 0.5bf ≤ a ≤ 0.75bf
+Longitud de recorte: 0.65d ≤ b ≤ 0.85d
+Profundidad de recorte: 0.1bf ≤ c ≤ 0.25bf
+
+Criterios para Placas de Continuidad
+
+Espesor del patín de columna: tcf ≥ 0.4√(1.8by·tf·(Ry·Fye/Ryc·Fyc))
+Alternativa: tcf ≥ bbf/6
+
+4. Recomendaciones Específicas para Manual de Bolsillo
+
+Procedimiento para Pórticos Resistentes a Momento:
+
+Verificar derivas y estabilidad estructural
+Determinar resistencia probable en fluencia y fractura
+Verificar relaciones de esbeltez local
+Dimensionar columnas para soportar cargas sísmicas y gravitacionales
+Dimensionar vigas incluyendo secciones reducidas cuando aplique
+Diseñar conexiones con resistencia mayor que la sección reducida
+
+
+Consideraciones para Conexiones VSR:
+
+Las dimensiones de la sección reducida son críticas para el comportamiento dúctil
+Incrementar derivas de piso en 8% por reducción de rigidez
+Asegurar el criterio columna fuerte-viga débil
+Verificar resistencia de la zona del panel
+
+
+Criterios de Control de Calidad:
+
+Mayor exigencia para componentes del sistema resistente a carga sísmica
+Inspección rigurosa de soldaduras en conexiones viga-columna
+Control especial en la fabricación de secciones reducidas
+
+
+Recomendaciones para Sistemas Constructivos:
+
+Pórticos especiales resistentes a momento: Alta ductilidad pero menor rigidez
+Pórticos con arriostramientos concéntricos: Alta rigidez pero menor versatilidad
+Pórticos con arriostramientos excéntricos: Combinan ductilidad y rigidez
+
+
+
+5. Requisitos de Documentación Técnica
+
+Planos Detallados:
+
+Especificar tipo de acero (ASTM A572 Gr. 50, etc.)
+Detallar conexiones viga-columna con cotas precisas
+Documentar dimensiones de secciones reducidas (a, b, c)
+Especificar placas de continuidad y rigidizadores
+
+
+Memorias de Cálculo:
+
+Documentar análisis de derivas y estabilidad estructural
+Incluir verificación de relaciones ancho-espesor
+Demostrar cumplimiento del criterio columna fuerte-viga débil
+Documentar diseño de la zona del panel
+
+
+Especificaciones Técnicas:
+
+Definir calidad de materiales y tolerancias dimensionales
+Especificar procesos de soldadura y calificaciones de soldadores
+Detallar procedimientos de control de calidad e inspección
+Incluir requisitos de montaje y alineación
+
+
+
+Integración con el Módulo de Cálculos
+La implementación en la app CONSTRU podría seguir el siguiente flujo:
+
+Fase de Definición:
+
+Selección del tipo de estructura (pórticos especiales, arriostramientos)
+Definición de geometría y cargas (integración con módulos previos)
+Selección de materiales (ASTM A572 Gr. 50, etc.)
+
+
+Fase de Análisis:
+
+Cálculo de fuerzas sísmicas (integración con módulo NEC-SE-DS)
+Análisis estructural para determinar fuerzas internas
+Verificación de derivas y estabilidad
+
+
+Fase de Diseño:
+
+Dimensionamiento de elementos estructurales
+Verificación de relaciones ancho-espesor
+Diseño de conexiones (especialmente VSR)
+Verificación del criterio columna fuerte-viga débil
+
+
+Fase de Documentación:
+
+Generación automática de memorias de cálculo
+Producción de detalles constructivos
+Especificaciones técnicas para fabricación y montaje
+
+
+
+Esta normativa complementa perfectamente los módulos ya analizados de NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas), completando así el flujo de diseño integral para estructuras de acero. La implementación permitirá a los usuarios no solo calcular cargas y fuerzas, sino también dimensionar adecuadamente los elementos estructurales y sus conexiones, siguiendo rigurosamente la normativa vigente.

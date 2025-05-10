@@ -1,0 +1,174 @@
+Análisis Técnico de la Normativa NEC-HS-AU: Accesibilidad Universal
+He analizado detalladamente el documento NEC-HS-AU sobre Accesibilidad Universal que forma parte de la Norma Ecuatoriana de la Construcción. A continuación, presento la extracción sistemática de los elementos técnicos que deben implementarse en el módulo de cálculos de la app CONSTRU.
+1. Fórmulas matemáticas para implementar
+A diferencia de las normas estructurales, la NEC-HS-AU no contiene fórmulas algebraicas complejas, sino relaciones dimensionales y geométricas que deben calcularse:
+
+Cálculo de pendientes en rampas:
+
+Pendiente (%) = (Altura/Longitud horizontal) × 100
+Restricción: Pendiente máxima = 12% (edificaciones existentes con limitaciones)
+Restricción: Pendiente máxima = 8% (longitud > 10,000 mm)
+Pendiente transversal máxima = 2%
+
+
+Cálculo de espacios de maniobra:
+
+Área de giro mínima = π × (1500 mm/2)² = 1,767,145 mm²
+Espacios de transferencia en baños = 1,650 mm × 2,300 mm o 1,650 mm × 2,100 mm
+
+
+Distribución de estacionamientos:
+
+Nº plazas preferenciales = Nº total plazas / 25 (redondeado al entero superior)
+
+
+Distribución de asientos en espacios especializados:
+
+1-50 asientos totales: 2 espacios reservados (mínimo)
+51-100 asientos totales: 3 espacios reservados
+101-200 asientos totales: 4 espacios reservados
+
+
+
+2. Tablas de valores, coeficientes y factores para cálculos
+Las tablas clave que deben incorporarse a la aplicación incluyen:
+2.1 Dimensiones de circulación
+ElementoDimensión (mm)Ancho mínimo de circulación libre1,200Ancho para circulación simultánea1,800Diámetro mínimo de giro1,500Altura libre de paso en espacios interiores2,100Altura libre de paso en espacios exteriores2,200Ancho mínimo de cruce peatonal1,500
+2.2 Parámetros para rampas
+ParámetroValorAncho mínimo entre pasamanos1,200 mmPendiente máxima (tramo ≤ 3,000 mm)12%Pendiente máxima (tramo ≤ 10,000 mm)8%Longitud máxima sin descanso10,000 mmDimensión mínima del descanso1,200 mm × 1,500 mm
+2.3 Parámetros para ascensores
+ParámetroValorÁrea útil mínima de cabina1.25 m²Lado mínimo de cabina1,000 mmAncho libre mínimo de puerta800 mmAltura libre mínima de puerta2,000 mmTolerancia de nivelación±20 mm
+2.4 Servicios higiénicos accesibles
+ElementoDimensión (mm)Dimensiones mínimas de cabina1,650 × 2,300 o 1,650 × 2,100Diámetro de giro interior1,500Altura de inodoro (movilidad reducida)450-500Altura de lavamanos (movilidad reducida)850Distancia eje inodoro-pared500
+2.5 Estacionamiento preferencial
+ParámetroValorDimensiones mínimas de plaza3,900 mm × 5,000 mmDimensiones para 2 plazas compartidas6,300 mm × 5,000 mmAncho mínimo de área de transferencia1,500 mm
+3. Parámetros de diseño y valores límite verificables
+Los parámetros críticos que deben verificarse en la aplicación:
+3.1 Circulación horizontal
+
+Separación máxima de juntas en pavimentos: 20 mm
+Altura máxima de desnivel entre acera y calzada: 200 mm
+Pendiente transversal máxima en aceras: 2%
+Separación máxima en rejillas de drenaje: 13 mm
+
+3.2 Circulación vertical
+
+Huella mínima en escaleras: 280 mm
+Contrahuella máxima: 180 mm
+Máximo de escalones sin descanso: 10 contrahuellas
+Altura recomendada para pasamanos superior: 850-950 mm
+Altura recomendada para pasamanos inferior: 600-750 mm
+Prolongación horizontal de pasamanos: 300 mm
+
+3.3 Puertas y aberturas
+
+Ancho libre mínimo para puertas exteriores principales: 1,000 mm
+Ancho libre mínimo para puertas interiores: 900 mm
+Altura libre mínima de paso: 2,050 mm
+Espacio de maniobra a ambos lados: 1,500 mm de diámetro
+
+3.4 Dispositivos accesibles
+
+Altura de pulsadores e interruptores: 800-1,200 mm
+Altura de tomacorrientes: 400-1,200 mm
+Altura para sistemas de turno y similares: 800-900 mm
+
+3.5 Espacios especializados
+
+Reserva mínima para personas en silla de ruedas: 1% (mínimo 2 espacios)
+Dimensiones de espacio para silla de ruedas: 900 × 1,400 mm
+Butacas plegables mínimas requeridas: 15 unidades
+
+4. Recomendaciones para el manual de bolsillo
+Las siguientes recomendaciones deberían incluirse en el manual de bolsillo de la app:
+
+Cadenas de accesibilidad: Priorizar circuitos con mayores flujos de usuarios, diseñando recorridos continuos y sin interrupciones desde el acceso hasta los destinos principales.
+Criterios para excepciones: En edificaciones patrimoniales o con limitaciones espaciales, realizar estudios de condiciones de accesibilidad con soluciones alternativas justificadas.
+Previsión para crecimiento vertical: Considerar espacio para futura implementación de mecanismos de circulación vertical accesible.
+Diseño de entornos naturales: Crear senderos accesibles que formen circuitos completos, permitiendo recorrer el entorno y volver al punto de inicio.
+Recomendaciones para cuartos de baño:
+
+Prever la instalación de cambiadores de pañales
+Planificar al menos un baño accesible por cada 10 unidades de inodoros
+Considerar espacios para niños y personas de talla baja (<1340 mm)
+
+
+Criterios para habitaciones accesibles:
+
+1-24 habitaciones: 1 habitación accesible
+25-49 habitaciones: 2 habitaciones accesibles
+50-74 habitaciones: 3 habitaciones accesibles
+75-100 habitaciones: 4 habitaciones accesibles
+Por cada 50 habitaciones adicionales: 1 habitación accesible más
+
+
+Diseño de vestuarios accesibles:
+
+Dimensiones mínimas: 1,500 mm × 1,800 mm
+Incluir asiento abatible con espacio libre lateral de 900 mm
+Percha a altura entre 1,100-1,400 mm
+
+
+Accesibilidad en piscinas:
+
+Circuito accesible hacia y alrededor de la piscina
+Implementar rampa con inclinación suave o elevadora hidráulica
+
+
+
+5. Requisitos de documentación técnica según la normativa
+La aplicación debería facilitar la generación de documentación técnica que incluya:
+
+Estudio de condiciones de accesibilidad: Para casos de excepciones donde la aplicación estricta de la norma no sea posible, generar informes técnicos justificativos.
+Análisis de cadenas de accesibilidad: Documentar el proceso de circulación de los usuarios dentro y fuera de las edificaciones, identificando puntos críticos.
+Planos con elementos de accesibilidad: Generar planos que identifiquen claramente:
+
+Itinerarios accesibles
+Ubicación de rampas, ascensores y plataformas elevadoras
+Espacios de maniobra y transferencia
+Servicios higiénicos accesibles
+Señalización y elementos podotáctiles
+
+
+Detalles constructivos: Incluir especificaciones técnicas de:
+
+Pendientes y dimensiones de rampas
+Características de pasamanos y barandillas
+Detalles de instalación de dispositivos accesibles
+Especificaciones de materiales antideslizantes
+
+
+Señalización accesible: Documentar la implementación de:
+
+Bandas podotáctiles (guía y prevención)
+Señalización visual contrastante
+Información en sistema Braille
+Planos hápticos
+
+
+
+Integración con la aplicación CONSTRU
+Esta normativa complementa las normas estructurales previamente analizadas, añadiendo un componente esencial de habitabilidad y accesibilidad. Para integrar efectivamente estos requisitos en el flujo de cálculo de la aplicación CONSTRU, propongo:
+
+Módulo de verificación de accesibilidad: Crear un componente específico que permita evaluar automáticamente el cumplimiento de los parámetros dimensionales y geométricos requeridos.
+Calculadoras específicas:
+
+Calculadora de pendientes para rampas
+Verificador de dimensiones para espacios de maniobra
+Calculador de plazas de estacionamiento preferenciales
+Verificador de espacios reservados en auditorios y similares
+
+
+Biblioteca de elementos accesibles: Incluir plantillas prediseñadas para elementos como:
+
+Rampas con dimensiones normalizadas
+Servicios higiénicos accesibles
+Ascensores y plataformas elevadoras
+Señalización podotáctil y visual
+
+
+Integración con presupuestos: Vincular los elementos de accesibilidad con el módulo de presupuestos, permitiendo estimar costos de implementación.
+Sistema de alertas: Implementar verificaciones automáticas durante el diseño que alerten sobre incumplimientos de la normativa de accesibilidad.
+Generador de informes técnicos: Facilitar la creación de documentación que certifique el cumplimiento de los requisitos de accesibilidad.
+
+Esta implementación permitirá a los profesionales de la construcción integrar la accesibilidad desde las etapas iniciales del diseño, cumpliendo con la normativa vigente y promoviendo entornos inclusivos para todas las personas.

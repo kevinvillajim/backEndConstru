@@ -1,0 +1,246 @@
+Análisis del Documento NEC-SE-HM (Estructuras de Hormigón Armado) para Implementación en CONSTRU App
+He analizado sistemáticamente el documento NEC-SE-HM para extraer toda la información relevante que debe implementarse en el Módulo de Cálculos Técnicos de la app CONSTRU. A continuación, presento los resultados organizados por categorías.
+1. Fórmulas Matemáticas a Implementar
+Módulo de Elasticidad del Hormigón (Sección 3.3.3)
+
+Para estimación de deflexiones:
+Ec = 1.15 * ∛Ea * √f'c
+Donde:
+
+Ec: Módulo de elasticidad para el hormigón (GPa)
+Ea: Módulo de elasticidad del agregado (GPa)
+f'c: Resistencia a la compresión del hormigón (MPa)
+
+
+Para modelos de análisis sísmico:
+Ec = 4.7 * √f'c
+
+
+Resistencia Media Requerida (Sección 3.3.1)
+Cuando se disponen de datos históricos de producción (Tabla 8):
+
+Para f'c ≤ 35 MPa, usar el mayor valor de:
+f'cr = f'c + 1.34ss
+f'cr = f'c + 2.33ss - 3.5
+
+Para f'c > 35 MPa, usar el mayor valor de:
+f'cr = f'c + 1.34ss
+f'cr = 0.90f'c + 2.33ss
+
+
+Cuando no se disponen de datos estadísticos (Tabla 10):
+
+Para f'c < 21 MPa: f'cr = f'c + 7.0
+Para 21 ≤ f'c ≤ 35 MPa: f'cr = f'c + 8.5
+Para f'c > 35 MPa: f'cr = 1.10f'c + 5.0
+
+Propiedades Esperadas de Materiales (Sección 3.3.4)
+f'ce = 1.3f'c
+f'ye = 1.1fy
+Refuerzo Longitudinal Mínimo para Flexión (Sección 4.2.5)
+As ≥ max{(1.4/fy)bwd ; (√f'c/4fy)bwd}
+Diseño de Elementos a Flexo-Compresión (Sección 4.3.2)
+
+Momentos últimos: SCP = Ø°ωfSE
+Factor de sobre-resistencia: Ø° = (M0- + M0+)/(Mreq.- + Mreq.+)
+Capacidad en sobre-resistencia: M0 = 1.25As fy(d - d')
+Factor de amplificación dinámica: ωf = 1.15 + 0.13(μ/1.8 - 1) > 1.15
+
+Confinamiento en Elementos a Flexo-Compresión (Sección 4.3.4)
+
+Razón del volumen de refuerzo en espiral:
+ρs = 0.12f'c/fyt
+ρs = 0.45(Ag/Ach - 1)f'c/fyt
+
+Área de refuerzo para estribos rectangulares:
+Ash = 0.3(sbc/f'c/fyt)[(Ag/Ach) - 1]
+Ash = 0.09(sbc/f'c/fyt)
+
+
+Cortante en Elementos Estructurales (Sección 5.2)
+
+Para vigas: ØVn ≥ (Mi° + Mj°)/(L - d) + Vug
+Para columnas: ØVn ≥ Ø°VE + 0.5μVE,base ≤ (Mt° + Mb°)/Hc
+
+Cortante en Muros Estructurales (Sección 5.3)
+
+Factor de amplificación dinámica:
+ωv = 1 + μ/(Ø°C2,T)
+C2,T = 0.067 + 0.4(Ti - 0.5) ≤ 1.15
+
+Resistencia por cortante superior: Vn° = (0.9 - 0.3Ti)V°B ≥ 0.3V°B
+Capacidad nominal a cortante: Vn = Acv(αc√f'c + ρnfy)
+Límites:
+Vn ≤ 2Acv(f'c)^0.5/3
+Vn ≤ 5Acp(f'c)^0.5/6
+
+
+Juntas de Construcción (Sección 5.5)
+Vn = 0.8Avffy + AcK1
+Vn = Avffy(0.8sinα + cosα) + AcK1sin²α
+Capacidad de Momento de Muros (Sección 6.1.2)
+M°0.5H = C1,T·Ø°MB
+C1,T = 0.4 + 0.075Ti(μ/Ø° - 1) ≥ 0.4
+2. Tablas de Valores, Coeficientes y Factores
+Módulos de Elasticidad de Agregados (Tabla 11)
+TipoProcedenciaEa (GPa)Caliza (Formación San Eduardo)Guayaquil – Guayas67.9Chert (Formación Guayaquil)Guayaquil – Guayas15.8Diabasa (Formación Piñón)Chivería – Guayas89.3TonalitaPascuales – Guayas74.9Basalto (Formación Piñón)Picoazá – Manabí52.5BasaltoPifo – Pichincha27.2Ígnea (Andesitas, basaltos, Granodioritas)Río Jubones – El Oro110.5VolcánicaLa Península – Tungurahua17.5
+Factores de Reducción de Resistencia (Tabla 12)
+SolicitacionesFactor ØSecciones controladas por tracción0.90Tracción axial0.90Secciones controladas por compresión con espiral0.75Secciones controladas por compresión otros0.65Cortante y torsión0.75Aplastamiento0.65
+Corrección para Datos Estadísticos (Tabla 9)
+Número de ensayosFactor de correcciónMenos de 15N.A.151.16201.08251.0330 o más1.00
+Requisitos para Exposición Ambiental (Tabla 4)
+ClaseRelación a/c máxf'c mín (MPa)Requisitos adicionalesF0N/A17N/AF10.4531Tabla 5 (contenido de aire)S0N/A17Sin restricciónS10.528Tipo II de cementoS20.4531Tipo V de cementoP10.5028NingunaC1N/A17Cloruros máx. 0.30%C20.4035Cloruros máx. 0.15%
+Dimensiones de Acero de Refuerzo (Tabla 13)
+TipoDiámetro mínimoDiámetro máximoBarras corrugadas8 mm36 mmAlambre para mallas4 mm10 mmEstribos10 mm16 mm
+3. Parámetros de Diseño y Valores Límite
+Requisitos Generales
+
+Resistencia mínima hormigón normal: f'c = 21 MPa
+Resistencia máxima hormigón liviano: f'c = 35 MPa
+Límite de fy y fyt: 550 MPa (excepto preesforzado y espirales)
+Límite de fyt para confinamiento: 700 MPa
+
+Para Elementos en Flexión (Sección 4.2)
+
+Fuerzas axiales: Pu < 0.10f'cAg
+Luz libre: > 4 veces la altura útil
+Ancho mínimo: b ≥ 250 mm
+Separación entre apoyos laterales: ≤ 50b
+Cuantía máxima: ρmax = 0.025 (≤ 50% ρb)
+Relación momentos: M+ ≥ 0.5M- en extremos
+Momentos en cualquier sección: ≥ 25% de momento máximo del elemento
+
+Para Elementos en Flexo-Compresión (Sección 4.3)
+
+Fuerzas axiales: Pu > 0.10f'cAg
+Razón entre dimensiones: > 0.40
+Dimensión mínima: 300 mm
+Cuantía de refuerzo longitudinal: 0.01 ≤ ρg/Ag ≤ 0.03
+
+Confinamiento
+
+Longitud de confinamiento Lo: la mayor de (luz libre/6, dimensión máxima, 450 mm)
+Espaciamiento máximo en Lo: el menor de (dimensión mínima/4, 6db, so)
+Espaciamiento en región no confinada: ≤ 6db o ≤ 200 mm
+Para secciones > 500 mm: varillas longitudinales adicionales con xi ≤ 350 mm
+
+Muros Estructurales (Sección 6.1)
+
+Espesor mínimo para doble malla: > 150 mm
+Cuantía mínima: ρv ≥ 0.0025, ρn ≥ 0.0025
+Espaciamiento máximo: 250 mm
+
+4. Recomendaciones para Manual de Bolsillo
+Consideraciones Generales
+
+Durabilidad del Hormigón:
+
+Seleccionar la relación agua-cemento según la categoría de exposición ambiental.
+Considerar contenido de aire para zonas con congelación-deshielo.
+Para exposición a sulfatos, usar cementos resistentes y controlar la mezcla.
+
+
+Acero de Refuerzo:
+
+Mantener el acero libre de corrosión excesiva.
+Una fina capa de oxidación mejora la adherencia.
+Verificar espaciamientos, empalmes y amarres adecuados.
+No use materiales como piedras o bloques de madera para soportar el acero.
+
+
+Diseño Sísmico:
+
+Priorizar formación de rótulas plásticas en extremos de vigas y base de columnas.
+Aplicar "Diseño por capacidad" con jerarquía de resistencia.
+Garantizar columna fuerte - viga débil.
+Para vigas banda: peralte mínimo 25 cm y verificar punzonamiento.
+
+
+Elementos en Flexión:
+
+Usar mínimo dos varillas en el refuerzo superior e inferior.
+Garantizar capacidad de momentos positivos = 50% de momentos negativos en extremos.
+Todos los momentos de sección ≥ 25% del momento máximo del elemento.
+
+
+Elementos en Flexo-Compresión:
+
+Aplicar confinamiento especial en longitud Lo.
+No permitir traslapes en regiones de confinamiento especial.
+Evitar "columnas cortas" o diseñarlas con requisitos especiales.
+
+
+Muros Estructurales:
+
+Usar doble malla para muros > 150 mm.
+Evaluar necesidad de elementos de borde según criterios de compresión.
+Verificar refuerzo transversal en borde.
+
+
+
+5. Requisitos de Documentación Técnica
+Especificaciones de Materiales
+
+Tipo de cemento utilizado: Portland, compuesto tipo IP, etc.
+Granulometría y propiedades físicas de áridos.
+Calidad del agua (apta para consumo humano o ensayada).
+Acero de refuerzo: grado, tamaño, propiedades.
+
+Diseño de Mezcla
+
+Dosificación detallada con cantidades de materiales y resistencia esperada.
+Relación agua-cemento según clase de exposición.
+Contenido de aire si aplica según Tabla 5.
+Aditivos utilizados y sus porcentajes.
+
+Control de Calidad
+
+Resultados de pruebas de resistencia (mínimo 5 resultados).
+Ensayos de consistencia, temperatura y masa volumétrica.
+Informe de supervisión de procesos de colado y compactación.
+Verificación de encofrados y tiempos de desencofrado según Tablas 16 y 17.
+
+Documentación Final
+
+Informe de cumplimiento firmado por Constructor y Supervisor.
+Resultados de todas las pruebas realizadas.
+Criterios de aceptación aplicados y correcciones ejecutadas.
+Archivo fotográfico de cada etapa constructiva.
+
+Integración en el Módulo de Cálculos de CONSTRU App
+El análisis de la normativa NEC-SE-HM complementa perfectamente la información ya extraída de las normas NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas). Para integrar este contenido en un flujo coherente dentro de la aplicación, propongo la siguiente estructura:
+
+Módulo de Materiales:
+
+Selección y verificación de propiedades del hormigón
+Cálculo de resistencia requerida (f'cr)
+Selección de acero de refuerzo
+Verificación de durabilidad según exposición ambiental
+
+
+Módulo de Elementos Estructurales:
+
+Diseño de vigas (refuerzo longitudinal y transversal)
+Diseño de columnas (refuerzo longitudinal y confinamiento)
+Diseño de muros estructurales
+Verificación de resistencia a cortante
+
+
+Módulo de Diseño Sísmico:
+
+Integración de factores de sobre-resistencia
+Verificación de mecanismos dúctiles
+Análisis de columna fuerte - viga débil
+Diseño por capacidad
+
+
+Generador de Documentación:
+
+Reporte de diseño con verificación de cumplimiento normativo
+Especificaciones técnicas para obra
+Lista de verificación para supervisión
+Protocolo de pruebas y ensayos requeridos
+
+
+
+Este análisis proporciona los fundamentos técnicos necesarios para implementar correctamente los cálculos de estructuras de hormigón armado en la aplicación CONSTRU, garantizando el cumplimiento de la normativa ecuatoriana vigente y facilitando el trabajo de profesionales de la construcción.

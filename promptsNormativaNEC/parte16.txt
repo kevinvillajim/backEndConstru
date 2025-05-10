@@ -1,0 +1,189 @@
+Análisis de la Guía de Diseño 5: Evaluación Sísmica y Rehabilitación de Estructuras (NEC-2015)
+1. Fórmulas Matemáticas para Implementación
+1.1 Diseño Basado en Desplazamientos (DDBD)
+Desplazamiento de fluencia en pórticos:
+
+Para hormigón armado: θy = 0.5εy(Lb/hb)
+Para acero: θy = 0.6εy(Lb/hb)
+Valor típico para hormigón armado: θy = 0.01 (cuando Lb/hb=10 y εy=0.002)
+
+Amortiguamiento viscoso equivalente:
+
+Pórticos hormigón armado: ξeq = 0.05 + 0.565(μ-1)/(μπ)
+Pórticos acero: ξeq = 0.05 + 0.577(μ-1)/(μπ)
+
+Sistema equivalente de un grado de libertad:
+
+Desplazamiento equivalente: Δd = Σ(mi·Δi²)/Σ(mi·Δi)
+Peso equivalente: me = Σ(mi·Δi)/Δd
+Altura efectiva: He = Σ(mi·Δi·Hi)/Σ(mi·Δi)
+Ductilidad: μ = Δd/Δy
+Desplazamiento de fluencia: Δy = θy·He
+Rigidez efectiva: ke = 4π²me/Te²
+Cortante basal: Vbase = ke·Δd
+Distribución de fuerzas por piso: Fi = K·Vbase·(mi·Δi)/Σ(mj·Δj)
+
+Donde K = 0.9 para edificaciones aporticadas, K = 1.0 para las demás
+
+
+
+Periodo efectivo:
+Teff = max[T, 2π·√(Δd·me/(Fd·Z·g·Rξ))]
+1.2 Perfil de Desplazamiento de Diseño
+Para edificaciones aporticadas:
+
+Para n≤4 pisos: Δi = ωθ·Hi·θT
+Para n>4 pisos: Δi = ωθ·θT·H(4Hi/3Hn)
+
+Factor de amplificación dinámica:
+
+ωθ = 1.15 - 0.0034H ≥ 1.0 (H en metros)
+
+1.3 Evaluación de Estructuras Patrimoniales (Tierra Cruda)
+Esfuerzos admisibles para adobe:
+
+Compresión: fm = 0.4·f'm·ϕe
+Factor de esbeltez:
+
+ϕe = (1-(h/t)²/140) cuando 6 ≤ h/t ≤ 10
+ϕe = 0.7 cuando 10 < h/t ≤ 20
+
+
+Aplastamiento: fa = 1.25·fm
+Tracción: ft = 0.1·f'm
+Corte permisible: fv = 0.4·(kPa)^(1/2)
+
+Verificación de diseño:
+
+Ecuación unitaria: (fa/Fa) + (fb/Fb) ≤ 1.0
+Tracción: ft = M·c/I - P/A ≤ Ft
+Pandeo: Pu ≤ Pe/4 donde Pe = π²·E·I/(k·h)²
+
+1.4 Densidad de Muros en Planta
+
+d% = (Aw/Ap)·100 > 1.5%
+
+Aw: Suma de secciones transversales de muros en dirección de análisis
+Ap: Área total en planta de la vivienda
+
+
+
+2. Tablas de Valores y Coeficientes
+2.1 Factores para Análisis de Sitio
+Tabla 2: Identificación de sondeo con periodo elástico y profundidad del semi-espacio (pág. 41)
+Sondeo IDPeríodo Elástico, Te (s)Prof. del semiespacio (Vs>700m/s), (m)ERU1.58145BSF21.40100P20.7440GYE14CH0.3940GYE11N0.105GYE12P0.375
+2.2 Factores para Estructuras Patrimoniales
+Tabla 3: Factores de modificación del coeficiente de demanda (pág. 99)
+FactorDescripciónValork₁Desempeño previo: bueno1.0k₁Desempeño previo: regular0.8k₁Desempeño previo: malo0.6k₂Categoría ocupación: esencial1.2k₂Categoría ocupación: importante1.0k₂Categoría ocupación: normal0.8
+Tabla 9: Esfuerzo máximo admisible en flexión fm (pág. 101)
+GRUPO MADERAMPaA23.1B16.5C11.0
+Tabla 10: Esfuerzo máximo admisible en tracción paralela a la fibra ft (pág. 102)
+GRUPO MADERAMPaA14.5B10.5C7.5
+2.3 Evaluación de Vulnerabilidad Sísmica
+Tabla 12: Puntaje básico de cada sistema estructural (pág. 130)
+TipologíaW1URMRMMXC1C2C3PCS1S2S3S4S5Puntaje4.41.82.81.82.52.81.62.42.6322.82
+3. Parámetros de Diseño y Valores Límite
+3.1 Configuración Estructural en Planta
+
+Relación largo/ancho ≤ 4
+Longitud máxima ≤ 30 metros
+Retrocesos en esquinas ≤ 15% de la dimensión
+Discontinuidades en sistema de piso ≤ 50% del área total
+Excentricidad centro de rigidez/masa ≤ 10% de la dimensión
+
+3.2 Configuración Estructural en Elevación
+
+Resistencia de piso ≥ 70% del piso superior
+Masa de piso ≤ 1.5 veces la masa de pisos adyacentes
+Rigidez lateral de piso ≥ 70% del piso superior
+Dimensión en planta ≤ 1.3 veces la dimensión del piso adyacente
+
+3.3 Criterios de Desempeño
+
+Vulnerabilidad sísmica baja: S > 2.5
+Vulnerabilidad sísmica media: 2 ≤ S ≤ 2.5
+Vulnerabilidad sísmica alta: S < 2
+
+3.4 Estructuras de Tierra Cruda
+
+Densidad de muros en cada dirección > 1.5% del área total
+Relación de esbeltez h/t ≤ 20
+Cumplimiento ecuación unitaria: (fa/Fa) + (fb/Fb) ≤ 1.0
+
+4. Recomendaciones para Manual de Bolsillo
+4.1 Configuración Estructural General
+
+Preferir formas simétricas, regulares y tendientes a cuadrangulares o rectangulares
+Evitar configuraciones en L, T, U, H, O o Cruz
+Implementar juntas de construcción cuando la longitud exceda 4 veces el ancho
+Separación mínima de juntas: 2.50 cm
+
+4.2 Recomendaciones para Elementos Estructurales
+
+Mantener continuidad vertical de elementos estructurales
+Evitar columnas cortas o esbeltas
+Aplicar principio "columna fuerte - viga débil"
+Preferir formación de rótulas plásticas en vigas antes que en columnas
+Proveer suficientes elementos verticales para aumentar hiperestaticidad
+
+4.3 Recomendaciones para Rehabilitación de Estructuras Patrimoniales
+
+Criterios basados en mantener, restituir o aumentar la resistencia
+Para adobe: verificar esfuerzos admisibles en compresión, flexión y corte
+Controlar desplazamientos en estructuras agrietadas mediante refuerzos compatibles
+Conservar valor patrimonial con mínima intervención y materiales reversibles
+
+4.4 Evaluación Post-Sismo
+
+Inspeccionar exterior antes de ingresar
+Examinar suelo buscando fisuras o asentamientos
+Verificar daños estructurales en columnas, vigas y nudos
+Clasificar según severidad: Inspeccionado, Uso Restringido o Inseguro
+
+5. Requisitos de Documentación Técnica
+5.1 Para Evaluación Estructural
+
+Descripción de la estructura y materiales
+Identificación de cargas y combinaciones
+Antecedentes de análisis sísmico
+Parámetros del suelo de fundación
+
+5.2 Para Diagnóstico y Patologías
+
+Levantamiento geométrico detallado
+Inventario de materiales existentes
+Levantamiento de daños y deterioros
+Evaluación de vulnerabilidad estructural
+Diagnóstico del estado actual
+
+5.3 Para Intervención Estructural
+
+Análisis estructural incluyendo sistemas existentes y nuevos
+Verificación de elementos y cálculo de derivas
+Memoria técnica del sistema de refuerzo
+Justificación de comportamiento conjunto entre estructura original y reforzada
+
+5.4 Para Evaluación Visual Rápida
+
+Formulario completo con datos generales
+Esquema estructural en planta y elevación
+Identificación del sistema estructural
+Evaluación de modificadores y cálculo de vulnerabilidad
+
+Integración con el Módulo de Cálculos de CONSTRU
+Este documento amplía considerablemente las capacidades de la aplicación CONSTRU, permitiendo incorporar:
+
+Módulo de Evaluación Rápida: Permite evaluar la vulnerabilidad sísmica de edificaciones existentes, basado en la tipología estructural y modificadores (altura, irregularidades, código y tipo de suelo).
+Módulo de Diseño Basado en Desplazamientos: Cálculo de estructuras nuevas o rehabilitación mediante métodos de desempeño sísmico, más precisos que los tradicionales basados en fuerzas.
+Módulo para Estructuras Patrimoniales: Evaluación y reforzamiento de construcciones de tierra cruda (adobe) y madera, con verificación de esfuerzos admisibles.
+Asistente Post-Sismo: Guía para evaluación rápida de edificaciones tras un evento sísmico, con criterios de clasificación y señalización.
+
+La implementación debe seguir un flujo coherente donde:
+
+El usuario primero identifica el tipo de estructura (nueva, existente o patrimonial)
+Selecciona el método de análisis apropiado (por fuerzas o desplazamientos)
+Ingresa las características geométricas y materiales
+La aplicación calcula y verifica parámetros según la normativa
+Se genera documentación técnica según los requisitos específicos
+
+Esta información complementa perfectamente los módulos de Peligro Sísmico (NEC-SE-DS) y Cargas (NEC-SE-CG) ya existentes, proporcionando herramientas para la evaluación completa del ciclo de vida de una estructura, desde su diseño hasta su rehabilitación o evaluación post-sismo.

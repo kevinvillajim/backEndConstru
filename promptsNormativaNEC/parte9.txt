@@ -1,0 +1,223 @@
+Análisis Normativo NEC-SE-VIVIENDA para Implementación en App CONSTRU
+Basado en el análisis detallado del documento NEC-SE-VIVIENDA (Viviendas de hasta 2 pisos con luces de hasta 5m), he extraído sistemáticamente los elementos clave que deben implementarse en el módulo de cálculos técnicos de la aplicación CONSTRU.
+1. FÓRMULAS MATEMÁTICAS PARA IMPLEMENTAR
+1.1 Verificación de Resistencia Estructural
+Vbase ≤ VMR
+Donde:
+
+Vbase: Cortante basal demandado por el sismo de diseño
+VMR: Resistencia lateral de la estructura
+
+1.2 Cálculo del Cortante Basal Sísmico
+Vbase = Z·C·W/R
+Donde:
+
+Z: Factor de zona sísmica (según ubicación geográfica)
+C: Coeficiente de respuesta sísmica
+W: Peso sísmico efectivo (carga muerta + 25% carga viva de piso)
+R: Factor de reducción de resistencia sísmica (según sistema estructural)
+
+1.3 Índice de Densidad de Muros (para mampostería)
+d(%) = (Aw/Ap) × 100
+Donde:
+
+Aw: Suma de secciones transversales de muros confinados en la dirección analizada
+Ap: Área total en planta de la vivienda
+
+1.4 Factor de Reducción por Excentricidad y Esbeltez
+FE = (1 - 2e'/t)·(1 - (h/30t)²)
+Donde:
+
+e': Excentricidad calculada para la carga vertical más excentricidad accidental
+t: Espesor del muro
+h: Altura del muro
+
+1.5 Resistencia a Compresión Axial en Mampostería Confinada
+Puc = 0.55·f'm·Amd·FE + 0.65·f'c·Act
+Donde:
+
+f'm: Resistencia especificada a compresión de la mampostería (MPa)
+Amd: Área de la sección de mampostería (mm²)
+FE: Factor de reducción por excentricidad y esbeltez
+f'c: Resistencia especificada a compresión del concreto (MPa)
+Act: Área total de columnas de confinamiento (mm²)
+
+1.6 Diseño a Flexión Perpendicular al Plano del Muro
+M = w·h²/α
+Donde:
+
+w: Carga uniformemente distribuida perpendicular al plano
+h: Altura entre apoyos
+α: Coeficiente según condiciones de borde (8 para apoyo simple, 32 para empotrado)
+
+1.7 Resistencia a Cortante en Mampostería Confinada
+Vn = vm·Amv + 0.5·VS
+Donde:
+
+vm: Resistencia a cortante de la mampostería
+Amv: Área efectiva para esfuerzos cortantes
+VS: Contribución del acero de refuerzo
+
+2. TABLAS DE VALORES Y COEFICIENTES
+2.1 Factor de Zona Sísmica (Z)
+Zona sísmicaIIIIIIIVVVIFactor Z0.150.250.300.350.40≥0.50Peligro sísmicoIntermediaAltaAltaAltaAltaMuy alta
+2.2 Coeficiente de Respuesta Sísmica (C)
+Zona geográficaCCosta y Galápagos2.4Sierra y Oriente3.0
+2.3 Factores de Reducción de Resistencia Sísmica (R)
+Sistema EstructuralMaterialCoeficiente RPisos máx.Pórticos resistentes a momentoHormigón armado con secciones menores a NEC-SE-HM con acero laminado en caliente32Pórticos resistentes a momentoHormigón armado con secciones menores a NEC-SE-HM con armadura electro-soldada2.52Pórticos resistentes a momentoAcero doblado en frío1.52Muros portantesMampostería no reforzada y no confinada11Muros portantesMampostería enchapada con malla de acero1.52Muros portantesAdobe y tapial reforzado1.52Muros portantesBahareque1.52Muros portantesMampostería reforzada32Muros portantesMampostería confinada32Muros portantesMuro de hormigón reforzado32Muros portantesMuros livianos de acero1.52Muros portantesMuro de mortero armado u hormigón armado con alma de poliestireno1.52
+2.4 Dimensiones y Refuerzos Mínimos de Cimentación Corrida
+Nota: Esta tabla debe ser extraída completa del documento para su implementación
+2.5 Índice de Densidad de Muros (d%) Mínimo
+Nota: Esta tabla especifica el porcentaje mínimo requerido según tipo de construcción y zona sísmica
+3. PARÁMETROS DE DISEÑO Y VALORES LÍMITE
+3.1 Limitaciones Geométricas
+
+Altura máxima: 2 pisos
+Luces máximas: 5.0 m
+Altura máxima de entrepisos: 3.0 m
+Altura máxima total: 6 m para cubierta plana, 8 m hasta cumbrera para cubierta inclinada
+Relación largo/ancho en planta: ≤ 4
+Dimensión máxima en planta: 30 m
+Aberturas de piso: ≤ 50% del área total y ninguna abertura > 25% del área total
+Aberturas en muros: ≤ 35% del área total del muro
+Distancia mínima entre aberturas: 50 cm o ½ de la dimensión menor de abertura
+Relación altura/longitud de muro individual: ≤ 4
+
+3.2 Requisitos de Juntas Constructivas
+
+Espesor mínimo: 2.5 cm
+Obligatorias cuando: relación largo/ancho > 4:1, terreno con pendiente > 30%, o dimensión mayor > 30 m
+
+3.3 Requisitos para Mampostería Confinada
+
+Separación máxima entre elementos de confinamiento vertical: 4 m
+Dimensión mínima de columnas de confinamiento: 15 cm x t (t = espesor del muro)
+Refuerzo mínimo en columnas: 4 barras de 10 mm ø con estribos de 6 mm ø @ 15 cm
+Resistencia mínima del concreto: f'c = 21 MPa (210 kg/cm²)
+
+3.4 Resistencias Mínimas de Materiales
+
+Hormigón estructural: f'c = 21 MPa (210 kg/cm²)
+Mampostería: f'm según tipo (desde 2 MPa hasta 15 MPa)
+Ladrillo artesanal: f'cu ≥ 2 MPa (20 kg/cm²)
+Bloque de hormigón: f'cu ≥ 3 MPa (30 kg/cm²)
+
+4. RECOMENDACIONES PARA MANUAL DE BOLSILLO
+4.1 Conceptos Clave de Sismo-Resistencia
+
+Todo proyecto de vivienda debe garantizar seguridad de ocupantes ante sismo de diseño
+El buen comportamiento sísmico depende de configuración estructural adecuada
+Importancia de continuidad vertical de elementos estructurales
+Disposición balanceada de muros en ambas direcciones principales
+
+4.2 Criterios de Configuración Estructural
+
+Priorizar formas regulares y simétricas en planta
+Evitar irregularidades en elevación
+Distribución simétrica de aberturas (puertas y ventanas)
+Usar juntas constructivas para dividir estructuras irregulares en módulos regulares
+
+4.3 Selección de Sistema Estructural
+
+Factores para selección: zona sísmica, tipo de suelo, materiales disponibles
+Verificar limitaciones de altura según sistema estructural
+Considerar ventajas/desventajas de cada sistema para condiciones locales
+
+4.4 Verificaciones Simplificadas
+
+Cálculo del cortante basal según zona sísmica
+Índice de densidad de muros mínimo requerido
+Verificación de resistencia lateral vs. demanda sísmica
+
+5. REQUISITOS DE DOCUMENTACIÓN TÉCNICA
+5.1 Documentos Obligatorios
+
+Planos arquitectónicos, estructurales, sanitarios y eléctricos
+Estudio de suelos
+Presupuestos y especificaciones técnicas
+Memoria técnica completa
+
+5.2 Contenido de Planos
+
+Nombre del proyecto y fecha de diseño
+Profesional responsable con título registrado en SENESCYT
+Norma utilizada (NEC-SE-VIVIENDA)
+Cargas vivas adoptadas
+Especificaciones de materiales y resistencias
+Aclaración de uso exclusivo para vivienda
+
+5.3 Contenido de Memoria Técnica
+
+Descripción completa del sistema constructivo
+Proceso constructivo detallado
+Materiales y sus propiedades
+Procesos de control de calidad
+Especificación de posibles modificaciones/ampliaciones futuras
+
+INTEGRACIÓN CON LOS DOCUMENTOS PREVIAMENTE ANALIZADOS
+La normativa NEC-SE-VIVIENDA complementa los documentos previamente analizados (NEC-SE-DS y NEC-SE-CG) de la siguiente manera:
+
+Integración con NEC-SE-DS (Peligro Sísmico):
+
+Simplifica el cálculo del cortante basal para viviendas pequeñas
+Proporciona factores R específicos para viviendas
+Establece criterios específicos de configuración arquitectónica-estructural para sistemas de menor ductilidad
+
+
+Integración con NEC-SE-CG (Cargas No Sísmicas):
+
+Adapta los requisitos de carga para edificaciones pequeñas
+Permite un enfoque simplificado para combinaciones de carga
+No requiere análisis de efectos de viento excepto para cubiertas ligeras
+
+
+
+FLUJO DE CÁLCULO PROPUESTO PARA LA APLICACIÓN
+Para implementar eficientemente estos requisitos en la app CONSTRU, sugiero el siguiente flujo de cálculo:
+
+Datos de entrada:
+
+Ubicación geográfica (para determinar zona sísmica y factor Z)
+Sistema estructural seleccionado
+Geometría básica de la edificación
+Características del suelo
+
+
+Verificaciones preliminares:
+
+Comprobar cumplimiento de limitaciones geométricas
+Verificar requisitos de simetría y regularidad
+Determinar necesidad de juntas constructivas
+
+
+Cálculo de fuerzas sísmicas:
+
+Determinar factor Z según ubicación
+Seleccionar coeficiente C según región
+Calcular peso sísmico W
+Obtener factor R según sistema estructural
+Calcular cortante basal Vbase
+
+
+Verificación de resistencia estructural:
+
+Para sistemas de muros: calcular índice de densidad de muros
+Verificar que la resistencia lateral VMR ≥ Vbase
+
+
+Diseño de elementos estructurales:
+
+Dimensionamiento de cimentaciones según tipo de suelo
+Verificación de elementos de confinamiento (para mampostería)
+Diseño de refuerzo según sistema estructural
+
+
+Generación de documentación:
+
+Memoria de cálculo automática
+Resumen de verificaciones normativas
+Especificaciones técnicas según sistema seleccionado
+
+
+
+Este flujo permitirá que la aplicación CONSTRU incorpore todos los requisitos de la normativa NEC-SE-VIVIENDA, facilitando el diseño y verificación de viviendas pequeñas conforme a la normativa ecuatoriana actual.

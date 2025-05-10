@@ -1,0 +1,97 @@
+Informe de Extracción de Normativa NEC para CONSTRU App
+He analizado los documentos proporcionados relacionados con las normativas ecuatorianas de construcción (NEC) para implementarlos en el Módulo de Cálculos Técnicos de la app CONSTRU. A continuación, presento las fórmulas, recomendaciones y parámetros más relevantes extraídos de los documentos NEC-SE-DS (Peligro Sísmico) y NEC-SE-CG (Cargas No Sísmicas).
+1. Fórmulas Principales
+A. De NEC-SE-DS (Peligro Sísmico y Diseño Sismo Resistente)
+Espectro Sísmico Elástico de Aceleraciones:
+
+Para 0 ≤ T ≤ TC: Sa = ηZFa
+Para T > TC: Sa = ηZFa(TC/T)^r
+
+Donde:
+
+η = Razón entre aceleración espectral Sa (T=0.1s) y el PGA
+
+1.80: Provincias de la Costa (excepto Esmeraldas)
+2.48: Provincias de la Sierra, Esmeraldas y Galápagos
+2.60: Provincias del Oriente
+
+
+Z = Factor de zona sísmica (0.15 a ≥0.50)
+Fa, Fd, Fs = Coeficientes de amplificación del suelo
+r = 1 para todos los suelos excepto tipo E (r=1.5)
+TC = 0.55·Fs·(Fd/Fa)
+
+Espectro Elástico de Diseño en Desplazamientos:
+
+Para 0 ≤ T ≤ TL: Sd = Sa(g)·(T/2π)²
+Para T > TL: Sd = Sa(g)·(TL/2π)²
+
+Donde:
+
+TL = 2.4·Fd
+
+Cortante Basal de Diseño:
+V = Sa·I·W / (R·ΦP·ΦE)
+Donde:
+
+I = Coeficiente de importancia
+W = Carga sísmica reactiva
+R = Factor de reducción de resistencia sísmica
+ΦP, ΦE = Coeficientes de regularidad estructural
+
+Período de Vibración Aproximado:
+Ta = Ct·hn^α
+B. De NEC-SE-CG (Cargas No Sísmicas)
+Reducción de Cargas Vivas:
+Si KLL·AT ≥ 35 m²: L = Lo(0.25 + 4.5/√(KLL·AT))
+Reducción de Sobrecarga en Cubiertas:
+Lr = Lo·R1·R2
+Presión del Viento:
+P = (1/2)·ρ·Vb²·ce·cf
+Donde:
+
+Vb = V·σ (velocidad corregida del viento)
+ce = Coeficiente de entorno/altura
+cf = Coeficiente de forma
+
+Carga de Granizo:
+S = ρS·HS
+2. Tablas y Valores Importantes
+De NEC-SE-DS:
+
+Zonas sísmicas de Ecuador: 6 zonas con valores Z entre 0.15 y ≥0.50
+Tipos de perfiles de suelo: Tipos A-F con definiciones específicas
+Factores de sitio: Fa, Fd y Fs según tipo de suelo y zona sísmica
+Categorías de edificios y coeficiente de importancia I:
+
+Edificaciones esenciales: I=1.5
+Estructuras de ocupación especial: I=1.3
+Otras estructuras: I=1.0
+
+
+Límites de deriva de piso:
+
+0.02 para hormigón armado, estructuras metálicas y madera
+0.01 para mampostería
+
+
+Factores de reducción R: Entre 1.5 y 8 según sistema estructural
+
+De NEC-SE-CG:
+
+Pesos unitarios de materiales (tabla extensa con valores específicos)
+Sobrecargas mínimas según uso de edificación
+Factores de reducción para cargas vivas y de cubierta
+Coeficientes de forma para cálculo de viento
+
+3. Recomendaciones Clave para Implementación
+
+Zonificación sísmica: Implementar un mapa interactivo o selección de provincias para determinar automáticamente el factor Z.
+Clasificación de suelos: Crear un asistente para determinar el tipo de suelo basado en parámetros geotécnicos (velocidad de onda, número de golpes SPT, etc.).
+Irregularidades estructurales: Desarrollar un sistema de verificación de configuraciones para identificar irregularidades en planta y elevación.
+Cálculo de derivas: Implementar verificaciones automáticas de cumplimiento con los límites permitidos.
+Cargas de granizo: Considerar automáticamente en regiones sobre 1500 msnm con valores mínimos según pendiente de cubierta.
+Reducción de cargas: Aplicar automáticamente los factores de reducción según área tributaria y condiciones específicas.
+Combinaciones de carga: Generar automáticamente todas las combinaciones requeridas por la norma.
+
+Esta información servirá para desarrollar el Módulo de Cálculos Técnicos que cumpla completamente con las normativas NEC, facilitando a los profesionales realizar diseños conformes con los requisitos ecuatorianos.

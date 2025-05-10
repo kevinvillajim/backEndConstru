@@ -1,46 +1,246 @@
+Listado de rutas de carpetas
+El n�mero de serie del volumen es 7C1B-BCDF
+C:.
 |   .env
 |   .gitignore
 |   estructura_carpetas.txt
+|   guiaNotificationsBack.txt
 |   ormconfig.json
 |   package-lock.json
 |   package.json
+|   planDesarrollo.txt
 |   README.md
-|   tsconfig.json                    
+|   tsconfig.json
+|   
++---dist
+|   |   bootstrap.js
+|   |   check-container.js
+|   |   index.js
+|   |   
+|   +---application
+|   |   \---calculation
+|   |           CreateCalculationTemplateUseCase.js
+|   |           ExecuteCalculationUseCase.js
+|   |           GetTemplateRecommendationsUseCase.js
+|   |           SaveCalculationResultUseCase.js
+|   |           
+|   +---domain
+|   |   +---dtos
+|   |   |   \---user
+|   |   |           LoginUserDTO.js
+|   |   |           RegisterUserDTO.js
+|   |   |           
+|   |   +---exception
+|   |   |       AuthenticationError.js
+|   |   |       
+|   |   +---models
+|   |   |   +---auth
+|   |   |   |       RefreshToken.js
+|   |   |   |       
+|   |   |   +---calculation
+|   |   |   |       CalculationParameter.js
+|   |   |   |       CalculationResult.js
+|   |   |   |       CalculationTemplate.js
+|   |   |   |       GeographicalZone.js
+|   |   |   |       
+|   |   |   \---user
+|   |   |           User.js
+|   |   |           
+|   |   +---repositories
+|   |   |       CalculationParameterRepository.js
+|   |   |       CalculationResultRepository.js
+|   |   |       CalculationTemplateRepository.js
+|   |   |       GeographicalZoneRepository.js
+|   |   |       RefreshTokenRepository.js
+|   |   |       UserRepository.js
+|   |   |       
+|   |   \---services
+|   |           AuthService.js
+|   |           CalculationService.js
+|   |           RecommendationService.js
+|   |           TemplateValidationService.js
+|   |           
+|   \---infrastructure
+|       +---config
+|       |       container.js
+|       |       service-factory.js
+|       |       
+|       +---database
+|       |   |   data-source.js
+|       |   |   database.service.js
+|       |   |   
+|       |   +---entities
+|       |   |       BudgetItemEntity.js
+|       |   |       CalculationFeedbackEntity.js
+|       |   |       CalculationGuideEntity.js
+|       |   |       CalculationImprovementEntity.js
+|       |   |       CalculationParameterEntity.js
+|       |   |       CalculationRecommendationEntity.js
+|       |   |       CalculationResultEntity.js
+|       |   |       CalculationTemplateEntity.js
+|       |   |       CategoryEntity.js
+|       |   |       GeographicalZoneEntity.js
+|       |   |       InvoiceEntity.js
+|       |   |       InvoiceItemEntity.js
+|       |   |       MaterialEntity.js
+|       |   |       MaterialPriceHistoryEntity.js
+|       |   |       MaterialRequestEntity.js
+|       |   |       NotificationEntity.js
+|       |   |       PhaseEntity.js
+|       |   |       ProjectBudgetEntity.js
+|       |   |       ProjectDocumentEntity.js
+|       |   |       ProjectEntity.js
+|       |   |       ProjectTeamMemberEntity.js
+|       |   |       RefreshTokenEntity.js
+|       |   |       TaskEntity.js
+|       |   |       UserEntity.js
+|       |   |       UserInteractionEntity.js
+|       |   |       UserRecommendationEntity.js
+|       |   |       UserTemplateUsageEntity.js
+|       |   |       
+|       |   +---migrations
+|       |   |       1746648653972-InitialSchema.js
+|       |   |       1746715381056-InitialSchema.js
+|       |   |       
+|       |   +---repositories
+|       |   |       TypeOrmCalculationParameterRepository.js
+|       |   |       TypeOrmCalculationResultRepository.js
+|       |   |       TypeOrmCalculationTemplateRepository.js
+|       |   |       TypeOrmGeographicalZoneRepository.js
+|       |   |       TypeOrmRefreshTokenRepository.js
+|       |   |       TypeOrmUserRepository.js
+|       |   |       
+|       |   \---seeds
+|       |           calculation-templates.js
+|       |           
+|       \---webserver
+|           +---controllers
+|           |       AuthController.js
+|           |       CalculationController.js
+|           |       CalculationTemplateController.js
+|           |       
+|           +---middlewares
+|           |       authMiddleware.js
+|           |       validationMiddleware.js
+|           |       
+|           +---routes
+|           |       authRoutes.js
+|           |       calculationRoutes.js
+|           |       
+|           +---utils
+|           |       errorHandler.js
+|           |       
+|           \---validators
+|                   authValidator.js
+|                   calculationValidator.js
+|                   templateValidator.js
+|                   
++---frontGuide
+|       component-notification-front.txt
+|       websocket-client.txt
+|      
+|                       
 +---scripts
 +---src
+|   |   bootstrap.ts
+|   |   check-container.ts
 |   |   index.ts
 |   |   
 |   +---application
 |   |   +---auth
+|   |   +---budget
+|   |   |       AddLaborAndIndirectCostsUseCase.ts
+|   |   |       CompareBudgetVersionsUseCase.ts
+|   |   |       CreateBudgetVersionUseCase.ts
+|   |   |       GetProjectBudgetsUseCase.ts
+|   |   |       
 |   |   +---calculation
+|   |   |       CreateCalculationTemplateUseCase.ts
+|   |   |       ExecuteCalculationUseCase.ts
+|   |   |       GenerateBudgetFromCalculationUseCase.ts
+|   |   |       GetTemplateRecommendationsUseCase.ts
+|   |   |       SaveCalculationResultUseCase.ts
+|   |   |       
 |   |   +---common
 |   |   +---invoice
 |   |   +---material
 |   |   +---project
+|   |   |       ApproveMaterialRequestUseCase.ts
+|   |   |       AssignTaskUseCase.ts
+|   |   |       CreateMaterialRequestUseCase.ts
+|   |   |       GenerateProgressReportUseCase.ts
+|   |   |       GenerateProjectScheduleUseCase.ts
+|   |   |       UpdateTaskProgressUseCase.ts
+|   |   |       
 |   |   +---subscription
 |   |   \---user
 |   +---domain
+|   |   +---dtos
+|   |   |   \---user
+|   |   |           LoginUserDTO.ts
+|   |   |           RegisterUserDTO.ts
+|   |   |           
 |   |   +---events
 |   |   +---exception
+|   |   |       AuthenticationError.ts
+|   |   |       
 |   |   +---models
+|   |   |   +---auth
+|   |   |   |       RefreshToken.ts
+|   |   |   |       
 |   |   |   +---calculation
+|   |   |   |       CalculationParameter.ts
+|   |   |   |       CalculationResult.ts
 |   |   |   |       CalculationTemplate.ts
+|   |   |   |       GeographicalZone.ts
 |   |   |   |       
 |   |   |   +---invoice
 |   |   |   +---material
+|   |   |   |       Material.ts
+|   |   |   |       
 |   |   |   +---project
+|   |   |   |       BudgetItem.ts
+|   |   |   |       MaterialRequest.ts
+|   |   |   |       Phase.ts
+|   |   |   |       Project.ts
+|   |   |   |       ProjectBudget.ts
+|   |   |   |       Task.ts
+|   |   |   |       
 |   |   |   +---subscription
 |   |   |   \---user
 |   |   |           User.ts
 |   |   |           
 |   |   +---repositories
+|   |   |       BudgetItemRepository.ts
+|   |   |       CalculationParameterRepository.ts
+|   |   |       CalculationResultRepository.ts
+|   |   |       CalculationTemplateRepository.ts
+|   |   |       GeographicalZoneRepository.ts
+|   |   |       MaterialRepository.ts
+|   |   |       MaterialRequestRepository.ts
+|   |   |       NotificationRepository.ts
+|   |   |       PhaseRepository.ts
+|   |   |       ProjectBudgetRepository.ts
+|   |   |       ProjectRepository.ts
+|   |   |       RefreshTokenRepository.ts
+|   |   |       TaskRepository.ts
 |   |   |       UserRepository.ts
 |   |   |       
 |   |   \---services
+|   |           AuthService.ts
+|   |           CalculationService.ts
+|   |           NotificationService.ts
+|   |           RecommendationService.ts
+|   |           TemplateValidationService.ts
+|   |           
 |   +---infrastructure
 |   |   +---config
+|   |   |       container.ts
+|   |   |       service-factory.ts
+|   |   |       
 |   |   +---database
 |   |   |   |   data-source.ts
+|   |   |   |   database.service.ts
 |   |   |   |   
 |   |   |   +---entities
 |   |   |   |       BudgetItemEntity.ts
@@ -64,6 +264,7 @@
 |   |   |   |       ProjectDocumentEntity.ts
 |   |   |   |       ProjectEntity.ts
 |   |   |   |       ProjectTeamMemberEntity.ts
+|   |   |   |       RefreshTokenEntity.ts
 |   |   |   |       TaskEntity.ts
 |   |   |   |       UserEntity.ts
 |   |   |   |       UserInteractionEntity.ts
@@ -71,12 +272,28 @@
 |   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1746648653972-InitialSchema.ts
+|   |   |   |       1746715381056-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
+|   |   |   |       TypeOrmBudgetItemRepository.ts
+|   |   |   |       TypeOrmCalculationParameterRepository.ts
+|   |   |   |       TypeOrmCalculationResultRepository.ts
+|   |   |   |       TypeOrmCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmGeographicalZoneRepository.ts
+|   |   |   |       TypeOrmMaterialRepository.ts
+|   |   |   |       TypeOrmMaterialRequestRepository.ts
+|   |   |   |       TypeOrmNotificationRepository.ts
+|   |   |   |       TypeOrmPhaseRepository.ts
+|   |   |   |       TypeOrmProjectBudgetRepository.ts
+|   |   |   |       TypeOrmProjectRepository.ts
+|   |   |   |       TypeOrmRefreshTokenRepository.ts
+|   |   |   |       TypeOrmTaskRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
+|   |   |           calculation-templates.ts
+|   |   |           specialized-templates.ts
+|   |   |           
 |   |   +---external
 |   |   |   +---notifications
 |   |   |   +---payment
@@ -84,18 +301,60 @@
 |   |   +---security
 |   |   |   +---encryption
 |   |   |   \---jwt
-|   |   \---webserver
-|   |       +---controllers
-|   |       +---middlewares
-|   |       +---routes
-|   |       \---validators
-|   \---interfaces
-|       +---events
-|       +---http
-|       |   +---graphql
-|       |   +---rest
-|       |   \---websocket
-|       \---jobs
+|   |   +---services
+|   |   |       NotificationServiceImpl.ts
+|   |   |       
+|   |   +---webserver
+|   |   |   +---controllers
+|   |   |   |       AuthController.ts
+|   |   |   |       BudgetController.ts
+|   |   |   |       CalculationController.ts
+|   |   |   |       CalculationTemplateController.ts
+|   |   |   |       MaterialRequestController.ts
+|   |   |   |       NotificationController.ts
+|   |   |   |       PhaseController.ts
+|   |   |   |       ProgressReportController.ts
+|   |   |   |       ProjectScheduleController.ts
+|   |   |   |       TaskController.ts
+|   |   |   |       
+|   |   |   +---middlewares
+|   |   |   |       authMiddleware.ts
+|   |   |   |       validationMiddleware.ts
+|   |   |   |       
+|   |   |   +---routes
+|   |   |   |       authRoutes.ts
+|   |   |   |       budgetRoutes.ts
+|   |   |   |       calculationRoutes.ts
+|   |   |   |       materialRequestRoutes.ts
+|   |   |   |       notificationRoutes.ts
+|   |   |   |       progressReportRoutes.ts
+|   |   |   |       projectScheduleRoutes.ts
+|   |   |   |       
+|   |   |   +---utils
+|   |   |   |       errorHandler.ts
+|   |   |   |       
+|   |   |   \---validators
+|   |   |           authValidator.ts
+|   |   |           budgetValidator.ts
+|   |   |           calculationValidator.ts
+|   |   |           materialRequestValidator.ts
+|   |   |           projectScheduleValidator.ts
+|   |   |           templateValidator.ts
+|   |   |           
+|   |   \---websocket
+|   |           WebSocketService.ts
+|   |           
+|   +---interfaces
+|   |   +---events
+|   |   +---http
+|   |   |   +---graphql
+|   |   |   +---rest
+|   |   |   \---websocket
+|   |   \---jobs
+|   \---types
+|       \---express
+|               index.d.ts
+|               
 \---test
     +---e2e
     +---integration

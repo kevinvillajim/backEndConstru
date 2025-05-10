@@ -80,6 +80,8 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/notificationRoutes").default;
 		const progressReportRoutes = require("./infrastructure/webserver/routes/progressReportRoutes").default;
 		const materialRequestRoutes = require("./infrastructure/webserver/routes/materialRequestRoutes").default;
+		const materialRoutes =
+			require("./infrastructure/webserver/routes/materialRoutes").default;
 
 		// Configure routes
 		app.use("/api/auth", authRoutes);
@@ -89,6 +91,7 @@ async function bootstrap() {
 		app.use("/api/notifications", notificationRoutes);
 		app.use("/api/reports", progressReportRoutes);
 		app.use("/api/material-requests", materialRequestRoutes);
+		app.use("/api/materials", materialRoutes);
 
 		// Global error handler
 		app.use(
