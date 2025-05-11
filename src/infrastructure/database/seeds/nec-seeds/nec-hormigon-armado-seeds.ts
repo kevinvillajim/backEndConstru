@@ -417,7 +417,7 @@ export async function seedHormigonArmadoTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedHormigonTemplates()
+	seedHormigonArmadoTemplates()
 		.then(() =>
 			console.log("Seeding de plantillas de hormigón armado completado")
 		)

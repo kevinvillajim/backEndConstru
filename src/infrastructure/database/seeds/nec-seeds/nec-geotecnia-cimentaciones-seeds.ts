@@ -431,7 +431,7 @@ export async function seedGeotecniaCimentacionesTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedFoundationTemplates()
+	seedGeotecniaCimentacionesTemplates()
 		.then(() =>
 			console.log("Seeding de plantillas de cimentaciones completado")
 		)

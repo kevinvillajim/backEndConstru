@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-vivienda-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
 	CalculationTemplateEntity,
 	CalculationType,
@@ -29,7 +30,7 @@ export async function seedViviendasDosPisosTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-SE-VIVIENDA
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-SE-VIVIENDA"],
+			tags: In(["NEC-SE-VIVIENDA"]),
 		},
 	});
 

@@ -735,7 +735,7 @@ export async function seedEstructurasGuaduaTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedGuaduaTemplates()
+	seedEstructurasGuaduaTemplates()
 		.then(() => console.log("Seeding de plantillas de guadúa completado"))
 		.catch((error) => console.error("Error en seeding de guadúa:", error));
 }

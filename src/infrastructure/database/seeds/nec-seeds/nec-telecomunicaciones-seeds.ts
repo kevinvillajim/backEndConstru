@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-telecomunicaciones-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
 	CalculationTemplateEntity,
 	CalculationType,
@@ -29,7 +30,7 @@ export async function seedTelecomunicacionesTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-SB-TE
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-SB-TE"],
+			tags: In(["NEC-SB-TE"]),
 		},
 	});
 

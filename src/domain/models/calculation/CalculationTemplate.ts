@@ -11,7 +11,14 @@ export enum CalculationType {
 	BUDGET = "budget",
 	INSTALLATION = "installation",
 	DESIGN = "design",
-	USER_DEFINED = "user_defined",
+	USER_DEFINED = "user_defined", // Nueva categoría para fórmulas personalizadas
+	ARCHITECTURE = "architecture",
+	HVAC = "HVAC",
+	FIRE_SAFETY = "fire_safety",
+	EFFICIENCY = "efficiency",
+	FOUNDATION = "foundation",
+	ELECTRICAL = "electrical",
+	TELECOMMUNICATIONS = "telecommunications",
 }
 
 export enum ProfessionType {
@@ -22,6 +29,10 @@ export enum ProfessionType {
 	ELECTRICIAN = "electrician",
 	CONTRACTOR = "contractor",
 	ALL = "all",
+	SAFETY_ENGINEER = "safety_engineer",
+	MECHANICAL_ENGINEER = "mechanical_engineer",
+	ELECTRICAL_ENGINEER = "electrical_engineer",
+	TELECOMMUNICATIONS_ENGINEER = "telecommunications_engineer",
 }
 
 export enum TemplateSource {

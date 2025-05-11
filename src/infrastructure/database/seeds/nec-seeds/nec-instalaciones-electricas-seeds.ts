@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-instalaciones-electricas-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
 	CalculationTemplateEntity,
 	CalculationType,
@@ -31,7 +32,7 @@ export async function seedInstalacionesElectricasTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-SB-IE
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-SB-IE"],
+			tags: In(["NEC-SB-IE"]),
 		},
 	});
 

@@ -459,7 +459,7 @@ export async function seedEficienciaEnergeticaTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedEnergyEfficiencyTemplates()
+	seedEficienciaEnergeticaTemplates()
 		.then(() =>
 			console.log("Seeding de plantillas de eficiencia energética completado")
 		)

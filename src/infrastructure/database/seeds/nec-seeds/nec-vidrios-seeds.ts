@@ -44,7 +44,7 @@ export async function seedVidriosTemplates() {
 			name: "Cálculo de Espesor de Vidrio",
 			description:
 				"Calcula el espesor requerido y la deformación del vidrio según NEC-HS-VIDRIO.",
-			type: CalculationType.ARCHITECTURAL,
+			type: CalculationType.ARCHITECTURE,
 			targetProfession: ProfessionType.ARCHITECT,
 			formula: `
         // Cálculo de dimensiones para comparación
@@ -317,7 +317,7 @@ export async function seedVidriosTemplates() {
 			name: "Fuerzas Sísmicas en Muros Cortina",
 			description:
 				"Calcula las fuerzas sísmicas horizontales y verticales en muros cortina según NEC-HS-VIDRIO.",
-			type: CalculationType.ARCHITECTURAL,
+			type: CalculationType.ARCHITECTURE,
 			targetProfession: ProfessionType.ARCHITECT,
 			formula: `
         // Cálculo de fuerzas sísmicas horizontales
@@ -576,7 +576,7 @@ export async function seedVidriosTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedGlassTemplates()
+	seedVidriosTemplates()
 		.then(() => console.log("Seeding de plantillas de vidrio completado"))
 		.catch((error) => console.error("Error en seeding de vidrio:", error));
 }

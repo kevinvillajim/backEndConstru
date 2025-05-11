@@ -498,7 +498,7 @@ export async function seedClimatizacionTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedClimatizationTemplates()
+	seedClimatizacionTemplates()
 		.then(() =>
 			console.log("Seeding de plantillas de climatización completado")
 		)

@@ -544,7 +544,7 @@ export async function seedEnergiasRenovablesTemplates() {
 
 // Ejecutar el seed si se llama directamente
 if (require.main === module) {
-	seedRenewableEnergyTemplates()
+	seedEnergiasRenovablesTemplates()
 		.then(() =>
 			console.log("Seeding de plantillas de energías renovables completado")
 		)

@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-accesibilidad-universal-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
   CalculationTemplateEntity,
   CalculationType,
@@ -31,7 +32,7 @@ export async function seedAccesibilidadUniversalTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-HS-AU
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-HS-AU"],
+			tags: In(["NEC-HS-AU"]),
 		},
 	});
 

@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-madera-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
 	CalculationTemplateEntity,
 	CalculationType,
@@ -31,7 +32,7 @@ export async function seedEstructurasMaderaTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-SE-MD
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-SE-MD"],
+			tags: In(["NEC-SE-MD"]),
 		},
 	});
 

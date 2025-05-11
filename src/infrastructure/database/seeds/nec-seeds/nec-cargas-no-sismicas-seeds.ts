@@ -1,5 +1,6 @@
 // src/infrastructure/database/seeds/nec-seeds/nec-cargas-seeds.ts
-import {AppDataSource} from "../../data-source";
+import { AppDataSource } from "../../data-source";
+import {In} from "typeorm";
 import {
 	CalculationTemplateEntity,
 	CalculationType,
@@ -29,7 +30,7 @@ export async function seedCargasNoSismicasTemplates() {
 	// Verificar si ya existen plantillas con tag NEC-SE-CG
 	const existingCount = await templateRepository.count({
 		where: {
-			tags: ["NEC-SE-CG"],
+			tags: In(["NEC-SE-CG"]),
 		},
 	});
 
