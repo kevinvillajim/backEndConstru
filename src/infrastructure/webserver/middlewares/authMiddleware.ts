@@ -1,7 +1,7 @@
 // src/infrastructure/webserver/middlewares/authMiddleware.ts
 import {Request, Response, NextFunction} from "express";
 import {User, UserRole} from "../../../domain/models/user/User";
-import {AppDataSource} from "../../../infrastructure/database/data-source";
+import {AppDataSource} from "../../database/data-source";
 import {UserEntity} from "../../../infrastructure/database/entities/UserEntity";
 import {AuthService} from "../../../domain/services/AuthService";
 
