@@ -637,6 +637,343 @@ export async function seedEstructurasAceroTemplates() {
 			}),
 		];
 
+		// PLANTILLA: DISEÑO DE CONEXIONES VSR Y ANÁLISIS DE COLUMNA FUERTE-VIGA DÉBIL
+		const conexionesAceroTemplate = templateRepository.create({
+			name: "Diseño de Conexiones y Relación Columna-Viga (NEC-SE-AC)",
+			description:
+				"Analiza las conexiones viga-columna de acero y verifica la condición de columna fuerte-viga débil según NEC-SE-AC.",
+			type: CalculationType.STRUCTURAL,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // PARTE 1: CONEXIÓN VIGA-COLUMNA (VSR)
+    // Cálculo de módulo plástico reducido
+    const c = distanciaCortePatines;
+    const ZVSR = moduloPlastico - 2 * c * espesorPatines * (alturaViga - espesorPatines);
+    
+    // Verificación de límites dimensionales para cortes
+    const anchoCorte = anchoPatines * factorAnchoCorte;
+    const alturaCorte = alturaViga * factorAlturaCorte;
+    
+    // Verificar límites según normativa
+    const cumpleLimiteA = factorAnchoCorte >= 0.5 && factorAnchoCorte <= 0.75;
+    const cumpleLimiteB = factorAlturaCorte >= 0.65 && factorAlturaCorte <= 0.85;
+    const cumpleLimiteC = distanciaCortePatines >= 0.1 * anchoPatines && distanciaCortePatines <= 0.25 * anchoPatines;
+    
+    const cumpleLimitesVSR = cumpleLimiteA && cumpleLimiteB && cumpleLimiteC;
+    
+    // Cálculo de momento probable en la rótula plástica
+    const factorSobrerresistencia = tipoAcero === "A36" ? 1.3 : 
+                                  tipoAcero === "A572Gr50" ? 1.1 : 
+                                  tipoAcero === "A588" ? 1.15 : 1.0;
+    
+    // Cálculo del factor de amplificación
+    const Cpr = factorAmplificacion > 0 ? 
+                Math.min(factorAmplificacion, 1.2) : 
+                Math.min((Fy + Fu) / (2 * Fy), 1.2);
+    
+    // Momento probable en la rótula
+    const Mpr = Cpr * factorSobrerresistencia * Fy * ZVSR;
+    
+    // PARTE 2: CONDICIÓN COLUMNA FUERTE-VIGA DÉBIL
+    // Cálculo de sumatorias de momentos
+    const MpbIzquierdo = momentoPlasticoVigaIzquierda;
+    const MpbDerecho = momentoPlasticoVigaDerecha;
+    const sumaMpb = MpbIzquierdo + MpbDerecho;
+    
+    const MpcSuperior = momentoPlasticoColumnaSuperior;
+    const MpcInferior = momentoPlasticoColumnaInferior;
+    const sumaMpc = MpcSuperior + MpcInferior;
+    
+    // Relación columna fuerte-viga débil
+    const relacionColumnasVigas = sumaMpc / sumaMpb;
+    const cumpleRelacionCFVD = relacionColumnasVigas >= 1.0;
+    
+    return {
+      moduloPlasticoReducido: ZVSR,
+      factorAmplificacionCpr: Cpr,
+      momentoProbableRotula: Mpr,
+      relacionColumnasVigas,
+      cumpleLimitesVSR,
+      cumpleRelacionCFVD
+    };
+  `,
+			necReference: "NEC-SE-AC, Capítulo 5.4",
+			isActive: true,
+			isVerified: true,
+			isFeatured: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			shareLevel: "public",
+			usageCount: 0,
+			averageRating: 0,
+			ratingCount: 0,
+			tags: [
+				"acero",
+				"conexiones",
+				"columna fuerte-viga débil",
+				"VSR",
+				"NEC-SE-AC",
+			],
+		});
+
+		await templateRepository.save(conexionesAceroTemplate);
+
+		// Parámetros para conexiones de acero
+		const conexionesAceroParams = [
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "moduloPlastico",
+				description: "Módulo plástico de la viga",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 100000,
+				defaultValue: "2000000",
+				unitOfMeasure: "mm³",
+				helpText: "Módulo plástico original de la sección de la viga",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "alturaViga",
+				description: "Altura total de la viga",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 100,
+				defaultValue: "400",
+				unitOfMeasure: "mm",
+				helpText: "Altura total (peralte) de la viga",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "anchoPatines",
+				description: "Ancho de los patines",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 50,
+				defaultValue: "200",
+				unitOfMeasure: "mm",
+				helpText: "Ancho del patín (ala) de la viga",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "espesorPatines",
+				description: "Espesor de los patines",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: true,
+				minValue: 5,
+				defaultValue: "15",
+				unitOfMeasure: "mm",
+				helpText: "Espesor del patín (ala) de la viga",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "factorAnchoCorte",
+				description: "Factor de ancho de corte (a/bf)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: true,
+				minValue: 0.5,
+				maxValue: 0.75,
+				defaultValue: "0.6",
+				helpText:
+					"Relación entre ancho de corte y ancho del patín (0.5 ≤ a/bf ≤ 0.75)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "factorAlturaCorte",
+				description: "Factor de altura de corte (b/d)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				minValue: 0.65,
+				maxValue: 0.85,
+				defaultValue: "0.75",
+				helpText:
+					"Relación entre altura de corte y altura de viga (0.65 ≤ b/d ≤ 0.85)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "distanciaCortePatines",
+				description: "Distancia de corte en patines (c)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: true,
+				minValue: 5,
+				defaultValue: "30",
+				unitOfMeasure: "mm",
+				helpText: "Distancia de corte en patines (0.1bf ≤ c ≤ 0.25bf)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "tipoAcero",
+				description: "Tipo de acero",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 8,
+				isRequired: true,
+				defaultValue: "A36",
+				allowedValues: JSON.stringify(["A36", "A572Gr50", "A588", "Otro"]),
+				helpText: "Tipo de acero según ASTM",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "Fy",
+				description: "Esfuerzo de fluencia",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 9,
+				isRequired: true,
+				minValue: 200,
+				maxValue: 500,
+				defaultValue: "250",
+				unitOfMeasure: "MPa",
+				helpText:
+					"Esfuerzo de fluencia del acero (A36=250MPa, A572Gr50=345MPa)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "Fu",
+				description: "Resistencia última",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 10,
+				isRequired: true,
+				minValue: 400,
+				maxValue: 700,
+				defaultValue: "400",
+				unitOfMeasure: "MPa",
+				helpText: "Resistencia última del acero (A36=400MPa, A572Gr50=450MPa)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "factorAmplificacion",
+				description: "Factor de amplificación (Cpr)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 11,
+				isRequired: false,
+				minValue: 0,
+				maxValue: 1.2,
+				defaultValue: "0",
+				helpText: "Factor de amplificación (0 para calcular automáticamente)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "momentoPlasticoVigaIzquierda",
+				description: "Momento plástico viga izquierda",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 12,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "200",
+				unitOfMeasure: "kN·m",
+				helpText: "Momento plástico de la viga del lado izquierdo",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "momentoPlasticoVigaDerecha",
+				description: "Momento plástico viga derecha",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 13,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "200",
+				unitOfMeasure: "kN·m",
+				helpText: "Momento plástico de la viga del lado derecho",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "momentoPlasticoColumnaSuperior",
+				description: "Momento plástico columna superior",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 14,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "300",
+				unitOfMeasure: "kN·m",
+				helpText: "Momento plástico de la columna superior",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "momentoPlasticoColumnaInferior",
+				description: "Momento plástico columna inferior",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 15,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "300",
+				unitOfMeasure: "kN·m",
+				helpText: "Momento plástico de la columna inferior",
+			}),
+			// Parámetros de salida
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "moduloPlasticoReducido",
+				description: "Módulo plástico reducido (ZVSR)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 16,
+				unitOfMeasure: "mm³",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "factorAmplificacionCpr",
+				description: "Factor de amplificación (Cpr)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 17,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "momentoProbableRotula",
+				description: "Momento probable en rótula",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 18,
+				unitOfMeasure: "kN·m",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "relacionColumnasVigas",
+				description: "Relación columna fuerte-viga débil",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 19,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "cumpleLimitesVSR",
+				description: "¿Cumple límites de conexión VSR?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 20,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: conexionesAceroTemplate.id,
+				name: "cumpleRelacionCFVD",
+				description: "¿Cumple relación columna fuerte-viga débil?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 21,
+			}),
+		];
+
+		await parameterRepository.save(conexionesAceroParams);
+
 		await parameterRepository.save(aceroVigaParams);
 
 		await parameterRepository.save(aceroColumnaParams);

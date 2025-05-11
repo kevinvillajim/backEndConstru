@@ -682,6 +682,286 @@ export async function seedMamposteriaTemplates() {
 			}),
 		];
 
+		// PLANTILLA: RESISTENCIA A CORTANTE DE MUROS DE MAMPOSTERÍA
+		const resistenciaCortanteTemplate = templateRepository.create({
+			name: "Resistencia a Cortante de Muros (NEC-SE-MP)",
+			description:
+				"Calcula la resistencia a cortante de muros de mampostería según la Norma Ecuatoriana de la Construcción.",
+			type: CalculationType.STRUCTURAL,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // Cálculo de área efectiva para cortante
+    const Amv = (longitudMuro * espesorEfectivoMuro) - areaAberturasCorte;
+    
+    // Cálculo del cortante proporcionado por la mampostería
+    // vm = (0.5 * √f'm + 0.3 * Pu/An) ≤ 0.8 * √f'm
+    const vm_base = 0.5 * Math.sqrt(resistenciaCompresionMamposteria);
+    const vm_axial = 0.3 * cargaAxial / Amv;
+    const vm_limite = 0.8 * Math.sqrt(resistenciaCompresionMamposteria);
+    const vm = Math.min(vm_base + vm_axial, vm_limite);
+    
+    // Cortante resistido por la mampostería
+    const Vm = vm * Amv;
+    
+    // Cortante resistido por el refuerzo horizontal
+    const Avh = areaRefuerzoHorizontal;
+    const Vs = cuantiaRefuerzoHorizontal * resistenciaFluenciaAcero * Amv;
+    
+    // Resistencia nominal a cortante
+    const Vn = Vm + Vs;
+    
+    // Factor de reducción de resistencia para cortante
+    const factorReduccion = 0.60; // Para cortante
+    
+    // Resistencia de diseño a cortante
+    const Vu = factorReduccion * Vn;
+    
+    // Verificación con el cortante actuante
+    const cumpleCortante = Vu >= cortanteActuante;
+    
+    // Verificación de separación máxima del refuerzo horizontal
+    const cumpleSeparacionMaxima = separacionRefuerzoHorizontal <= 600; // mm
+    
+    return {
+      areaEfectivaCortante: Amv,
+      esfuerzoCortanteMamposteria: vm,
+      cortanteResistidoMamposteria: Vm,
+      cortanteResistidoRefuerzo: Vs,
+      resistenciaNominalCortante: Vn,
+      resistenciaDiseñoCortante: Vu,
+      cumpleCortante,
+      cumpleSeparacionMaxima
+    };
+  `,
+			necReference: "NEC-SE-MP, Sección 1.6",
+			isActive: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			isVerified: true,
+			isFeatured: true,
+			tags: ["NEC-SE-MP", "mampostería", "estructural", "resistencia cortante"],
+			shareLevel: "public",
+		});
+
+		await templateRepository.save(resistenciaCortanteTemplate);
+
+		// Parámetros para resistencia a cortante
+		const resistenciaCortanteParams = [
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "longitudMuro",
+				description: "Longitud del muro",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 0.5,
+				defaultValue: "3.0",
+				unitOfMeasure: "m",
+				helpText: "Longitud horizontal del muro",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "espesorEfectivoMuro",
+				description: "Espesor efectivo del muro",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 0.1,
+				defaultValue: "0.15",
+				unitOfMeasure: "m",
+				helpText: "Espesor efectivo del muro (t)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "areaAberturasCorte",
+				description: "Área de aberturas en plano de corte",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "0",
+				unitOfMeasure: "m²",
+				helpText:
+					"Área total de aberturas (puertas, ventanas) en el plano de corte",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "resistenciaCompresionMamposteria",
+				description: "Resistencia a compresión de la mampostería (f'm)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: true,
+				minValue: 8,
+				maxValue: 28,
+				defaultValue: "10",
+				unitOfMeasure: "MPa",
+				helpText: "Resistencia a compresión de la mampostería (f'm)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cargaAxial",
+				description: "Carga axial en el muro",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "50",
+				unitOfMeasure: "kN",
+				helpText: "Carga axial aplicada al muro (Pu)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "areaRefuerzoHorizontal",
+				description: "Área de refuerzo horizontal",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "100",
+				unitOfMeasure: "mm²",
+				helpText: "Área total de refuerzo horizontal en plano de corte",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cuantiaRefuerzoHorizontal",
+				description: "Cuantía de refuerzo horizontal",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: true,
+				minValue: 0.0007,
+				maxValue: 0.01,
+				defaultValue: "0.002",
+				helpText: "Cuantía de refuerzo horizontal (ρh)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "resistenciaFluenciaAcero",
+				description: "Resistencia a la fluencia del acero (fy)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 8,
+				isRequired: true,
+				minValue: 400,
+				defaultValue: "420",
+				unitOfMeasure: "MPa",
+				helpText: "Resistencia a la fluencia del acero de refuerzo (fy)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "separacionRefuerzoHorizontal",
+				description: "Separación de refuerzo horizontal",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 9,
+				isRequired: true,
+				minValue: 100,
+				defaultValue: "400",
+				unitOfMeasure: "mm",
+				helpText: "Separación del refuerzo horizontal (máximo 600 mm)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cortanteActuante",
+				description: "Cortante actuante de diseño",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 10,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "30",
+				unitOfMeasure: "kN",
+				helpText: "Cortante actuante de diseño (Vu)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "areaEfectivaCortante",
+				description: "Área efectiva para cortante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 11,
+				unitOfMeasure: "m²",
+				helpText: "Área efectiva para resistencia a cortante (Amv)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "esfuerzoCortanteMamposteria",
+				description: "Esfuerzo cortante de la mampostería",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 12,
+				unitOfMeasure: "MPa",
+				helpText: "Esfuerzo cortante resistido por la mampostería (vm)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cortanteResistidoMamposteria",
+				description: "Cortante resistido por mampostería",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 13,
+				unitOfMeasure: "kN",
+				helpText: "Cortante resistido por la mampostería (Vm)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cortanteResistidoRefuerzo",
+				description: "Cortante resistido por refuerzo",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 14,
+				unitOfMeasure: "kN",
+				helpText: "Cortante resistido por el refuerzo horizontal (Vs)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "resistenciaNominalCortante",
+				description: "Resistencia nominal a cortante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 15,
+				unitOfMeasure: "kN",
+				helpText: "Resistencia nominal a cortante (Vn = Vm + Vs)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "resistenciaDiseñoCortante",
+				description: "Resistencia de diseño a cortante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 16,
+				unitOfMeasure: "kN",
+				helpText: "Resistencia de diseño a cortante (φVn)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cumpleCortante",
+				description: "¿Cumple resistencia a cortante?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 17,
+				helpText: "Indica si la resistencia a cortante es suficiente",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: resistenciaCortanteTemplate.id,
+				name: "cumpleSeparacionMaxima",
+				description: "¿Cumple separación máxima?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 18,
+				helpText:
+					"Indica si la separación del refuerzo horizontal cumple la normativa",
+			}),
+		];
+
+		await parameterRepository.save(resistenciaCortanteParams);
+
 		await parameterRepository.save(propiedadesMamposteriaParams);
 
 		await parameterRepository.save(longitudDesarrolloParams);
