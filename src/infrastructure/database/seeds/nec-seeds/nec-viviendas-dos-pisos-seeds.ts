@@ -483,6 +483,276 @@ export async function seedViviendasDosPisosTemplates() {
 			}),
 		];
 
+		// PLANTILLA: DIMENSIONAMIENTO DE ELEMENTOS ESTRUCTURALES PARA VIVIENDAS
+		const dimensionamientoElementosTemplate = templateRepository.create({
+			name: "Dimensionamiento de Elementos Estructurales para Viviendas (NEC-SE-VIVIENDA)",
+			description:
+				"Dimensiona elementos estructurales para viviendas de hasta 2 pisos según NEC-SE-VIVIENDA.",
+			type: CalculationType.STRUCTURAL,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // Dimensiones mínimas para columnas
+    let dimensionColumnasPB, dimensionColumnasPA;
+    
+    if (numeroPisos === 1) {
+      dimensionColumnasPB = "20×20 cm";
+    } else if (numeroPisos === 2) {
+      dimensionColumnasPB = "25×25 cm";
+      dimensionColumnasPA = "20×20 cm";
+    }
+    
+    // Dimensiones mínimas para vigas
+    let dimensionVigasPB, dimensionVigasPA;
+    
+    if (numeroPisos === 1) {
+      dimensionVigasPB = "15×20 cm";
+    } else if (numeroPisos === 2) {
+      dimensionVigasPB = "20×20 cm";
+      dimensionVigasPA = "15×20 cm";
+    }
+    
+    // Dimensionamiento de cimentación corrida
+    let dimensionCimentacion = "25×20 cm";
+    
+    if (numeroPisos === 2) {
+      dimensionCimentacion = "30×30 cm";
+    }
+    
+    // Verificación de limitaciones geométricas
+    const relacionLargoAncho = largo / ancho;
+    const cumpleRelacion = relacionLargoAncho <= 4;
+    
+    const dimensionMaxima = Math.max(largo, ancho);
+    const cumpleDimensionMaxima = dimensionMaxima <= 30;
+    
+    const cumpleRequisitoJuntas = !cumpleRelacion || !cumpleDimensionMaxima;
+    const anchoJuntaSismica = 2.5; // cm
+    
+    // Verificación de altura máxima
+    const alturaMaximaPermitida = tipoTecho === "plano" ? 6 : 8; // metros
+    const cumpleAlturaMaxima = alturaEdificio <= alturaMaximaPermitida;
+    
+    // Verificación de separación máxima entre elementos de confinamiento
+    const cumpleSeparacionMaxima = separacionMaxima <= 4;
+    
+    return {
+      dimensionColumnasPB,
+      dimensionColumnasPA,
+      dimensionVigasPB,
+      dimensionVigasPA,
+      dimensionCimentacion,
+      relacionLargoAncho,
+      cumpleRelacionLargoAncho: cumpleRelacion,
+      cumpleDimensionMaxima,
+      requiereJuntaSismica: cumpleRequisitoJuntas,
+      anchoJuntaSismica: cumpleRequisitoJuntas ? anchoJuntaSismica : 0,
+      alturaMaximaPermitida,
+      cumpleAlturaMaxima,
+      cumpleSeparacionMaxima
+    };
+  `,
+			necReference: "NEC-SE-VIVIENDA, Capítulo 4",
+			isActive: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			isVerified: true,
+			isFeatured: true,
+			tags: ["NEC-SE-VIVIENDA", "dimensionamiento", "viviendas", "dos pisos"],
+			shareLevel: "public",
+		});
+
+		await templateRepository.save(dimensionamientoElementosTemplate);
+
+		// Parámetros para dimensionamiento de elementos
+		const dimensionamientoElementosParams = [
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "numeroPisos",
+				description: "Número de pisos",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 1,
+				maxValue: 2,
+				defaultValue: "2",
+				helpText: "Número de pisos de la vivienda (1 o 2)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "largo",
+				description: "Largo de la edificación",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 3,
+				defaultValue: "10",
+				unitOfMeasure: "m",
+				helpText: "Largo total de la edificación",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "ancho",
+				description: "Ancho de la edificación",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 3,
+				defaultValue: "8",
+				unitOfMeasure: "m",
+				helpText: "Ancho total de la edificación",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "tipoTecho",
+				description: "Tipo de techo",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: true,
+				defaultValue: "plano",
+				allowedValues: JSON.stringify(["plano", "inclinado"]),
+				helpText: "Tipo de techo de la vivienda",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "alturaEdificio",
+				description: "Altura de la edificación",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: true,
+				minValue: 2.5,
+				defaultValue: "5.5",
+				unitOfMeasure: "m",
+				helpText: "Altura total de la edificación desde el nivel de suelo",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "separacionMaxima",
+				description: "Separación máxima entre columnas",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				minValue: 1,
+				defaultValue: "4",
+				unitOfMeasure: "m",
+				helpText: "Separación máxima entre elementos de confinamiento",
+			}),
+			// Parámetros de salida
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "dimensionColumnasPB",
+				description: "Dimensión de columnas planta baja",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 7,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "dimensionColumnasPA",
+				description: "Dimensión de columnas planta alta",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 8,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "dimensionVigasPB",
+				description: "Dimensión de vigas planta baja",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 9,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "dimensionVigasPA",
+				description: "Dimensión de vigas planta alta",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 10,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "dimensionCimentacion",
+				description: "Dimensión de cimentación corrida",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 11,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "relacionLargoAncho",
+				description: "Relación largo/ancho",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 12,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "cumpleRelacionLargoAncho",
+				description: "¿Cumple relación largo/ancho?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 13,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "cumpleDimensionMaxima",
+				description: "¿Cumple dimensión máxima?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 14,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "requiereJuntaSismica",
+				description: "¿Requiere junta sísmica?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 15,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "anchoJuntaSismica",
+				description: "Ancho de junta sísmica",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 16,
+				unitOfMeasure: "cm",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "alturaMaximaPermitida",
+				description: "Altura máxima permitida",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 17,
+				unitOfMeasure: "m",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "cumpleAlturaMaxima",
+				description: "¿Cumple altura máxima?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 18,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: dimensionamientoElementosTemplate.id,
+				name: "cumpleSeparacionMaxima",
+				description: "¿Cumple separación máxima?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 19,
+			}),
+		];
+
+		await parameterRepository.save(dimensionamientoElementosParams);
+
 		await parameterRepository.save(resistenciaEstructuralParams);
 
 		console.log(

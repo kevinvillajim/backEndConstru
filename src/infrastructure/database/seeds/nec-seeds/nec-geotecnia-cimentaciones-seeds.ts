@@ -416,6 +416,321 @@ export async function seedGeotecniaCimentacionesTemplates() {
 			}),
 		];
 
+		// PLANTILLA: CAPACIDAD PORTANTE DEL SUELO
+		const capacidadPortanteTemplate = templateRepository.create({
+			name: "Capacidad Portante del Suelo (NEC-SE-GC)",
+			description:
+				"Calcula la capacidad portante del suelo utilizando la fórmula de Terzaghi según NEC-SE-GC.",
+			type: CalculationType.FOUNDATION,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // Cálculo de capacidad portante del suelo con ecuación de Terzaghi
+    // qu = c'×Nc + γ×Df×Nq + 0.5×γ×B×Nγ
+    
+    // Factores de capacidad de carga
+    let Nc, Nq, Ng;
+    
+    // Valores según ángulo de fricción interna (tabla de Terzaghi)
+    if (phi <= 0) {
+      Nc = 5.7;
+      Nq = 1.0;
+      Ng = 0.0;
+    } else if (phi <= 5) {
+      Nc = 7.3;
+      Nq = 1.6;
+      Ng = 0.5;
+    } else if (phi <= 10) {
+      Nc = 9.6;
+      Nq = 2.7;
+      Ng = 1.2;
+    } else if (phi <= 15) {
+      Nc = 12.9;
+      Nq = 4.4;
+      Ng = 2.5;
+    } else if (phi <= 20) {
+      Nc = 17.7;
+      Nq = 7.4;
+      Ng = 5.0;
+    } else if (phi <= 25) {
+      Nc = 25.1;
+      Nq = 12.7;
+      Ng = 9.7;
+    } else if (phi <= 30) {
+      Nc = 37.2;
+      Nq = 22.5;
+      Ng = 19.7;
+    } else if (phi <= 35) {
+      Nc = 57.8;
+      Nq = 41.4;
+      Ng = 42.4;
+    } else if (phi <= 40) {
+      Nc = 95.7;
+      Nq = 81.3;
+      Ng = 100.4;
+    } else if (phi <= 45) {
+      Nc = 172.3;
+      Nq = 173.3;
+      Ng = 297.5;
+    } else {
+      Nc = 258.3;
+      Nq = 347.5;
+      Ng = 780.1;
+    }
+    
+    // Factores de forma
+    let Sc, Sq, Sg;
+    if (formaZapata === "cuadrada") {
+      Sc = 1.3;
+      Sq = 1.0;
+      Sg = 0.8;
+    } else if (formaZapata === "circular") {
+      Sc = 1.3;
+      Sq = 1.0;
+      Sg = 0.6;
+    } else { // rectangular o corrida
+      Sc = 1.0;
+      Sq = 1.0;
+      Sg = 1.0;
+    }
+    
+    // Capacidad última del suelo
+    const qu = c * Nc * Sc + pesoUnitario * Df * Nq * Sq + 0.5 * pesoUnitario * B * Ng * Sg;
+    
+    // Capacidad admisible (con factor de seguridad)
+    const qadm = qu / FS;
+    
+    // Verificación de tipo de cimentación
+    const relacion_Df_B = Df / B;
+    const tipoFundacion = relacion_Df_B < 2 ? "Superficial" : "Profunda";
+    
+    // Verificación de capacidad para caso sísmico
+    const FSsismico = FS * 0.75; // Típicamente 25% menor que el estático
+    const qadm_sismico = qu / FSsismico;
+    
+    return {
+      factorCapacidadNc: Nc,
+      factorCapacidadNq: Nq,
+      factorCapacidadNg: Ng,
+      factorFormaSc: Sc,
+      factorFormaSq: Sq,
+      factorFormaSg: Sg,
+      capacidadUltima: qu,
+      capacidadAdmisible: qadm,
+      capacidadAdmisibleSismica: qadm_sismico,
+      clasificacionCimentacion: tipoFundacion,
+      relacionDf_B: relacion_Df_B
+    };
+  `,
+			necReference: "NEC-SE-GC, Capítulo 3.2",
+			isActive: true,
+			isVerified: true,
+			isFeatured: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			shareLevel: "public",
+			usageCount: 0,
+			averageRating: 0,
+			ratingCount: 0,
+			tags: ["geotecnia", "capacidad portante", "cimentaciones", "NEC-SE-GC"],
+		});
+
+		await templateRepository.save(capacidadPortanteTemplate);
+
+		// Parámetros para plantilla de capacidad portante
+		const capacidadPortanteParams = [
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "c",
+				description: "Cohesión del suelo",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 0,
+				defaultValue: "10",
+				unitOfMeasure: "kPa",
+				helpText: "Cohesión del suelo (c')",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "phi",
+				description: "Ángulo de fricción interna",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 0,
+				maxValue: 50,
+				defaultValue: "30",
+				unitOfMeasure: "°",
+				helpText: "Ángulo de fricción interna del suelo (φ)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "pesoUnitario",
+				description: "Peso unitario del suelo",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 10,
+				maxValue: 25,
+				defaultValue: "18",
+				unitOfMeasure: "kN/m³",
+				helpText: "Peso unitario del suelo (γ)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "B",
+				description: "Ancho de la cimentación",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: true,
+				minValue: 0.3,
+				defaultValue: "1.5",
+				unitOfMeasure: "m",
+				helpText: "Ancho de la cimentación",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "Df",
+				description: "Profundidad de desplante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: true,
+				minValue: 0.3,
+				defaultValue: "1.0",
+				unitOfMeasure: "m",
+				helpText: "Profundidad de desplante de la cimentación",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "formaZapata",
+				description: "Forma de la zapata",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				defaultValue: "cuadrada",
+				allowedValues: JSON.stringify([
+					"cuadrada",
+					"rectangular",
+					"circular",
+					"corrida",
+				]),
+				helpText: "Forma geométrica de la cimentación",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "FS",
+				description: "Factor de seguridad",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: true,
+				minValue: 1.5,
+				maxValue: 5,
+				defaultValue: "3.0",
+				helpText: "Factor de seguridad para condiciones estáticas",
+			}),
+			// Parámetros de salida
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorCapacidadNc",
+				description: "Factor de capacidad Nc",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 8,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorCapacidadNq",
+				description: "Factor de capacidad Nq",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 9,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorCapacidadNg",
+				description: "Factor de capacidad Nγ",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 10,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorFormaSc",
+				description: "Factor de forma Sc",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 11,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorFormaSq",
+				description: "Factor de forma Sq",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 12,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "factorFormaSg",
+				description: "Factor de forma Sγ",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 13,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "capacidadUltima",
+				description: "Capacidad portante última",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 14,
+				unitOfMeasure: "kPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "capacidadAdmisible",
+				description: "Capacidad portante admisible",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 15,
+				unitOfMeasure: "kPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "capacidadAdmisibleSismica",
+				description: "Capacidad portante admisible sísmica",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 16,
+				unitOfMeasure: "kPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "clasificacionCimentacion",
+				description: "Clasificación de la cimentación",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 17,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: capacidadPortanteTemplate.id,
+				name: "relacionDf_B",
+				description: "Relación Df/B",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 18,
+			}),
+		];
+
+		await parameterRepository.save(capacidadPortanteParams);
+
 		await parameterRepository.save(zapataParams);
 
 		console.log("Plantillas de cálculo de cimentaciones creadas exitosamente");

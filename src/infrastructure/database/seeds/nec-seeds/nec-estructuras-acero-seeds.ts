@@ -294,6 +294,351 @@ export async function seedEstructurasAceroTemplates() {
 			}),
 		];
 
+		// PLANTILLA: DISEÑO DE VIGA DE ACERO
+		const aceroVigaTemplate = templateRepository.create({
+			name: "Diseño de Viga de Acero (NEC-SE-AC)",
+			description:
+				"Calcula la capacidad a flexión y verifica requisitos sismorresistentes para vigas de acero según NEC-SE-AC.",
+			type: CalculationType.STRUCTURAL,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // Cálculo de propiedades geométricas
+    const Iy = (tw * Math.pow(h, 3)) / 12; // Momento de inercia del alma
+    const Ix = (h * Math.pow(tw, 3)) / 12 + 2 * (bf * Math.pow(tf, 3)) / 12 + 2 * bf * tf * Math.pow(h/2, 2); // Momento de inercia de la sección
+    const Zx = bf * tf * h + (h - 2*tf) * tw * (h - 2*tf) / 4; // Módulo plástico aproximado
+    
+    // Verificación de sección compacta
+    // Para elementos sísmicamente compactos según AISC 341
+    const lambda_f = bf / (2 * tf); // Relación ancho-espesor de alas
+    const lambda_w = h / tw; // Relación ancho-espesor del alma
+    
+    const lambda_ps_f = 0.3 * Math.sqrt(E / Fy); // Límite para patines
+    const lambda_ps_w = 2.45 * Math.sqrt(E / Fy); // Límite para alma (Ca ≤ 0.125)
+    
+    const esCompactaF = lambda_f <= lambda_ps_f;
+    const esCompactaW = lambda_w <= lambda_ps_w;
+    const seccionCompacta = esCompactaF && esCompactaW;
+    
+    // Fluencia probable considerando factor de sobrerresistencia
+    const Ry = tipoAcero === "A36" ? 1.3 : 
+               tipoAcero === "A572Gr50" ? 1.1 : 
+               tipoAcero === "A588" ? 1.15 : 1.0;
+    
+    const Fyp = Ry * Fy; // Fluencia probable
+    
+    // Resistencia a flexión nominal y de diseño
+    const Mn = Fy * Zx; // Momento nominal
+    const Mpr = Fyp * Zx; // Momento probable para diseño por capacidad
+    const phi_Mn = phi_flexion * Mn; // Momento de diseño
+    
+    // Verificación de capacidad por flexión
+    const ratio_flexion = Mu / phi_Mn;
+    const cumpleFlexion = ratio_flexion <= 1.0;
+    
+    // Verificación para pórticos especiales (SMF)
+    const luz_peralte = span * 1000 / h;
+    const cumpleLuzPeralte = luz_peralte >= 7; // Para SMF, L/d ≥ 7
+    
+    // Cálculo de cortante para diseño por capacidad
+    const Vu_capacity = 2 * Mpr / span; // Cortante por capacidad en kN
+    
+    return {
+      moduloPlastico: Zx,
+      momentoNominal: Mn / 1000000, // kN·m
+      momentoDiseno: phi_Mn / 1000000, // kN·m
+      momentoProbable: Mpr / 1000000, // kN·m
+      relacionLuzPeralte: luz_peralte,
+      cortanteCapacidad: Vu_capacity,
+      ratioFlexion: ratio_flexion,
+      factorSobrerresistencia: Ry,
+      relacionPatines: lambda_f,
+      relacionAlma: lambda_w,
+      limitePatines: lambda_ps_f,
+      limiteAlma: lambda_ps_w,
+      esSeccionCompacta: seccionCompacta,
+      cumpleFlexion: cumpleFlexion,
+      cumpleLuzPeralte: cumpleLuzPeralte
+    };
+  `,
+			necReference: "NEC-SE-AC, Capítulo 5.2",
+			isActive: true,
+			isVerified: true,
+			isFeatured: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			shareLevel: "public",
+			usageCount: 0,
+			averageRating: 0,
+			ratingCount: 0,
+			tags: ["acero", "viga", "estructural", "NEC-SE-AC", "flexión"],
+		});
+
+		await templateRepository.save(aceroVigaTemplate);
+
+		// Parámetros para plantilla de viga de acero
+		const aceroVigaParams = [
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "h",
+				description: "Altura total de la sección",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 100,
+				defaultValue: "400",
+				unitOfMeasure: "mm",
+				helpText: "Altura total (peralte) de la sección",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "bf",
+				description: "Ancho del patín",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 50,
+				defaultValue: "200",
+				unitOfMeasure: "mm",
+				helpText: "Ancho del patín (ala)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "tf",
+				description: "Espesor del patín",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 5,
+				defaultValue: "15",
+				unitOfMeasure: "mm",
+				helpText: "Espesor del patín (ala)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "tw",
+				description: "Espesor del alma",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 4,
+				isRequired: true,
+				minValue: 3,
+				defaultValue: "10",
+				unitOfMeasure: "mm",
+				helpText: "Espesor del alma",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "Fy",
+				description: "Resistencia a la fluencia",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 5,
+				isRequired: true,
+				minValue: 200,
+				maxValue: 500,
+				defaultValue: "250",
+				unitOfMeasure: "MPa",
+				helpText:
+					"Resistencia a la fluencia del acero (A36=250MPa, A572Gr50=345MPa)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "E",
+				description: "Módulo de elasticidad",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 6,
+				isRequired: true,
+				minValue: 190000,
+				maxValue: 210000,
+				defaultValue: "200000",
+				unitOfMeasure: "MPa",
+				helpText: "Módulo de elasticidad del acero (aprox. 200000 MPa)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "tipoAcero",
+				description: "Tipo de acero",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 7,
+				isRequired: true,
+				defaultValue: "A36",
+				allowedValues: JSON.stringify(["A36", "A572Gr50", "A588", "Otro"]),
+				helpText: "Tipo de acero según ASTM",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "span",
+				description: "Luz de la viga",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 8,
+				isRequired: true,
+				minValue: 1,
+				defaultValue: "6",
+				unitOfMeasure: "m",
+				helpText: "Luz libre de la viga entre apoyos",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "Mu",
+				description: "Momento último de diseño",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 9,
+				isRequired: true,
+				minValue: 1,
+				defaultValue: "100",
+				unitOfMeasure: "kN·m",
+				helpText: "Momento último de diseño",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "phi_flexion",
+				description: "Factor de resistencia a flexión",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 10,
+				isRequired: true,
+				minValue: 0.85,
+				maxValue: 0.95,
+				defaultValue: "0.9",
+				helpText: "Factor de resistencia para flexión (LRFD=0.9)",
+			}),
+			// Parámetros de salida
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "moduloPlastico",
+				description: "Módulo plástico de la sección",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 11,
+				unitOfMeasure: "mm³",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "momentoNominal",
+				description: "Momento nominal",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 12,
+				unitOfMeasure: "kN·m",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "momentoDiseno",
+				description: "Momento de diseño",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 13,
+				unitOfMeasure: "kN·m",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "momentoProbable",
+				description: "Momento probable",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 14,
+				unitOfMeasure: "kN·m",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "relacionLuzPeralte",
+				description: "Relación luz/peralte",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 15,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "cortanteCapacidad",
+				description: "Cortante por capacidad",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 16,
+				unitOfMeasure: "kN",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "ratioFlexion",
+				description: "Ratio demanda/capacidad flexión",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 17,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "factorSobrerresistencia",
+				description: "Factor de sobrerresistencia (Ry)",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 18,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "relacionPatines",
+				description: "Relación ancho-espesor patines",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 19,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "relacionAlma",
+				description: "Relación altura-espesor alma",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 20,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "limitePatines",
+				description: "Límite para patines",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 21,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "limiteAlma",
+				description: "Límite para alma",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 22,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "esSeccionCompacta",
+				description: "¿Es sección compacta?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 23,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "cumpleFlexion",
+				description: "¿Cumple capacidad a flexión?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 24,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: aceroVigaTemplate.id,
+				name: "cumpleLuzPeralte",
+				description: "¿Cumple relación luz/peralte?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 25,
+			}),
+		];
+
+		await parameterRepository.save(aceroVigaParams);
+
 		await parameterRepository.save(aceroColumnaParams);
 
 		console.log("Plantillas de cálculo de acero creadas exitosamente");

@@ -550,6 +550,140 @@ export async function seedMamposteriaTemplates() {
 			}),
 		];
 
+		// PLANTILLA: PROPIEDADES ELÁSTICAS DE LA MAMPOSTERÍA
+		const propiedadesMamposteriaTemplate = templateRepository.create({
+			name: "Propiedades Elásticas de la Mampostería (NEC-SE-MP)",
+			description:
+				"Calcula las propiedades elásticas de la mampostería según NEC-SE-MP.",
+			type: CalculationType.STRUCTURAL,
+			targetProfession: ProfessionType.CIVIL_ENGINEER,
+			formula: `
+    // Cálculo de módulo de elasticidad según tipo de mampostería
+    let Em;
+    if (tipoMamposteria === "arcilla") {
+      Em = 750 * fm; // Para mampostería de arcilla
+    } else if (tipoMamposteria === "concreto") {
+      Em = 900 * fm; // Para mampostería de concreto
+    } else {
+      Em = 750 * fm; // Valor por defecto
+    }
+    
+    // Cálculo del módulo de cortante
+    const Gm = 0.4 * Em; // Módulo de cortante
+    
+    // Cálculo de la relación de Poisson
+    const nu = 0.25; // Valor típico para mampostería
+    
+    // Cálculo del módulo de elasticidad secante (opcional)
+    const Ems = 0.7 * Em;
+    
+    // Densidad típica según material
+    let densidad;
+    if (tipoMamposteria === "arcilla") {
+      densidad = 1800; // kg/m³
+    } else if (tipoMamposteria === "concreto") {
+      densidad = 2000; // kg/m³
+    } else {
+      densidad = 1900; // kg/m³
+    }
+    
+    return {
+      moduloElasticidad: Em,
+      moduloCortante: Gm,
+      moduloElasticidadSecante: Ems,
+      relacionPoisson: nu,
+      densidadEstimada: densidad
+    };
+  `,
+			necReference: "NEC-SE-MP, Sección 1.3",
+			isActive: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			isVerified: true,
+			isFeatured: true,
+			tags: ["NEC-SE-MP", "mampostería", "módulo elasticidad", "propiedades"],
+			shareLevel: "public",
+		});
+
+		await templateRepository.save(propiedadesMamposteriaTemplate);
+
+		// Parámetros para propiedades elásticas
+		const propiedadesMamposteriaParams = [
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "fm",
+				description: "Resistencia a compresión de la mampostería",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 8,
+				maxValue: 28,
+				defaultValue: "10",
+				unitOfMeasure: "MPa",
+				helpText: "Resistencia a compresión de la mampostería (f'm)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "tipoMamposteria",
+				description: "Tipo de mampostería",
+				dataType: ParameterDataType.ENUM,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				defaultValue: "arcilla",
+				allowedValues: JSON.stringify(["arcilla", "concreto", "otro"]),
+				helpText: "Material principal de la mampostería",
+			}),
+			// Parámetros de salida
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "moduloElasticidad",
+				description: "Módulo de elasticidad",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 3,
+				unitOfMeasure: "MPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "moduloCortante",
+				description: "Módulo de cortante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 4,
+				unitOfMeasure: "MPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "moduloElasticidadSecante",
+				description: "Módulo de elasticidad secante",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 5,
+				unitOfMeasure: "MPa",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "relacionPoisson",
+				description: "Relación de Poisson",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 6,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: propiedadesMamposteriaTemplate.id,
+				name: "densidadEstimada",
+				description: "Densidad estimada",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 7,
+				unitOfMeasure: "kg/m³",
+			}),
+		];
+
+		await parameterRepository.save(propiedadesMamposteriaParams);
+
 		await parameterRepository.save(longitudDesarrolloParams);
 
 		console.log(
