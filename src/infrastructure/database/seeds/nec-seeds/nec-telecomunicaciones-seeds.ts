@@ -16,8 +16,12 @@ import {
 /**
  * Semillas para plantillas de cálculo de infraestructura de telecomunicaciones (NEC-SB-TE)
  */
-export async function seedTelecomunicacionesTemplates() {
-	const connection = AppDataSource.getInstance();
+export async function seedTelecomunicacionesTemplates(connection = null) {
+	// Si no se proporciona una conexión, obtenemos la instancia
+	if (!connection) {
+		connection = AppDataSource.getInstance();
+	}
+
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);

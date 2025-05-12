@@ -15,23 +15,22 @@ import {
 /**
  * Semillas para plantillas de cálculo predefinidas
  */
-export async function seedCalculationTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedCalculationTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
+
+	// Usamos la conexión para el seeding
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
 	const parameterRepository = connection.getRepository(
 		CalculationParameterEntity
 	);
-
-	// Verificar si ya hay plantillas (evitar duplicados)
-	const existingCount = await templateRepository.count();
-	if (existingCount > 0) {
-		console.log(
-			`Ya existen ${existingCount} plantillas de cálculo. Omitiendo seeding.`
-		);
-		return;
-	}
 
 	try {
 		// Plantilla 1: Cálculo de área de losa rectangular
@@ -685,7 +684,9 @@ export async function seedCalculationTemplates() {
 	} catch (error) {
 		console.error("Error al crear plantillas de cálculo:", error);
 	} finally {
-		await connection.destroy();
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 

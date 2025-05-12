@@ -16,8 +16,12 @@ import {
 /**
  * Semillas para plantillas de cálculo de instalaciones eléctricas (NEC-SB-IE)
  */
-export async function seedInstalacionesElectricasTemplates() {
-	const connection = AppDataSource.getInstance();
+export async function seedInstalacionesElectricasTemplates(connection = null) {
+	// Si no se proporciona una conexión, obtenemos la instancia
+	if (!connection) {
+		connection = AppDataSource.getInstance();
+	}
+
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);

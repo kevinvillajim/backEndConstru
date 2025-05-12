@@ -15,8 +15,14 @@ import {
 /**
  * Semillas para plantillas de cálculo de eficiencia energética según NEC-HS-EE
  */
-export async function seedEficienciaEnergeticaTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedEficienciaEnergeticaTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
@@ -453,7 +459,9 @@ export async function seedEficienciaEnergeticaTemplates() {
 	} catch (error) {
 		console.error("Error al crear plantillas de eficiencia energética:", error);
 	} finally {
-		await connection.destroy();
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 

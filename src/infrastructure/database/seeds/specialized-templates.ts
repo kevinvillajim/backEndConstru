@@ -15,24 +15,32 @@ import {
 /**
  * Semillas para plantillas de cálculo de instalaciones especializadas
  */
-export async function seedSpecializedTemplates() {
-  const connection = await AppDataSource.initialize();
-  const templateRepository = connection.getRepository(
-    CalculationTemplateEntity
-  );
-  const parameterRepository = connection.getRepository(
-    CalculationParameterEntity
-  );
+export async function seedSpecializedTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
 
-  try {
-    // 1. Plantilla para cálculo de tubería de agua fría
-    const plumbingTemplate = templateRepository.create({
-      name: "Cálculo de tubería de agua fría",
-      description:
-        "Calcula el diámetro óptimo de tubería de agua fría y la cantidad necesaria según el caudal y la longitud del recorrido",
-      type: CalculationType.INSTALLATION,
-      targetProfession: ProfessionType.PLUMBER,
-      formula: `
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
+
+	// Usamos la conexión para el seeding
+	const templateRepository = connection.getRepository(
+		CalculationTemplateEntity
+	);
+	const parameterRepository = connection.getRepository(
+		CalculationParameterEntity
+	);
+
+	try {
+		// 1. Plantilla para cálculo de tubería de agua fría
+		const plumbingTemplate = templateRepository.create({
+			name: "Cálculo de tubería de agua fría",
+			description:
+				"Calcula el diámetro óptimo de tubería de agua fría y la cantidad necesaria según el caudal y la longitud del recorrido",
+			type: CalculationType.INSTALLATION,
+			targetProfession: ProfessionType.PLUMBER,
+			formula: `
         // Convertir las unidades
         const flowRateLS = flowRate / 60; // Convertir de L/min a L/s
         const flowRateM3S = flowRateLS / 1000; // Convertir de L/s a m³/s
@@ -109,135 +117,137 @@ export async function seedSpecializedTemplates() {
           materials
         };
       `,
-      necReference: "NEC-HS-CI, Capítulo 16",
-      isActive: true,
-      isVerified: true,
-      isFeatured: true,
-      version: 1,
-      source: TemplateSource.SYSTEM,
-      shareLevel: "public",
-      usageCount: 0,
-      averageRating: 0,
-      ratingCount: 0,
-      tags: ["plomería", "agua fría", "tubería", "instalación"],
-    });
+			necReference: "NEC-HS-CI, Capítulo 16",
+			isActive: true,
+			isVerified: true,
+			isFeatured: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			shareLevel: "public",
+			usageCount: 0,
+			averageRating: 0,
+			ratingCount: 0,
+			tags: ["plomería", "agua fría", "tubería", "instalación"],
+		});
 
-    await templateRepository.save(plumbingTemplate);
+		await templateRepository.save(plumbingTemplate);
 
-    // Parámetros para plantilla de plomería
-    const plumbingParams = [
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "flowRate",
-        description: "Caudal requerido",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.INPUT,
-        displayOrder: 1,
-        isRequired: true,
-        minValue: 1,
-        maxValue: 1000,
-        defaultValue: "12",
-        unitOfMeasure: "L/min",
-        helpText: "Caudal total requerido para todos los aparatos sanitarios",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "pipeLength",
-        description: "Longitud aproximada de tubería",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.INPUT,
-        displayOrder: 2,
-        isRequired: true,
-        minValue: 1,
-        maxValue: 500,
-        defaultValue: "15",
-        unitOfMeasure: "m",
-        helpText: "Longitud total de tubería requerida",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "fixtures",
-        description: "Número de aparatos sanitarios",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.INPUT,
-        displayOrder: 3,
-        isRequired: true,
-        minValue: 1,
-        maxValue: 50,
-        defaultValue: "3",
-        unitOfMeasure: "unidades",
-        helpText: "Cantidad de aparatos sanitarios (lavabos, inodoros, duchas, etc.)",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "theoreticalDiameter",
-        description: "Diámetro teórico de tubería",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 4,
-        unitOfMeasure: "mm",
-        formula: "Math.sqrt((4 * (flowRate / 60 / 1000) / 1.5) / Math.PI) * 1000",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "selectedDiameter",
-        description: "Diámetro comercial recomendado",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 5,
-        unitOfMeasure: "mm",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "totalLength",
-        description: "Longitud total con desperdicio",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 6,
-        unitOfMeasure: "m",
-        formula: "pipeLength * 1.1",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "elbowCount",
-        description: "Cantidad estimada de codos",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 7,
-        unitOfMeasure: "unidades",
-        formula: "Math.ceil(pipeLength / 5)",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "teeCount",
-        description: "Cantidad estimada de tees",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 8,
-        unitOfMeasure: "unidades",
-        formula: "Math.ceil(fixtures / 2)",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: plumbingTemplate.id,
-        name: "totalCost",
-        description: "Costo total estimado",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 9,
-        unitOfMeasure: "USD",
-      }),
-    ];
+		// Parámetros para plantilla de plomería
+		const plumbingParams = [
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "flowRate",
+				description: "Caudal requerido",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 1,
+				maxValue: 1000,
+				defaultValue: "12",
+				unitOfMeasure: "L/min",
+				helpText: "Caudal total requerido para todos los aparatos sanitarios",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "pipeLength",
+				description: "Longitud aproximada de tubería",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 1,
+				maxValue: 500,
+				defaultValue: "15",
+				unitOfMeasure: "m",
+				helpText: "Longitud total de tubería requerida",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "fixtures",
+				description: "Número de aparatos sanitarios",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 3,
+				isRequired: true,
+				minValue: 1,
+				maxValue: 50,
+				defaultValue: "3",
+				unitOfMeasure: "unidades",
+				helpText:
+					"Cantidad de aparatos sanitarios (lavabos, inodoros, duchas, etc.)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "theoreticalDiameter",
+				description: "Diámetro teórico de tubería",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 4,
+				unitOfMeasure: "mm",
+				formula:
+					"Math.sqrt((4 * (flowRate / 60 / 1000) / 1.5) / Math.PI) * 1000",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "selectedDiameter",
+				description: "Diámetro comercial recomendado",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 5,
+				unitOfMeasure: "mm",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "totalLength",
+				description: "Longitud total con desperdicio",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 6,
+				unitOfMeasure: "m",
+				formula: "pipeLength * 1.1",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "elbowCount",
+				description: "Cantidad estimada de codos",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 7,
+				unitOfMeasure: "unidades",
+				formula: "Math.ceil(pipeLength / 5)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "teeCount",
+				description: "Cantidad estimada de tees",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 8,
+				unitOfMeasure: "unidades",
+				formula: "Math.ceil(fixtures / 2)",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: plumbingTemplate.id,
+				name: "totalCost",
+				description: "Costo total estimado",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 9,
+				unitOfMeasure: "USD",
+			}),
+		];
 
-    await parameterRepository.save(plumbingParams);
+		await parameterRepository.save(plumbingParams);
 
-    // 2. Plantilla para cálculo de circuito eléctrico residencial
-    const electricalTemplate = templateRepository.create({
-      name: "Cálculo de circuito eléctrico residencial",
-      description:
-        "Determina el calibre de cable, protección y ductos necesarios para un circuito eléctrico residencial",
-      type: CalculationType.INSTALLATION,
-      targetProfession: ProfessionType.ELECTRICIAN,
-      formula: `
+		// 2. Plantilla para cálculo de circuito eléctrico residencial
+		const electricalTemplate = templateRepository.create({
+			name: "Cálculo de circuito eléctrico residencial",
+			description:
+				"Determina el calibre de cable, protección y ductos necesarios para un circuito eléctrico residencial",
+			type: CalculationType.INSTALLATION,
+			targetProfession: ProfessionType.ELECTRICIAN,
+			formula: `
         // Voltaje estándar residencial Ecuador
         const voltage = 120; // Voltios
         
@@ -400,132 +410,136 @@ export async function seedSpecializedTemplates() {
           materials
         };
       `,
-      necReference: "NEC-SB-IE, Capítulo 10",
-      isActive: true,
-      isVerified: true,
-      isFeatured: true,
-      version: 1,
-      source: TemplateSource.SYSTEM,
-      shareLevel: "public",
-      usageCount: 0,
-      averageRating: 0,
-      ratingCount: 0,
-      tags: ["eléctrico", "circuito", "cable", "instalación"],
-    });
+			necReference: "NEC-SB-IE, Capítulo 10",
+			isActive: true,
+			isVerified: true,
+			isFeatured: true,
+			version: 1,
+			source: TemplateSource.SYSTEM,
+			shareLevel: "public",
+			usageCount: 0,
+			averageRating: 0,
+			ratingCount: 0,
+			tags: ["eléctrico", "circuito", "cable", "instalación"],
+		});
 
-    await templateRepository.save(electricalTemplate);
+		await templateRepository.save(electricalTemplate);
 
-    // Parámetros para plantilla eléctrica
-    const electricalParams = [
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "totalPower",
-        description: "Potencia total del circuito",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.INPUT,
-        displayOrder: 1,
-        isRequired: true,
-        minValue: 100,
-        maxValue: 10000,
-        defaultValue: "1500",
-        unitOfMeasure: "W",
-        helpText: "Suma de la potencia de todos los aparatos conectados al circuito",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "circuitLength",
-        description: "Longitud del circuito",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.INPUT,
-        displayOrder: 2,
-        isRequired: true,
-        minValue: 1,
-        maxValue: 100,
-        defaultValue: "15",
-        unitOfMeasure: "m",
-        helpText: "Distancia desde el tablero hasta el punto más lejano del circuito",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "current",
-        description: "Corriente nominal",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 3,
-        unitOfMeasure: "A",
-        formula: "totalPower / 120",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "designCurrent",
-        description: "Corriente de diseño",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 4,
-        unitOfMeasure: "A",
-        formula: "(totalPower / 120) * 1.25",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "wireGauge",
-        description: "Calibre de cable recomendado",
-        dataType: ParameterDataType.STRING,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 5,
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "breakerSize",
-        description: "Capacidad del breaker",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 6,
-        unitOfMeasure: "A",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "conduitSize",
-        description: "Tamaño de tubería conduit",
-        dataType: ParameterDataType.STRING,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 7,
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "voltageDropPercentage",
-        description: "Porcentaje de caída de tensión",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 8,
-        unitOfMeasure: "%",
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "isVoltageDropAcceptable",
-        description: "¿Caída de tensión aceptable?",
-        dataType: ParameterDataType.BOOLEAN,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 9,
-      }),
-      parameterRepository.create({
-        calculationTemplateId: electricalTemplate.id,
-        name: "totalCost",
-        description: "Costo total estimado",
-        dataType: ParameterDataType.NUMBER,
-        scope: ParameterScope.OUTPUT,
-        displayOrder: 10,
-        unitOfMeasure: "USD",
-      }),
-    ];
+		// Parámetros para plantilla eléctrica
+		const electricalParams = [
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "totalPower",
+				description: "Potencia total del circuito",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 1,
+				isRequired: true,
+				minValue: 100,
+				maxValue: 10000,
+				defaultValue: "1500",
+				unitOfMeasure: "W",
+				helpText:
+					"Suma de la potencia de todos los aparatos conectados al circuito",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "circuitLength",
+				description: "Longitud del circuito",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.INPUT,
+				displayOrder: 2,
+				isRequired: true,
+				minValue: 1,
+				maxValue: 100,
+				defaultValue: "15",
+				unitOfMeasure: "m",
+				helpText:
+					"Distancia desde el tablero hasta el punto más lejano del circuito",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "current",
+				description: "Corriente nominal",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 3,
+				unitOfMeasure: "A",
+				formula: "totalPower / 120",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "designCurrent",
+				description: "Corriente de diseño",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 4,
+				unitOfMeasure: "A",
+				formula: "(totalPower / 120) * 1.25",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "wireGauge",
+				description: "Calibre de cable recomendado",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 5,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "breakerSize",
+				description: "Capacidad del breaker",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 6,
+				unitOfMeasure: "A",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "conduitSize",
+				description: "Tamaño de tubería conduit",
+				dataType: ParameterDataType.STRING,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 7,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "voltageDropPercentage",
+				description: "Porcentaje de caída de tensión",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 8,
+				unitOfMeasure: "%",
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "isVoltageDropAcceptable",
+				description: "¿Caída de tensión aceptable?",
+				dataType: ParameterDataType.BOOLEAN,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 9,
+			}),
+			parameterRepository.create({
+				calculationTemplateId: electricalTemplate.id,
+				name: "totalCost",
+				description: "Costo total estimado",
+				dataType: ParameterDataType.NUMBER,
+				scope: ParameterScope.OUTPUT,
+				displayOrder: 10,
+				unitOfMeasure: "USD",
+			}),
+		];
 
-    await parameterRepository.save(electricalParams);
+		await parameterRepository.save(electricalParams);
 
-    console.log("Plantillas de cálculo especializadas creadas exitosamente");
-  } catch (error) {
-    console.error("Error al crear plantillas de cálculo:", error);
-  } finally {
-    await connection.destroy();
-  }
+		console.log("Plantillas de cálculo especializadas creadas exitosamente");
+	} catch (error) {
+		console.error("Error al crear plantillas de cálculo:", error);
+	} finally {
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
+	}
 }
 
 // Ejecutar el seed si se llama directamente

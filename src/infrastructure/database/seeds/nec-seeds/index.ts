@@ -20,6 +20,7 @@ import {seedMamposteriaTemplates} from "./nec-mamposteria-seeds";
 import {seedInstalacionesElectricasTemplates} from "./nec-instalaciones-electricas-seeds";
 import {seedTelecomunicacionesTemplates} from "./nec-telecomunicaciones-seeds";
 import {seedAccesibilidadUniversalTemplates} from "./nec-accesibilidad-universal-seeds";
+import { AppDataSource } from "@infrastructure/database/data-source";
 
 /**
  * Función principal para inicializar todas las plantillas de cálculo basadas en la normativa NEC
@@ -27,34 +28,36 @@ import {seedAccesibilidadUniversalTemplates} from "./nec-accesibilidad-universal
 export async function seedNECTemplates() {
 	console.log("🏗️ Iniciando siembra de plantillas NEC...");
 
+	const connection = await AppDataSource.initialize();
+
 	try {
 		// Plantillas base generales
-		await seedCalculationTemplates();
-		await seedSpecializedTemplates();
+		await seedCalculationTemplates(connection);
+		await seedSpecializedTemplates(connection);
 
 		// Plantillas específicas NEC organizadas por grupo normativo
 		console.log("⚙️ Inicializando plantillas estructurales...");
-		await seedDisenoSismicoTemplates();
-		await seedCargasNoSismicasTemplates();
-		await seedHormigonArmadoTemplates();
-		await seedEstructurasAceroTemplates();
-		await seedMamposteriaTemplates(); // Nueva
-		await seedGeotecniaCimentacionesTemplates();
-		await seedEstructurasMaderaTemplates();
-		await seedEstructurasGuaduaTemplates();
-		await seedViviendasDosPisosTemplates();
+		await seedDisenoSismicoTemplates(connection);
+		await seedCargasNoSismicasTemplates(connection);
+		await seedHormigonArmadoTemplates(connection);
+		await seedEstructurasAceroTemplates(connection);
+		await seedMamposteriaTemplates(connection); // Nueva
+		await seedGeotecniaCimentacionesTemplates(connection);
+		await seedEstructurasMaderaTemplates(connection);
+		await seedEstructurasGuaduaTemplates(connection);
+		await seedViviendasDosPisosTemplates(connection);
 
 		console.log("🌱 Inicializando plantillas de habitabilidad y salud...");
-		await seedEficienciaEnergeticaTemplates();
-		await seedEnergiasRenovablesTemplates();
-		await seedClimatizacionTemplates();
-		await seedVidriosTemplates();
-		await seedContraIncendiosTemplates(); // Nueva
-		await seedAccesibilidadUniversalTemplates(); // Nueva
+		await seedEficienciaEnergeticaTemplates(connection);
+		await seedEnergiasRenovablesTemplates(connection);
+		await seedClimatizacionTemplates(connection);
+		await seedVidriosTemplates(connection);
+		await seedContraIncendiosTemplates(connection); // Nueva
+		await seedAccesibilidadUniversalTemplates(connection); // Nueva
 
 		console.log("⚡ Inicializando plantillas de instalaciones...");
-		await seedInstalacionesElectricasTemplates(); // Nueva
-		await seedTelecomunicacionesTemplates(); // Nueva
+		await seedInstalacionesElectricasTemplates(connection); // Nueva
+		await seedTelecomunicacionesTemplates(connection); // Nueva
 
 		console.log(
 			"✅ Todas las plantillas NEC han sido inicializadas correctamente"
@@ -62,6 +65,9 @@ export async function seedNECTemplates() {
 	} catch (error) {
 		console.error("❌ Error al inicializar plantillas NEC:", error);
 		throw error;
+	} finally {
+		// Cerramos la conexión solo al final, después de que todas las funciones han terminado
+		await connection.destroy();
 	}
 }
 

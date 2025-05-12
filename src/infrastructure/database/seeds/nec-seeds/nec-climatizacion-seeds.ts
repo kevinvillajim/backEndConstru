@@ -15,8 +15,14 @@ import {
 /**
  * Semillas para plantillas de cálculo de climatización según NEC-HS-CL
  */
-export async function seedClimatizacionTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedClimatizacionTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
@@ -492,7 +498,10 @@ export async function seedClimatizacionTemplates() {
 	} catch (error) {
 		console.error("Error al crear plantillas de climatización:", error);
 	} finally {
-		await connection.destroy();
+		// Solo cerramos la conexión si nosotros la abrimos
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 

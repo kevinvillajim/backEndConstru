@@ -16,8 +16,12 @@ import {
 /**
  * Semillas para plantillas de cálculo para protección contra incendios (NEC-HS-CI)
  */
-export async function seedContraIncendiosTemplates() {
-	const connection = AppDataSource.getInstance();
+export async function seedContraIncendiosTemplates(connection = null) {
+	// Si no se proporciona una conexión, obtenemos la instancia
+	if (!connection) {
+		connection = AppDataSource.getInstance();
+	}
+
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);

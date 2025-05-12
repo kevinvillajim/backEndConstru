@@ -15,8 +15,14 @@ import {
 /**
  * Semillas para plantillas de cálculo de vidrios según NEC-HS-VIDRIO
  */
-export async function seedVidriosTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedVidriosTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
@@ -570,7 +576,9 @@ export async function seedVidriosTemplates() {
 	} catch (error) {
 		console.error("Error al crear plantillas de vidrio:", error);
 	} finally {
-		await connection.destroy();
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 

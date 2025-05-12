@@ -16,8 +16,12 @@ import {
 /**
  * Semillas para plantillas de cálculo de viviendas hasta 2 pisos (NEC-SE-VIVIENDA)
  */
-export async function seedViviendasDosPisosTemplates() {
-	const connection = AppDataSource.getInstance();
+export async function seedViviendasDosPisosTemplates(connection = null) {
+	// Si no se proporciona una conexión, obtenemos la instancia
+	if (!connection) {
+		connection = AppDataSource.getInstance();
+	}
+
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);

@@ -15,8 +15,14 @@ import {
 /**
  * Semillas para plantillas de cálculo de energías renovables según NEC-HS-ER
  */
-export async function seedEnergiasRenovablesTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedEnergiasRenovablesTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
@@ -538,7 +544,9 @@ export async function seedEnergiasRenovablesTemplates() {
 	} catch (error) {
 		console.error("Error al crear plantillas de energías renovables:", error);
 	} finally {
-		await connection.destroy();
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 

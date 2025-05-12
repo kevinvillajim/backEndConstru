@@ -15,8 +15,14 @@ import {
 /**
  * Semillas para plantillas de cálculo de hormigón armado según NEC-SE-HM
  */
-export async function seedHormigonArmadoTemplates() {
-	const connection = await AppDataSource.initialize();
+export async function seedHormigonArmadoTemplates(connection = null) {
+	// Determinamos si necesitamos administrar la conexión nosotros mismos
+	const shouldCloseConnection = !connection;
+
+	// Si no se proporcionó una conexión, creamos una nueva
+	if (!connection) {
+		connection = await AppDataSource.initialize();
+	}
 	const templateRepository = connection.getRepository(
 		CalculationTemplateEntity
 	);
@@ -999,7 +1005,9 @@ export async function seedHormigonArmadoTemplates() {
 			error
 		);
 	} finally {
-		await connection.destroy();
+		if (shouldCloseConnection) {
+			await connection.destroy();
+		}
 	}
 }
 
