@@ -14,4 +14,20 @@ export interface MaterialRepository {
 	delete(id: string): Promise<boolean>;
 	updateStock(id: string, quantity: number): Promise<boolean>;
 	updateViewCount(id: string): Promise<boolean>;
+	saveHistoricalPrice(data: HistoricalPriceData): Promise<boolean>;
+}
+
+export interface HistoricalPriceData {
+	materialId: string;
+	price: number;
+	wholesalePrice?: number;
+	wholesaleMinQuantity?: number;
+	effectiveDate: Date;
+	reason: string;
+	notes?: string;
+	supplierName?: string;
+	supplierId?: string;
+	recordedBy: string;
+	priceChangePercentage?: number;
+	isPromotion?: boolean;
 }

@@ -1,0 +1,127 @@
+Guía de Uso: Sistema de Importación/Exportación de Plantillas
+Introducción
+El sistema de importación/exportación de plantillas de cálculo permite a los usuarios compartir fácilmente sus plantillas personalizadas, hacer respaldos, y contribuir con mejoras a las plantillas existentes. Esta funcionalidad facilita:
+
+Crear respaldos de plantillas personalizadas
+Compartir plantillas entre usuarios
+Contribuir con mejoras a la comunidad
+Importar plantillas en distintos entornos (desarrollo, producción)
+Gestionar versiones de plantillas
+
+Exportación de Plantillas
+Exportar una Plantilla Individual
+Para exportar una plantilla específica:
+
+Navega a la sección de plantillas y encuentra la que deseas exportar
+Haz clic en el botón de opciones (⋮) y selecciona "Exportar"
+El sistema generará un archivo JSON con toda la información de la plantilla
+El archivo se descargará automáticamente en tu dispositivo
+
+Exportar Múltiples Plantillas
+Para exportar varias plantillas a la vez:
+
+Ve a la sección "Administrar Plantillas"
+Selecciona la pestaña "Exportar"
+Aplica filtros para seleccionar las plantillas que deseas exportar:
+
+Tipo de cálculo (Área/Volumen, Estructural, etc.)
+Profesión objetivo (Arquitecto, Ingeniero Civil, etc.)
+Etiquetas específicas
+
+
+Haz clic en "Exportar Plantillas"
+Se descargará un archivo JSON con todas las plantillas que cumplen los criterios
+
+Importación de Plantillas
+Importar una Plantilla
+Para importar una plantilla:
+
+Ve a la sección "Administrar Plantillas"
+Selecciona la pestaña "Importar"
+Haz clic en "Seleccionar archivo" y elige el archivo JSON de la plantilla
+Opcionalmente, puedes hacer clic en "Vista previa" para revisar los detalles antes de importar
+Haz clic en "Importar"
+El sistema validará la plantilla y, si es correcta, la añadirá a tu biblioteca
+
+Importar Múltiples Plantillas
+Para importar varias plantillas simultáneamente:
+
+Sigue los mismos pasos que para una plantilla individual
+Selecciona un archivo JSON que contenga múltiples plantillas (generado con la función "Exportar Múltiples")
+El sistema mostrará un resumen de las plantillas importadas correctamente y las que tuvieron errores
+
+Formato del Archivo de Exportación
+El archivo JSON generado sigue este formato:
+Plantilla Individual
+json{
+  "templateData": {
+    "name": "Cálculo de Hormigón para Columnas",
+    "description": "Calcula la cantidad de hormigón necesaria para columnas",
+    "type": "material_estimation",
+    "targetProfession": "civil_engineer",
+    "formula": "...",
+    "necReference": "NEC-SE-HM",
+    "tags": ["hormigón", "columnas", "estructural"]
+  },
+  "parameters": [
+    {
+      "name": "altura",
+      "description": "Altura de la columna",
+      "dataType": "number",
+      "scope": "input",
+      "displayOrder": 1,
+      "isRequired": true,
+      "unitOfMeasure": "m"
+    },
+    // Más parámetros...
+  ],
+  "exportVersion": "1.0",
+  "exportDate": "2025-05-11T15:30:45.123Z"
+}
+Múltiples Plantillas
+json{
+  "exports": [
+    {
+      // Primera plantilla (mismo formato que arriba)
+    },
+    {
+      // Segunda plantilla
+    }
+    // Más plantillas...
+  ]
+}
+Consideraciones Importantes
+
+Nombres duplicados: Si importas una plantilla con un nombre que ya existe en tu biblioteca, el sistema añadirá automáticamente una indicación de que es una versión importada.
+Validación: El sistema verifica que las fórmulas y parámetros sean válidos antes de completar la importación.
+Permisos: Solo puedes exportar plantillas públicas o plantillas que tú hayas creado.
+Verificación: Las plantillas importadas se marcan como "no verificadas" hasta que un administrador las revise.
+Compatibilidad: El sistema solo puede importar archivos generados por la versión actual o versiones compatibles de la aplicación.
+
+Flujo de Trabajo Recomendado para Mejoras Colaborativas
+
+Un usuario exporta una plantilla que desea mejorar
+Realiza modificaciones en la fórmula o parámetros (fuera de la plataforma)
+Importa la plantilla modificada
+La plantilla se guarda como una nueva versión con el estado "no verificada"
+Un administrador revisa y aprueba la plantilla mejorada
+La plantilla ahora está disponible para todos los usuarios
+
+Solución de Problemas
+
+Error de validación: Asegúrate de que la estructura del archivo JSON y los tipos de datos sean correctos
+Fórmulas inválidas: Verifica que las fórmulas no contengan errores de sintaxis
+Parámetros faltantes: Comprueba que todos los parámetros tengan los campos requeridos
+Versión incompatible: Verifica que la versión de exportación sea compatible con tu versión de la aplicación
+
+Preguntas Frecuentes
+¿Puedo editar el archivo JSON manualmente?
+Sí, puedes editar el archivo manualmente antes de importarlo, siempre que mantengas la estructura correcta.
+¿Se importan las estadísticas de uso?
+No, las estadísticas como calificaciones y contadores de uso no se incluyen en la exportación.
+¿Puedo importar desde otras plataformas?
+Solo si el formato es compatible con el esperado por CONSTRU.
+¿Qué sucede con las plantillas verificadas cuando las exporto y las importo de nuevo?
+Se importarán como nuevas plantillas no verificadas, que requerirán aprobación.
+Soporte Técnico
+Si encuentras algún problema con la importación o exportación de plantillas, contacta a nuestro soporte técnico en soporte@constru.app o a través del chat en vivo de la plataforma.

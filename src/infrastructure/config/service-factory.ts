@@ -20,7 +20,7 @@ import {TypeOrmMaterialRepository} from "../database/repositories/TypeOrmMateria
 import {TypeOrmProjectBudgetRepository} from "../database/repositories/TypeOrmProjectBudgetRepository";
 import {TypeOrmBudgetItemRepository} from "../database/repositories/TypeOrmBudgetItemRepository";
 import {GenerateBudgetFromCalculationUseCase} from "../../application/calculation/GenerateBudgetFromCalculationUseCase";
-import { BudgetController } from "../webserver/controllers/BudgetController";
+import {BudgetController} from "../webserver/controllers/BudgetController";
 import {TypeOrmProjectRepository} from "../database/repositories/TypeOrmProjectRepository";
 import {TypeOrmPhaseRepository} from "../database/repositories/TypeOrmPhaseRepository";
 import {TypeOrmTaskRepository} from "../database/repositories/TypeOrmTaskRepository";
@@ -30,11 +30,11 @@ import {GetProjectBudgetsUseCase} from "../../application/budget/GetProjectBudge
 import {CreateBudgetVersionUseCase} from "../../application/budget/CreateBudgetVersionUseCase";
 import {UpdateTaskProgressUseCase} from "../../application/project/UpdateTaskProgressUseCase";
 import {AssignTaskUseCase} from "../../application/project/AssignTaskUseCase";
-import { TaskController } from "../webserver/controllers/TaskController";
-import { PhaseController } from "../webserver/controllers/PhaseController";
+import {TaskController} from "../webserver/controllers/TaskController";
+import {PhaseController} from "../webserver/controllers/PhaseController";
 import {TypeOrmNotificationRepository} from "../database/repositories/TypeOrmNotificationRepository";
 import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
-import { NotificationController } from "../webserver/controllers/NotificationController";
+import {NotificationController} from "../webserver/controllers/NotificationController";
 import {CompareBudgetVersionsUseCase} from "../../application/budget/CompareBudgetVersionsUseCase";
 import {AddLaborAndIndirectCostsUseCase} from "../../application/budget/AddLaborAndIndirectCostsUseCase";
 import {GenerateProgressReportUseCase} from "../../application/project/GenerateProgressReportUseCase";
@@ -44,6 +44,13 @@ import {ProgressReportController} from "../webserver/controllers/ProgressReportC
 import {MaterialRequestController} from "../webserver/controllers/MaterialRequestController";
 import {TypeOrmMaterialRequestRepository} from "../database/repositories/TypeOrmMaterialRequestRepository";
 import {MaterialController} from "../webserver/controllers/MaterialController";
+import {ExportCalculationTemplateUseCase} from "../../application/calculation/ExportCalculationTemplateUseCase";
+import {ImportCalculationTemplateUseCase} from "../../application/calculation/ImportCalculationTemplateUseCase";
+import {TemplateImportExportController} from "../webserver/controllers/TemplateImportExportController";
+import {SupplierIntegrationController} from "@infrastructure/webserver/controllers/SupplierIntegrationController";
+import { ManageMaterialPropertiesUseCase } from "@application/material/ManageMaterialPropertiesUseCase";
+import { TypeOrmMaterialPropertyRepository } from "@infrastructure/database/repositories/TypeOrmMaterialPropertyRepository";
+import { MaterialPropertyController } from "@infrastructure/webserver/controllers/MaterialPropertyController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -90,6 +97,9 @@ let materialRequestRepository: TypeOrmMaterialRequestRepository;
 let progressReportController: ProgressReportController;
 let materialRequestController: MaterialRequestController;
 let materialController: MaterialController;
+let exportCalculationTemplateUseCase: ExportCalculationTemplateUseCase;
+let importCalculationTemplateUseCase: ImportCalculationTemplateUseCase;
+let templateImportExportController: TemplateImportExportController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -153,7 +163,7 @@ export function initializeServices() {
 				projectBudgetRepository,
 				budgetItemRepository
 			);
-		
+
 		generateProjectScheduleUseCase = new GenerateProjectScheduleUseCase(
 			projectRepository,
 			phaseRepository,
@@ -209,6 +219,17 @@ export function initializeServices() {
 			notificationService
 		);
 
+		exportCalculationTemplateUseCase = new ExportCalculationTemplateUseCase(
+			calculationTemplateRepository,
+			calculationParameterRepository,
+			userRepository
+		);
+
+		importCalculationTemplateUseCase = new ImportCalculationTemplateUseCase(
+			calculationTemplateRepository,
+			calculationParameterRepository,
+			templateValidationService
+		);
 
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
@@ -236,11 +257,11 @@ export function initializeServices() {
 			generateProjectScheduleUseCase
 		);
 
-		 taskController = new TaskController(
-				updateTaskProgressUseCase,
-				assignTaskUseCase,
-				taskRepository
-			);
+		taskController = new TaskController(
+			updateTaskProgressUseCase,
+			assignTaskUseCase,
+			taskRepository
+		);
 
 		phaseController = new PhaseController(phaseRepository, taskRepository);
 
@@ -254,6 +275,11 @@ export function initializeServices() {
 			createMaterialRequestUseCase,
 			approveMaterialRequestUseCase,
 			materialRequestRepository
+		);
+
+		templateImportExportController = new TemplateImportExportController(
+			exportCalculationTemplateUseCase,
+			importCalculationTemplateUseCase
 		);
 
 		materialController = new MaterialController(materialRepository);
@@ -363,4 +389,33 @@ export function getMaterialController() {
 		);
 	}
 	return materialController;
+}
+
+export function getTemplateImportExportController() {
+	if (!templateImportExportController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return templateImportExportController;
+}
+
+export function getSupplierIntegrationController(): SupplierIntegrationController {
+	return new SupplierIntegrationController(
+		new TypeOrmMaterialRepository(),
+		new TypeOrmCategoryRepository(),
+		new NotificationServiceImpl()
+	);
+}
+
+export function getMaterialPropertyController(): MaterialPropertyController {
+	const materialPropertyRepository = new TypeOrmMaterialPropertyRepository();
+	const materialRepository = new TypeOrmMaterialRepository();
+
+	const useCase = new ManageMaterialPropertiesUseCase(
+		materialRepository,
+		materialPropertyRepository
+	);
+
+	return new MaterialPropertyController(useCase);
 }

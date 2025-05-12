@@ -97,3 +97,53 @@ export const validateStockUpdate = (
 
 	next();
 };
+
+export const validateBulkPriceUpdate = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): void => {
+	const schema = Joi.object({
+		categoryId: Joi.string().uuid(),
+		sellerId: Joi.string().uuid(),
+		tags: Joi.array().items(Joi.string()),
+		priceChangePercentage: Joi.number().required().messages({
+			"number.base": "El porcentaje de cambio debe ser un número",
+			"any.required": "El porcentaje de cambio es obligatorio",
+		}),
+		reason: Joi.string()
+			.required()
+			.valid(
+				"supplier_update",
+				"market_fluctuation",
+				"promotion",
+				"seasonal_change",
+				"inflation_adjustment",
+				"bulk_discount",
+				"other"
+			)
+			.messages({
+				"any.required": "La razón del cambio es obligatoria",
+				"any.only": "Razón de cambio inválida",
+			}),
+		notes: Joi.string().max(500),
+		minPrice: Joi.number().min(0),
+		maxPrice: Joi.number().min(0),
+	});
+
+	const {error} = schema.validate(req.body, {abortEarly: false});
+
+	if (error) {
+		res.status(400).json({
+			success: false,
+			message: "Error de validación",
+			errors: error.details.map((detail) => ({
+				field: detail.path.join("."),
+				message: detail.message,
+			})),
+		});
+		return;
+	}
+
+	next();
+};

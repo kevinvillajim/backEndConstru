@@ -9,6 +9,7 @@ C:.
 |   package-lock.json
 |   package.json
 |   planDesarrollo.txt
+|   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
 |   
@@ -138,8 +139,38 @@ C:.
 +---frontGuide
 |       component-notification-front.txt
 |       websocket-client.txt
-|      
 |                       
++---promptsNormativaNEC
+|       parte1.txt
+|       parte10.txt
+|       parte11.txt
+|       parte12.txt
+|       parte13.txt
+|       parte14.txt
+|       parte15.txt
+|       parte16.txt
+|       parte17.txt
+|       parte18.txt
+|       parte19.txt
+|       parte2.txt
+|       parte20.txt
+|       parte21.txt
+|       parte22.txt
+|       parte23.txt
+|       parte24.txt
+|       parte25.txt
+|       parte26.txt
+|       parte27.txt
+|       parte28.txt
+|       parte3.txt
+|       parte4.txt
+|       parte5.txt
+|       parte6.txt
+|       parte7.txt
+|       parte8.txt
+|       parte9.txt
+|       terminados.txt
+|       
 +---scripts
 +---src
 |   |   bootstrap.ts
@@ -272,7 +303,7 @@ C:.
 |   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1746715381056-InitialSchema.ts
+|   |   |   |       1747074112577-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmBudgetItemRepository.ts
@@ -291,9 +322,29 @@ C:.
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
-|   |   |           calculation-templates.ts
-|   |   |           specialized-templates.ts
-|   |   |           
+|   |   |       |   calculation-templates.ts
+|   |   |       |   specialized-templates.ts
+|   |   |       |   
+|   |   |       \---nec-seeds
+|   |   |               index.ts
+|   |   |               nec-accesibilidad-universal-seeds.ts
+|   |   |               nec-cargas-no-sismicas-seeds.ts
+|   |   |               nec-climatizacion-seeds.ts
+|   |   |               nec-contra-incendios-seeds.ts
+|   |   |               nec-diseno-sismico-seeds.ts
+|   |   |               nec-eficiencia-energetica-seeds.ts
+|   |   |               nec-energias-renovables-seeds.ts
+|   |   |               nec-estructuras-acero-seeds.ts
+|   |   |               nec-estructuras-guadua-seeds.ts
+|   |   |               nec-estructuras-madera-seeds.ts
+|   |   |               nec-geotecnia-cimentaciones-seeds.ts
+|   |   |               nec-hormigon-armado-seeds.ts
+|   |   |               nec-instalaciones-electricas-seeds.ts
+|   |   |               nec-mamposteria-seeds.ts
+|   |   |               nec-telecomunicaciones-seeds.ts
+|   |   |               nec-vidrios-seeds.ts
+|   |   |               nec-viviendas-dos-pisos-seeds.ts
+|   |   |               
 |   |   +---external
 |   |   |   +---notifications
 |   |   |   +---payment
@@ -310,6 +361,7 @@ C:.
 |   |   |   |       BudgetController.ts
 |   |   |   |       CalculationController.ts
 |   |   |   |       CalculationTemplateController.ts
+|   |   |   |       MaterialController.ts
 |   |   |   |       MaterialRequestController.ts
 |   |   |   |       NotificationController.ts
 |   |   |   |       PhaseController.ts
@@ -326,6 +378,7 @@ C:.
 |   |   |   |       budgetRoutes.ts
 |   |   |   |       calculationRoutes.ts
 |   |   |   |       materialRequestRoutes.ts
+|   |   |   |       materialRoutes.ts
 |   |   |   |       notificationRoutes.ts
 |   |   |   |       progressReportRoutes.ts
 |   |   |   |       projectScheduleRoutes.ts
@@ -338,6 +391,7 @@ C:.
 |   |   |           budgetValidator.ts
 |   |   |           calculationValidator.ts
 |   |   |           materialRequestValidator.ts
+|   |   |           materialValidator.ts
 |   |   |           projectScheduleValidator.ts
 |   |   |           templateValidator.ts
 |   |   |           

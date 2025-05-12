@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 import http from "http";
 import {AppDataSource} from "./infrastructure/database/data-source";
 import { initializeServices } from "./infrastructure/config/service-factory";
-import {WebSocketService} from "./infrastructure/websocket/WebSocketService";
+import { WebSocketService } from "./infrastructure/websocket/WebSocketService";
 
 // Load environment variables
 dotenv.config();
@@ -82,6 +82,12 @@ async function bootstrap() {
 		const materialRequestRoutes = require("./infrastructure/webserver/routes/materialRequestRoutes").default;
 		const materialRoutes =
 			require("./infrastructure/webserver/routes/materialRoutes").default;
+		const templateImportExportRoutes =
+			require("./infrastructure/webserver/routes/templateImportExportRoutes").default;
+
+		const supplierIntegrationRoutes = require ("./infrastructure/webserver/routes/supplierIntegrationRoutes").default;
+		const materialPropertyRoutes = require ("./infrastructure/webserver/routes/materialPropertyRoutes").default;
+
 
 		// Configure routes
 		app.use("/api/auth", authRoutes);
@@ -92,6 +98,9 @@ async function bootstrap() {
 		app.use("/api/reports", progressReportRoutes);
 		app.use("/api/material-requests", materialRequestRoutes);
 		app.use("/api/materials", materialRoutes);
+		app.use("/api/calculations/templates", templateImportExportRoutes);
+		app.use("/api/supplier-integration", supplierIntegrationRoutes);
+		app.use("/api/material-properties", materialPropertyRoutes);
 
 		// Global error handler
 		app.use(

@@ -11,8 +11,8 @@ Fase 1: Módulos Fundamentales
 ✅ API para ejecutar cálculos (ExecuteCalculationUseCase)
 ✅ Sistema de recomendaciones de plantillas (GetTemplateRecommendationsUseCase)
 ✅ Guardado de resultados de cálculos (SaveCalculationResultUseCase)
-❌ Integración completa con normativas NEC ecuatorianas
-❌ Sistema para importar/exportar plantillas de cálculo
+✅ Integración completa con normativas NEC ecuatorianas
+✅ Sistema para importar/exportar plantillas de cálculo
 
 2. Gestión de Materiales
 

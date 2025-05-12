@@ -1,7 +1,14 @@
 // src/infrastructure/database/repositories/TypeOrmMaterialRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {MaterialRepository} from "@domain/repositories/MaterialRepository";
+import {
+	MaterialRepository,
+	HistoricalPriceData,
+} from "@domain/repositories/MaterialRepository";
+import {
+	MaterialPriceHistoryEntity,
+	PriceChangeReason,
+} from "../entities/MaterialPriceHistoryEntity";
 import {Material} from "@domain/models/material/Material";
 import {MaterialEntity} from "../entities/MaterialEntity";
 
@@ -218,5 +225,52 @@ export class TypeOrmMaterialRepository implements MaterialRepository {
 		Object.assign(entity, model);
 
 		return entity;
+	}
+
+	async saveHistoricalPrice(data: HistoricalPriceData): Promise<boolean> {
+		try {
+			// 1. Crear la entidad de historial de precios
+			const historyEntity = new MaterialPriceHistoryEntity();
+			historyEntity.materialId = data.materialId;
+			historyEntity.price = data.price;
+			historyEntity.wholesalePrice = data.wholesalePrice;
+			historyEntity.wholesaleMinQuantity = data.wholesaleMinQuantity;
+			historyEntity.effectiveDate = data.effectiveDate;
+			historyEntity.reason = data.reason as PriceChangeReason;
+			historyEntity.notes = data.notes;
+			historyEntity.supplierName = data.supplierName;
+			historyEntity.supplierId = data.supplierId;
+			historyEntity.recordedBy = data.recordedBy;
+			historyEntity.priceChangePercentage = data.priceChangePercentage;
+			historyEntity.isPromotion = data.isPromotion || false;
+
+			// 2. Buscar el registro histórico anterior activo (sin endDate)
+			const historyRepository = AppDataSource.getRepository(
+				MaterialPriceHistoryEntity
+			);
+			const previousActiveRecord = await historyRepository.findOne({
+				where: {
+					materialId: data.materialId,
+					endDate: null,
+				},
+				order: {
+					effectiveDate: "DESC",
+				},
+			});
+
+			// 3. Si hay un registro activo, establecer su fecha de fin
+			if (previousActiveRecord) {
+				previousActiveRecord.endDate = data.effectiveDate;
+				await historyRepository.save(previousActiveRecord);
+			}
+
+			// 4. Guardar el nuevo registro histórico
+			await historyRepository.save(historyEntity);
+
+			return true;
+		} catch (error) {
+			console.error("Error al guardar historial de precios:", error);
+			return false;
+		}
 	}
 }

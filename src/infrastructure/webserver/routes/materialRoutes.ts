@@ -41,4 +41,14 @@ router.patch("/:id/stock", authenticate, validateStockUpdate, (req, res) => {
 	return materialController.updateStock(req, res);
 });
 
+router.post("/bulk-update-prices", authenticate, (req, res) => {
+	const materialController = getMaterialController();
+	return materialController.bulkUpdatePrices(req, res);
+});
+
+router.get("/:id/price-history", (req, res) => {
+	const materialController = getMaterialController();
+	return materialController.getPriceHistory(req, res);
+});
+
 export default router;

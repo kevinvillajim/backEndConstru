@@ -1,0 +1,403 @@
+import React, { useState } from 'react';
+import { 
+  Card, 
+  Button, 
+  Alert, 
+  Spinner, 
+  Tabs, 
+  Tab, 
+  Form, 
+  Badge, 
+  Modal,
+  Container,
+  Row,
+  Col
+} from 'react-bootstrap';
+import { FaUpload, FaDownload, FaCheck, FaFileCode, FaFileImport, FaFileExport } from 'react-icons/fa';
+import api from '../services/api';
+
+const TemplateImportExport = ({ onTemplateImported }) => {
+  const [activeTab, setActiveTab] = useState('export');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [importFile, setImportFile] = useState(null);
+  const [filters, setFilters] = useState({
+    type: '',
+    profession: '',
+    tags: ''
+  });
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
+  const [importResults, setImportResults] = useState(null);
+
+  const templateTypes = [
+    { value: 'area_volume', label: 'Área y Volumen' },
+    { value: 'structural', label: 'Estructural' },
+    { value: 'material_estimation', label: 'Estimación de Materiales' },
+    { value: 'budget', label: 'Presupuesto' },
+    { value: 'installation', label: 'Instalación' },
+    { value: 'user_defined', label: 'Personalizado' }
+  ];
+
+  const professionTypes = [
+    { value: 'architect', label: 'Arquitecto' },
+    { value: 'civil_engineer', label: 'Ingeniero Civil' },
+    { value: 'construction_worker', label: 'Trabajador de Construcción' },
+    { value: 'contractor', label: 'Contratista' },
+    { value: 'all', label: 'Todas las profesiones' }
+  ];
+
+  // Manejar cambio de archivo
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setImportFile(file);
+    setError(null);
+    setSuccess(null);
+  };
+
+  // Manejar vista previa de archivo
+  const handlePreviewFile = async () => {
+    if (!importFile) {
+      setError('Por favor selecciona un archivo para previsualizar');
+      return;
+    }
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = JSON.parse(e.target.result);
+          setPreviewData(content);
+          setShowPreviewModal(true);
+        } catch (err) {
+          setError('El archivo no contiene un JSON válido');
+        }
+      };
+      reader.readAsText(importFile);
+    } catch (err) {
+      setError('Error al leer el archivo');
+    }
+  };
+
+  // Manejar la importación
+  const handleImport = async () => {
+    if (!importFile) {
+      setError('Por favor selecciona un archivo para importar');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = JSON.parse(e.target.result);
+          
+          // Determinar si es importación individual o múltiple
+          const isMultiple = content.exports && Array.isArray(content.exports);
+          const endpoint = isMultiple ? '/api/calculations/templates/import-multiple' : '/api/calculations/templates/import';
+          
+          const response = await api.post(endpoint, content);
+          
+          setSuccess(response.data.message);
+          setImportResults(response.data.data);
+          
+          // Notificar al componente padre si existe la función
+          if (onTemplateImported && typeof onTemplateImported === 'function') {
+            onTemplateImported(response.data.data);
+          }
+        } catch (err) {
+          setError(err.response?.data?.message || 'Error al importar la plantilla');
+        } finally {
+          setLoading(false);
+        }
+      };
+      reader.readAsText(importFile);
+    } catch (err) {
+      setError('Error al leer el archivo');
+      setLoading(false);
+    }
+  };
+
+  // Manejar la exportación
+  const handleExport = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      let queryParams = new URLSearchParams();
+      
+      if (filters.type) queryParams.append('type', filters.type);
+      if (filters.profession) queryParams.append('profession', filters.profession);
+      if (filters.tags) {
+        // Dividir las etiquetas por comas y agregarlas
+        filters.tags.split(',').forEach(tag => {
+          queryParams.append('tags', tag.trim());
+        });
+      }
+      
+      const url = `/api/calculations/templates/export-multiple?${queryParams.toString()}`;
+      
+      // Para descargar directamente
+      window.location.href = url;
+      
+      // Alternativamente, si prefieres manejar la respuesta primero:
+      /*
+      const response = await api.get(url, { responseType: 'blob' });
+      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `templates_export_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      */
+      
+      setSuccess('Exportación iniciada');
+    } catch (err) {
+      setError('Error al exportar plantillas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="mb-4">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <h5 className="mb-0">Importar/Exportar Plantillas</h5>
+      </Card.Header>
+      <Card.Body>
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k)}
+          className="mb-3"
+        >
+          {/* Tab de Importación */}
+          <Tab eventKey="import" title={<span><FaFileImport className="me-2" />Importar</span>}>
+            <p className="text-muted">
+              Importa plantillas de cálculo previamente exportadas. Puedes importar una plantilla individual o múltiples plantillas.
+            </p>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Seleccionar archivo JSON</Form.Label>
+              <Form.Control 
+                type="file" 
+                accept=".json" 
+                onChange={handleFileChange} 
+              />
+              <Form.Text className="text-muted">
+                Selecciona un archivo JSON generado por la función de exportación.
+              </Form.Text>
+            </Form.Group>
+            
+            <div className="d-flex gap-2 mb-3">
+              <Button 
+                variant="primary" 
+                onClick={handleImport}
+                disabled={loading || !importFile}
+              >
+                {loading ? (
+                  <>
+                    <Spinner as="span" animation="border" size="sm" className="me-2" />
+                    Importando...
+                  </>
+                ) : (
+                  <>
+                    <FaUpload className="me-2" />
+                    Importar
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                variant="outline-secondary" 
+                onClick={handlePreviewFile}
+                disabled={loading || !importFile}
+              >
+                <FaFileCode className="me-2" />
+                Vista previa
+              </Button>
+            </div>
+            
+            {error && <Alert variant="danger">{error}</Alert>}
+            {success && <Alert variant="success">{success}</Alert>}
+            
+            {importResults && (
+              <div className="mt-3">
+                <h6>Resultado de la importación:</h6>
+                {importResults.results ? (
+                  <div>
+                    <p>Plantillas importadas: {importResults.summary.success}</p>
+                    <p>Plantillas fallidas: {importResults.summary.failed}</p>
+                    
+                    {importResults.results.map((result, index) => (
+                      <div key={index} className="d-flex align-items-center mb-2">
+                        <Badge bg={result.success ? "success" : "danger"} className="me-2">
+                          {result.success ? <FaCheck /> : "✗"}
+                        </Badge>
+                        {result.success ? (
+                          <span>"{result.templateName}" importada correctamente</span>
+                        ) : (
+                          <span>{result.errors?.[0] || "Error al importar plantilla"}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Plantilla "{importResults.templateName}" importada correctamente</p>
+                )}
+              </div>
+            )}
+          </Tab>
+          
+          {/* Tab de Exportación */}
+          <Tab eventKey="export" title={<span><FaFileExport className="me-2" />Exportar</span>}>
+            <p className="text-muted">
+              Exporta tus plantillas de cálculo para compartirlas o crear respaldos. Puedes filtrar las plantillas que deseas exportar.
+            </p>
+            
+            <Form>
+              <Row>
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Tipo de Cálculo</Form.Label>
+                    <Form.Select 
+                      value={filters.type}
+                      onChange={(e) => setFilters({...filters, type: e.target.value})}
+                    >
+                      <option value="">Todos los tipos</option>
+                      {templateTypes.map(type => (
+                        <option key={type.value} value={type.value}>
+                          {type.label}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Profesión</Form.Label>
+                    <Form.Select 
+                      value={filters.profession}
+                      onChange={(e) => setFilters({...filters, profession: e.target.value})}
+                    >
+                      <option value="">Todas las profesiones</option>
+                      {professionTypes.map(prof => (
+                        <option key={prof.value} value={prof.value}>
+                          {prof.label}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Etiquetas (separadas por comas)</Form.Label>
+                    <Form.Control 
+                      type="text" 
+                      placeholder="ej. estructural, cemento" 
+                      value={filters.tags}
+                      onChange={(e) => setFilters({...filters, tags: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Button 
+                variant="primary" 
+                onClick={handleExport}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Spinner as="span" animation="border" size="sm" className="me-2" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FaDownload className="me-2" />
+                    Exportar Plantillas
+                  </>
+                )}
+              </Button>
+            </Form>
+            
+            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+            {success && <Alert variant="success" className="mt-3">{success}</Alert>}
+          </Tab>
+        </Tabs>
+      </Card.Body>
+      
+      {/* Modal de vista previa */}
+      <Modal 
+        show={showPreviewModal} 
+        onHide={() => setShowPreviewModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Vista previa del archivo</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ maxHeight: '70vh', overflow: 'auto' }}>
+          {previewData && (
+            <div>
+              {previewData.exports ? (
+                <div>
+                  <h6>Archivo de exportación múltiple</h6>
+                  <p>Contiene {previewData.exports.length} plantillas</p>
+                  
+                  {previewData.exports.map((template, index) => (
+                    <Card key={index} className="mb-3">
+                      <Card.Header>
+                        <strong>{template.templateData.name}</strong>
+                      </Card.Header>
+                      <Card.Body>
+                        <p><strong>Tipo:</strong> {template.templateData.type}</p>
+                        <p><strong>Profesión:</strong> {template.templateData.targetProfession}</p>
+                        <p><strong>Parámetros:</strong> {template.parameters.length}</p>
+                      </Card.Body>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <h6>Plantilla: {previewData.templateData.name}</h6>
+                  <p><strong>Descripción:</strong> {previewData.templateData.description}</p>
+                  <p><strong>Tipo:</strong> {previewData.templateData.type}</p>
+                  <p><strong>Profesión:</strong> {previewData.templateData.targetProfession}</p>
+                  <p><strong>Versión de exportación:</strong> {previewData.exportVersion}</p>
+                  <p><strong>Fecha de exportación:</strong> {new Date(previewData.exportDate).toLocaleString()}</p>
+                  
+                  <h6 className="mt-3">Parámetros ({previewData.parameters.length}):</h6>
+                  <ul>
+                    {previewData.parameters.map((param, index) => (
+                      <li key={index}>
+                        <strong>{param.name}</strong> ({param.dataType}) - {param.scope}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPreviewModal(false)}>
+            Cerrar
+          </Button>
+          <Button variant="primary" onClick={handleImport}>
+            <FaUpload className="me-2" />
+            Importar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Card>
+  );
+};
+
+export default TemplateImportExport;

@@ -3,6 +3,9 @@ import {Request, Response} from "express";
 import {MaterialRepository} from "../../../domain/repositories/MaterialRepository";
 import {handleError} from "../utils/errorHandler";
 import {User} from "../../../domain/models/user/User";
+import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdateMaterialPricesUseCase";
+import { PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
+import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -331,6 +334,99 @@ export class MaterialController {
 			res.status(400).json({
 				success: false,
 				message: typedError.message || "Error al actualizar el stock",
+			});
+		}
+	}
+
+	async bulkUpdatePrices(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			const {
+				categoryId,
+				sellerId,
+				tags,
+				priceChangePercentage,
+				reason,
+				notes,
+				minPrice,
+				maxPrice,
+			} = req.body;
+
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			// Sólo administradores o vendedores pueden actualizar precios masivamente
+			if (req.user.role !== "admin" && req.user.role !== "seller") {
+				res.status(403).json({
+					success: false,
+					message: "No tienes permisos para actualizar precios masivamente",
+				});
+				return;
+			}
+
+			// Validar que se proporcionó un porcentaje de cambio
+			if (priceChangePercentage === undefined) {
+				res.status(400).json({
+					success: false,
+					message: "El porcentaje de cambio de precio es requerido",
+				});
+				return;
+			}
+
+			// Validar que se proporcionó una razón válida
+			if (
+				!reason ||
+				!Object.values(PriceChangeReason).includes(reason as PriceChangeReason)
+			) {
+				res.status(400).json({
+					success: false,
+					message: "Razón de cambio de precio inválida",
+				});
+				return;
+			}
+
+			// Ejecutar el caso de uso
+			const bulkUpdateUseCase = new BulkUpdateMaterialPricesUseCase(
+				this.materialRepository,
+				new NotificationServiceImpl() // Asumiendo que tienes una implementación
+			);
+
+			const result = await bulkUpdateUseCase.execute(
+				{
+					categoryId,
+					sellerId: sellerId || req.user.id, // Por defecto, solo actualiza los propios
+					tags,
+					priceChangePercentage: Number(priceChangePercentage),
+					reason: reason as PriceChangeReason,
+					notes,
+					minPrice: minPrice ? Number(minPrice) : undefined,
+					maxPrice: maxPrice ? Number(maxPrice) : undefined,
+				},
+				req.user.id
+			);
+
+			if (result.success) {
+				res.status(200).json({
+					success: true,
+					message: `Precios actualizados exitosamente para ${result.updatedCount} materiales`,
+					data: result,
+				});
+			} else {
+				res.status(404).json({
+					success: false,
+					message: "No se encontraron materiales que cumplan con los criterios",
+				});
+			}
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(500).json({
+				success: false,
+				message:
+					typedError.message || "Error al actualizar precios masivamente",
 			});
 		}
 	}
