@@ -1,3 +1,4 @@
+// src/infrastructure/database/repositories/TypeOrmCategoryRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
 import {CategoryRepository} from "../../../domain/repositories/CategoryRepository";
@@ -75,7 +76,6 @@ export class TypeOrmCategoryRepository implements CategoryRepository {
 		return result.affected !== undefined && result.affected > 0;
 	}
 
-	// Métodos auxiliares
 	private toDomainModel(entity: CategoryEntity): Category {
 		return {
 			id: entity.id,

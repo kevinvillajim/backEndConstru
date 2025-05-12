@@ -105,6 +105,9 @@ export class ImportMaterialsFromSupplierUseCase {
 								name: product.categoryName,
 								description: `Categoría importada desde ${this.supplierService.getSupplierName()}`,
 								isActive: true,
+								createdAt: new Date(),
+								updatedAt: new Date(),
+								displayOrder: 0,
 							});
 							categoryId = newCategory.id;
 						}
@@ -122,6 +125,9 @@ export class ImportMaterialsFromSupplierUseCase {
 								name: "Sin categoría",
 								description: "Categoría por defecto para productos importados",
 								isActive: true,
+								createdAt: new Date(),
+								updatedAt: new Date(),
+								displayOrder: 0,
 							});
 							categoryId = newCategory.id;
 						}

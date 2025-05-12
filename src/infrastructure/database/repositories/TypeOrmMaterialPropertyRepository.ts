@@ -38,7 +38,11 @@ export class TypeOrmMaterialPropertyRepository implements MaterialPropertyReposi
 		const entity = this.definitionRepository.create(definition as any);
 		const savedEntity = await this.definitionRepository.save(entity);
 
-		return this.toDefinitionModel(savedEntity);
+		// Asegurarse de que estamos trabajando con una sola entidad
+		const singleEntity = Array.isArray(savedEntity)
+			? savedEntity[0]
+			: savedEntity;
+		return this.toDefinitionModel(singleEntity);
 	}
 
 	async updatePropertyDefinition(
@@ -87,12 +91,16 @@ export class TypeOrmMaterialPropertyRepository implements MaterialPropertyReposi
 			// Actualizar valor existente
 			Object.assign(existingValue, value);
 			const updated = await this.valueRepository.save(existingValue);
-			return this.toValueModel(updated);
+			// Asegurarse de que estamos trabajando con una sola entidad
+			const singleUpdated = Array.isArray(updated) ? updated[0] : updated;
+			return this.toValueModel(singleUpdated);
 		} else {
 			// Crear nuevo valor
 			const entity = this.valueRepository.create(value as any);
 			const saved = await this.valueRepository.save(entity);
-			return this.toValueModel(saved);
+			// Asegurarse de que estamos trabajando con una sola entidad
+			const singleSaved = Array.isArray(saved) ? saved[0] : saved;
+			return this.toValueModel(singleSaved);
 		}
 	}
 

@@ -7,6 +7,7 @@ import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdat
 import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
 import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
 import { AppDataSource } from "@infrastructure/database/data-source";
+import {getNotificationService} from "../../config/service-factory";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -393,9 +394,8 @@ export class MaterialController {
 			// Ejecutar el caso de uso
 			const bulkUpdateUseCase = new BulkUpdateMaterialPricesUseCase(
 				this.materialRepository,
-				new NotificationServiceImpl() // Asumiendo que tienes una implementación
+				getNotificationService()
 			);
-
 			const result = await bulkUpdateUseCase.execute(
 				{
 					categoryId,

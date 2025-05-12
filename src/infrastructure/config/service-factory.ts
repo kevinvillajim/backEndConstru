@@ -48,9 +48,11 @@ import {ExportCalculationTemplateUseCase} from "../../application/calculation/Ex
 import {ImportCalculationTemplateUseCase} from "../../application/calculation/ImportCalculationTemplateUseCase";
 import {TemplateImportExportController} from "../webserver/controllers/TemplateImportExportController";
 import {SupplierIntegrationController} from "@infrastructure/webserver/controllers/SupplierIntegrationController";
-import { ManageMaterialPropertiesUseCase } from "@application/material/ManageMaterialPropertiesUseCase";
-import { TypeOrmMaterialPropertyRepository } from "@infrastructure/database/repositories/TypeOrmMaterialPropertyRepository";
-import { MaterialPropertyController } from "@infrastructure/webserver/controllers/MaterialPropertyController";
+import {ManageMaterialPropertiesUseCase} from "@application/material/ManageMaterialPropertiesUseCase";
+import {TypeOrmMaterialPropertyRepository} from "@infrastructure/database/repositories/TypeOrmMaterialPropertyRepository";
+import {MaterialPropertyController} from "@infrastructure/webserver/controllers/MaterialPropertyController";
+import {TypeOrmCategoryRepository} from "../database/repositories/TypeOrmCategoryRepository";
+
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -402,7 +404,7 @@ export function getTemplateImportExportController() {
 
 export function getSupplierIntegrationController(): SupplierIntegrationController {
 	return new SupplierIntegrationController(
-		materialRepository, 
+		materialRepository,
 		new TypeOrmCategoryRepository(),
 		notificationService
 	);
@@ -418,4 +420,13 @@ export function getMaterialPropertyController(): MaterialPropertyController {
 	);
 
 	return new MaterialPropertyController(useCase);
+}
+
+export function getNotificationService() {
+	if (!notificationService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return notificationService;
 }
