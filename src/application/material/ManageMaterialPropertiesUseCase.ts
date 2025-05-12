@@ -40,7 +40,13 @@ export class ManageMaterialPropertiesUseCase {
 		// Validar que las opciones sean coherentes con el tipo
 		this.validatePropertyOptions(definition.propertyType, definition.options);
 
-		return this.propertyRepository.createPropertyDefinition(definition);
+		const definitionWithDates = {
+			...definition,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		return this.propertyRepository.createPropertyDefinition(definitionWithDates);
 	}
 
 	/**

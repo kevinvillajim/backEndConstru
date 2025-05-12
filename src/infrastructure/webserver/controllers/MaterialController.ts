@@ -4,8 +4,9 @@ import {MaterialRepository} from "../../../domain/repositories/MaterialRepositor
 import {handleError} from "../utils/errorHandler";
 import {User} from "../../../domain/models/user/User";
 import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdateMaterialPricesUseCase";
-import { PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
+import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
 import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
+import { AppDataSource } from "@infrastructure/database/data-source";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -427,6 +428,46 @@ export class MaterialController {
 				success: false,
 				message:
 					typedError.message || "Error al actualizar precios masivamente",
+			});
+		}
+	}
+
+	/**
+	 * Obtiene el historial de precios de un material
+	 */
+	async getPriceHistory(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			const {id} = req.params;
+
+			// Verificar que el material existe
+			const material = await this.materialRepository.findById(id);
+
+			if (!material) {
+				res.status(404).json({
+					success: false,
+					message: "Material no encontrado",
+				});
+				return;
+			}
+
+			// Obtener historial de precios
+			const priceHistoryRepository = AppDataSource.getRepository(
+				MaterialPriceHistoryEntity
+			);
+			const priceHistory = await priceHistoryRepository.find({
+				where: {materialId: id},
+				order: {effectiveDate: "DESC"},
+			});
+
+			res.status(200).json({
+				success: true,
+				data: priceHistory,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error al obtener historial de precios",
 			});
 		}
 	}

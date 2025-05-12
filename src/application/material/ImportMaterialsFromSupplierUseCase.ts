@@ -153,6 +153,8 @@ export class ImportMaterialsFromSupplierUseCase {
 						ratingCount: 0,
 						viewCount: 0,
 						orderCount: 0,
+						createdAt: new Date(), // Añadido para corregir error
+						updatedAt: new Date(), // Añadido para corregir error
 					});
 
 					// Guardar historial de precio inicial

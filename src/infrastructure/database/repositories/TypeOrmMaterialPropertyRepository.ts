@@ -7,9 +7,7 @@ import {MaterialPropertyValue} from "../../../domain/models/material/MaterialPro
 import {MaterialPropertyDefinitionEntity} from "../entities/MaterialPropertyDefinitionEntity";
 import {MaterialPropertyValueEntity} from "../entities/MaterialPropertyValueEntity";
 
-export class TypeOrmMaterialPropertyRepository
-	implements MaterialPropertyRepository
-{
+export class TypeOrmMaterialPropertyRepository implements MaterialPropertyRepository {
 	private definitionRepository: Repository<MaterialPropertyDefinitionEntity>;
 	private valueRepository: Repository<MaterialPropertyValueEntity>;
 

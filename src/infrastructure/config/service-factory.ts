@@ -402,9 +402,9 @@ export function getTemplateImportExportController() {
 
 export function getSupplierIntegrationController(): SupplierIntegrationController {
 	return new SupplierIntegrationController(
-		new TypeOrmMaterialRepository(),
+		materialRepository, 
 		new TypeOrmCategoryRepository(),
-		new NotificationServiceImpl()
+		notificationService
 	);
 }
 
