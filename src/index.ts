@@ -84,9 +84,12 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/materialRoutes").default;
 		const templateImportExportRoutes =
 			require("./infrastructure/webserver/routes/templateImportExportRoutes").default;
-
 		const supplierIntegrationRoutes = require ("./infrastructure/webserver/routes/supplierIntegrationRoutes").default;
 		const materialPropertyRoutes = require ("./infrastructure/webserver/routes/materialPropertyRoutes").default;
+		const projectDashboardRoutes =
+			require("./infrastructure/webserver/routes/projectDashboardRoutes").default;
+		const projectMetricsRoutes =
+			require("./infrastructure/webserver/routes/projectMetricsRoutes").default;
 
 
 		// Configure routes
@@ -101,6 +104,8 @@ async function bootstrap() {
 		app.use("/api/calculations/templates", templateImportExportRoutes);
 		app.use("/api/supplier-integration", supplierIntegrationRoutes);
 		app.use("/api/material-properties", materialPropertyRoutes);
+		app.use("/api/dashboards", projectDashboardRoutes);
+		app.use("/api/metrics", projectMetricsRoutes);
 
 		// Global error handler
 		app.use(

@@ -20,9 +20,9 @@ Fase 1: Módulos Fundamentales
 ✅ Repositorio de materiales (MaterialRepository)
 ✅ Historial de precios de materiales (MaterialPriceHistoryEntity)
 ✅ CRUD básico de materiales
-❌ Actualización masiva de precios
-❌ Integración con proveedores externos
-❌ Categorización avanzada de materiales
+✅ Actualización masiva de precios
+✅ Integración con proveedores externos
+✅ Categorización avanzada de materiales
 
 3. Gestión de Proyectos
 
@@ -35,8 +35,8 @@ Fase 1: Módulos Fundamentales
 ✅ Generación de cronograma (GenerateProjectScheduleUseCase)
 ✅ Controladores para proyectos y cronogramas
 ✅ APIs para actualizar progreso de tareas
-❌ Tableros visuales de seguimiento de proyectos
-❌ Métricas avanzadas de rendimiento de proyectos
+✅ Tableros visuales de seguimiento de proyectos
+✅ Métricas avanzadas de rendimiento de proyectos
 
 Fase 2: Funcionalidades de Presupuestación y Seguimiento
 4. Sistema de Presupuestos

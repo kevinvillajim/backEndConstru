@@ -52,7 +52,11 @@ import {ManageMaterialPropertiesUseCase} from "@application/material/ManageMater
 import {TypeOrmMaterialPropertyRepository} from "@infrastructure/database/repositories/TypeOrmMaterialPropertyRepository";
 import {MaterialPropertyController} from "@infrastructure/webserver/controllers/MaterialPropertyController";
 import {TypeOrmCategoryRepository} from "../database/repositories/TypeOrmCategoryRepository";
-
+import {ProjectMetricsService} from "../../domain/services/ProjectMetricsService";
+import {GetProjectDashboardDataUseCase} from "../../application/project/GetProjectDashboardDataUseCase";
+import {GetProjectMetricsUseCase} from "../../application/project/GetProjectMetricsUseCase";
+import {ProjectDashboardController} from "../webserver/controllers/ProjectDashboardController";
+import {ProjectMetricsController} from "../webserver/controllers/ProjectMetricsController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -102,6 +106,11 @@ let materialController: MaterialController;
 let exportCalculationTemplateUseCase: ExportCalculationTemplateUseCase;
 let importCalculationTemplateUseCase: ImportCalculationTemplateUseCase;
 let templateImportExportController: TemplateImportExportController;
+let projectMetricsService: ProjectMetricsService;
+let getProjectDashboardDataUseCase: GetProjectDashboardDataUseCase;
+let getProjectMetricsUseCase: GetProjectMetricsUseCase;
+let projectDashboardController: ProjectDashboardController;
+let projectMetricsController: ProjectMetricsController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -133,6 +142,7 @@ export function initializeServices() {
 			userRepository,
 			projectRepository
 		);
+		projectMetricsService = new ProjectMetricsService();
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -233,6 +243,21 @@ export function initializeServices() {
 			templateValidationService
 		);
 
+		getProjectDashboardDataUseCase = new GetProjectDashboardDataUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectBudgetRepository
+		);
+
+		getProjectMetricsUseCase = new GetProjectMetricsUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectBudgetRepository,
+			projectMetricsService
+		);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -285,6 +310,14 @@ export function initializeServices() {
 		);
 
 		materialController = new MaterialController(materialRepository);
+
+		projectDashboardController = new ProjectDashboardController(
+			getProjectDashboardDataUseCase
+		);
+
+		projectMetricsController = new ProjectMetricsController(
+			getProjectMetricsUseCase
+		);
 
 		console.log("Services initialized successfully");
 	} catch (error) {
@@ -429,4 +462,22 @@ export function getNotificationService() {
 		);
 	}
 	return notificationService;
+}
+
+export function getProjectDashboardController() {
+	if (!projectDashboardController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return projectDashboardController;
+}
+
+export function getProjectMetricsController() {
+	if (!projectMetricsController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return projectMetricsController;
 }
