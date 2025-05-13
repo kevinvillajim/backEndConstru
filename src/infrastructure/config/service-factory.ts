@@ -57,6 +57,10 @@ import {GetProjectDashboardDataUseCase} from "../../application/project/GetProje
 import {GetProjectMetricsUseCase} from "../../application/project/GetProjectMetricsUseCase";
 import {ProjectDashboardController} from "../webserver/controllers/ProjectDashboardController";
 import {ProjectMetricsController} from "../webserver/controllers/ProjectMetricsController";
+import {PdfGenerationService} from "../../infrastructure/services/PdfGenerationService";
+import {TypeOrmAccountingTransactionRepository} from "../database/repositories/TypeOrmAccountingTransactionRepository";
+import {SyncBudgetWithAccountingUseCase} from "@application/accounting/SyncBudgetWithAccountingUseCase";
+import {AccountingController} from "@infrastructure/webserver/controllers/AccountingController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -111,6 +115,10 @@ let getProjectDashboardDataUseCase: GetProjectDashboardDataUseCase;
 let getProjectMetricsUseCase: GetProjectMetricsUseCase;
 let projectDashboardController: ProjectDashboardController;
 let projectMetricsController: ProjectMetricsController;
+let pdfGenerationService: PdfGenerationService;
+let accountingTransactionRepository: TypeOrmAccountingTransactionRepository;
+let syncBudgetWithAccountingUseCase: SyncBudgetWithAccountingUseCase;
+let accountingController: AccountingController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -131,6 +139,8 @@ export function initializeServices() {
 		taskRepository = new TypeOrmTaskRepository();
 		notificationRepository = new TypeOrmNotificationRepository();
 		materialRequestRepository = new TypeOrmMaterialRequestRepository();
+		accountingTransactionRepository =
+			new TypeOrmAccountingTransactionRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -143,6 +153,7 @@ export function initializeServices() {
 			projectRepository
 		);
 		projectMetricsService = new ProjectMetricsService();
+		pdfGenerationService = new PdfGenerationService();
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -258,6 +269,13 @@ export function initializeServices() {
 			projectMetricsService
 		);
 
+		syncBudgetWithAccountingUseCase = new SyncBudgetWithAccountingUseCase(
+			projectBudgetRepository,
+			accountingTransactionRepository,
+			userRepository,
+			notificationService
+		);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -277,7 +295,8 @@ export function initializeServices() {
 			createBudgetVersionUseCase,
 			projectBudgetRepository,
 			compareBudgetVersionsUseCase,
-			addLaborAndIndirectCostsUseCase
+			addLaborAndIndirectCostsUseCase,
+			pdfGenerationService
 		);
 
 		projectScheduleController = new ProjectScheduleController(
@@ -317,6 +336,11 @@ export function initializeServices() {
 
 		projectMetricsController = new ProjectMetricsController(
 			getProjectMetricsUseCase
+		);
+
+		accountingController = new AccountingController(
+			syncBudgetWithAccountingUseCase,
+			accountingTransactionRepository
 		);
 
 		console.log("Services initialized successfully");
@@ -480,4 +504,31 @@ export function getProjectMetricsController() {
 		);
 	}
 	return projectMetricsController;
+}
+
+export function getPdfGenerationService() {
+	if (!pdfGenerationService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return pdfGenerationService;
+}
+
+export function getAccountingTransactionRepository() {
+	if (!accountingTransactionRepository) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return accountingTransactionRepository;
+}
+
+export function getAccountingController() {
+	if (!accountingController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return accountingController;
 }

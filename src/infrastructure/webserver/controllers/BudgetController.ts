@@ -9,7 +9,9 @@ import {User} from "../../../domain/models/user/User";
 import { BudgetStatus } from "../../../domain/models/project/ProjectBudget";
 import { CompareBudgetVersionsUseCase } from "../../../application/budget/CompareBudgetVersionsUseCase";
 import { AddLaborAndIndirectCostsUseCase } from "../../../application/budget/AddLaborAndIndirectCostsUseCase";
-
+import {PdfGenerationService} from "../../services/PdfGenerationService";
+import path from "path";
+import fs from "fs";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -22,7 +24,8 @@ export class BudgetController {
 		private createBudgetVersionUseCase: CreateBudgetVersionUseCase,
 		private projectBudgetRepository: ProjectBudgetRepository,
 		private compareBudgetVersionsUseCase: CompareBudgetVersionsUseCase,
-		private addLaborAndIndirectCostsUseCase: AddLaborAndIndirectCostsUseCase
+		private addLaborAndIndirectCostsUseCase: AddLaborAndIndirectCostsUseCase,
+		private pdfGenerationService: PdfGenerationService
 	) {}
 
 	/**
@@ -375,17 +378,60 @@ export class BudgetController {
 				return;
 			}
 
-			// Este sería un servicio que genere PDF
-			// Por ahora simplemente reportamos éxito
-			res.status(200).json({
-				success: true,
-				message:
-					"La funcionalidad de exportación a PDF se implementará en una fase posterior",
-				data: {
-					budgetId,
+			// Obtener el presupuesto con sus items
+			const budget = await this.projectBudgetRepository.findById(budgetId);
+
+			if (!budget) {
+				res.status(404).json({
+					success: false,
+					message: "Presupuesto no encontrado",
+				});
+				return;
+			}
+
+			// Configurar directorio para almacenar PDFs temporales
+			const uploadsDir = path.join(process.cwd(), "uploads", "pdf");
+			if (!fs.existsSync(uploadsDir)) {
+				fs.mkdirSync(uploadsDir, {recursive: true});
+			}
+
+			// Generar nombre de archivo
+			const fileName = `presupuesto_${budgetId}_${Date.now()}.pdf`;
+			const filePath = path.join(uploadsDir, fileName);
+
+			// Obtener información de la empresa del usuario (placeholder por ahora)
+			const companyInfo = {
+				name: "CONSTRU-ECU S.A.",
+				address: "Av. 6 de Diciembre y Whymper, Quito, Ecuador",
+				phone: "+593 99 123 4567",
+				email: "info@construecu.com",
+				ruc: "1234567890001",
+			};
+
+			// Generar PDF
+			const pdfBuffer = await this.pdfGenerationService.generateBudgetPdf(
+				budget,
+				{
+					companyInfo,
 					includeDetails: includeDetails === "true",
-				},
-			});
+					outputPath: filePath,
+				}
+			);
+
+			// Configurar headers para descargar el archivo
+			res.setHeader("Content-Type", "application/pdf");
+			res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+			res.setHeader("Content-Length", pdfBuffer.length);
+
+			// Enviar el PDF
+			res.send(pdfBuffer);
+
+			// Eliminar archivo después de enviarlo
+			setTimeout(() => {
+				if (fs.existsSync(filePath)) {
+					fs.unlinkSync(filePath);
+				}
+			}, 60000); // Eliminar después de 1 minuto
 		} catch (error) {
 			const typedError = handleError(error);
 			res.status(400).json({
