@@ -1,0 +1,401 @@
+// src/frontend/components/ProjectDelayPrediction.jsx
+
+import React, { useState, useEffect } from 'react';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, Legend, ComposedChart, Area
+} from 'recharts';
+import { format, addDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { 
+  AlertTriangle, Clock, Calendar, TrendingUp, ArrowUp, ArrowDown, 
+  CheckCircle, AlertCircle, Loader
+} from 'lucide-react';
+
+const ProjectDelayPrediction = ({ projectId }) => {
+  const [predictionData, setPredictionData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
+  const [viewMode, setViewMode] = useState('current'); // 'current' o 'history'
+
+  useEffect(() => {
+    const fetchPredictionData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/projects/${projectId}/predictions`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar las predicciones');
+        }
+        
+        const result = await response.json();
+        setPredictionData(result.data);
+        
+        // Cargar historial
+        const historyResponse = await fetch(`/api/projects/${projectId}/predictions/history`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (historyResponse.ok) {
+          const historyResult = await historyResponse.json();
+          setHistoryData(historyResult.data);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error al cargar las predicciones:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPredictionData();
+  }, [projectId]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-96">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="bg-red-100 p-4 rounded-md text-red-700">{error}</div>;
+  }
+
+  if (!predictionData) {
+    return <div>No hay datos de predicción disponibles</div>;
+  }
+
+  // Formatear fechas para gráficos
+  const formattedTrendData = predictionData.trendData.map(item => ({
+    ...item,
+    formattedDate: format(new Date(item.date), 'dd MMM', { locale: es }),
+    formattedEndDate: format(new Date(item.predictedEndDate), 'dd MMM yyyy', { locale: es })
+  }));
+  
+  // Función para determinar el color según nivel de riesgo
+  const getRiskColor = (riskLevel) => {
+    switch (riskLevel) {
+      case 'LOW': return '#22c55e'; // green-500
+      case 'MEDIUM': return '#eab308'; // yellow-500
+      case 'HIGH': return '#f97316'; // orange-500
+      case 'CRITICAL': return '#ef4444'; // red-500
+      default: return '#3b82f6'; // blue-500
+    }
+  };
+  
+  // Función para obtener el texto descriptivo del nivel de riesgo
+  const getRiskText = (riskLevel) => {
+    switch (riskLevel) {
+      case 'LOW': return 'Bajo';
+      case 'MEDIUM': return 'Medio';
+      case 'HIGH': return 'Alto';
+      case 'CRITICAL': return 'Crítico';
+      default: return 'Desconocido';
+    }
+  };
+  
+  // Formatear fechas para mostrar
+  const originalEndDate = predictionData.originalEndDate 
+    ? format(new Date(predictionData.originalEndDate), 'dd/MM/yyyy')
+    : 'No definida';
+    
+  const predictedEndDate = format(new Date(predictionData.predictedEndDate), 'dd/MM/yyyy');
+  
+  return (
+    <div className="container mx-auto p-4">
+      {/* Cabecera */}
+      <div className="mb-8">
+        <div className="flex flex-wrap justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Predicción de Retrasos: {predictionData.projectName}</h1>
+          
+          {/* Selector de modo de vista */}
+          {historyData && (
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button 
+                className={`px-4 py-2 rounded-md ${viewMode === 'current' ? 'bg-white shadow' : ''}`}
+                onClick={() => setViewMode('current')}
+              >
+                Predicción Actual
+              </button>
+              <button 
+                className={`px-4 py-2 rounded-md ${viewMode === 'history' ? 'bg-white shadow' : ''}`}
+                onClick={() => setViewMode('history')}
+              >
+                Histórico
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Resumen de predicción */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <div className="flex flex-wrap gap-6 items-center">
+            <div className={`p-4 rounded-lg flex items-center gap-4 ${
+              predictionData.predictedDelay <= 0 ? 'bg-green-50' : 
+              predictionData.riskLevel === 'LOW' ? 'bg-green-50' :
+              predictionData.riskLevel === 'MEDIUM' ? 'bg-yellow-50' :
+              predictionData.riskLevel === 'HIGH' ? 'bg-orange-50' : 'bg-red-50'
+            }`}>
+              <div className={`p-3 rounded-full ${
+                predictionData.predictedDelay <= 0 ? 'bg-green-100 text-green-700' : 
+                predictionData.riskLevel === 'LOW' ? 'bg-green-100 text-green-700' :
+                predictionData.riskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                predictionData.riskLevel === 'HIGH' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
+              }`}>
+                {predictionData.predictedDelay <= 0 ? (
+                  <CheckCircle size={32} />
+                ) : (
+                  <AlertTriangle size={32} />
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-1">
+                  {predictionData.predictedDelay <= 0 
+                    ? 'En tiempo' 
+                    : `Retraso predicho: ${Math.round(predictionData.predictedDelay)} días`}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {predictionData.predictedDelay <= 0 
+                    ? 'El proyecto está en camino a completarse según lo planificado' 
+                    : `Nivel de riesgo: ${getRiskText(predictionData.riskLevel)}`}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex-grow flex flex-wrap gap-4">
+              <div className="text-center p-3">
+                <div className="text-sm text-gray-500 mb-1">Fecha final original</div>
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar size={18} className="text-blue-500" />
+                  <span className="text-lg font-medium">{originalEndDate}</span>
+                </div>
+              </div>
+              
+              <div className="text-center p-3">
+                <div className="text-sm text-gray-500 mb-1">Fecha final predicha</div>
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar size={18} className={predictionData.predictedDelay > 0 ? "text-red-500" : "text-green-500"} />
+                  <span className="text-lg font-medium">{predictedEndDate}</span>
+                </div>
+              </div>
+              
+              <div className="text-center p-3">
+                <div className="text-sm text-gray-500 mb-1">Probabilidad de retraso</div>
+                <div className="text-lg font-medium">
+                  {Math.round(predictionData.probabilityOfDelay * 100)}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {viewMode === 'current' ? (
+        <>
+          {/* Primera fila - Gráficas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Tendencia de predicción */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">Tendencia de retraso predicho</h2>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={formattedTrendData}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="formattedDate" angle={-45} textAnchor="end" height={50} />
+                    <YAxis yAxisId="left" label={{ value: 'Días de retraso', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `${Math.round(value)} días`, 
+                        'Retraso predicho'
+                      ]}
+                      labelFormatter={(label) => `Fecha: ${label}`}
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="predictedDelay" 
+                      name="Retraso predicho" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* Factores de riesgo */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">Factores que contribuyen al retraso</h2>
+              <div className="h-64">
+                {predictionData.factors.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No hay factores significativos</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={predictionData.factors}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        type="number" 
+                        domain={[-0.1, 1]} 
+                        label={{ value: 'Impacto (días)', position: 'bottom' }}
+                      />
+                      <YAxis 
+                        dataKey="factor" 
+                        type="category" 
+                        width={100} 
+                      />
+                      <Tooltip 
+                        formatter={(value, name, props) => [
+                          `${(value * 100).toFixed(1)}%`, 
+                          'Impacto'
+                        ]}
+                        labelFormatter={(value) => value}
+                      />
+                      <Bar 
+                        dataKey="impact" 
+                        fill="#3b82f6" 
+                        radius={[0, 4, 4, 0]} 
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Segunda fila - Recomendaciones y ruta crítica */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Recomendaciones */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">Recomendaciones</h2>
+              <div className="h-64 overflow-auto pr-2">
+                {predictionData.recommendations.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No hay recomendaciones disponibles</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-3 list-disc pl-5">
+                    {predictionData.recommendations.map((recommendation, index) => (
+                      <li key={index} className="text-gray-700">{recommendation}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            
+            {/* Ruta crítica */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">Tareas en la ruta crítica</h2>
+              <div className="h-64 overflow-auto pr-2">
+                {predictionData.criticalPath.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No hay tareas críticas identificadas</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {predictionData.criticalPath.map((task, index) => (
+                      <div key={index} className="border-l-4 border-red-500 pl-4 py-2">
+                        <div className="flex justify-between">
+                          <h3 className="font-medium">{task.taskName}</h3>
+                          <span className={`ml-2 px-2 py-1 rounded text-xs font-bold ${
+                            task.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
+                            task.status === 'blocked' ? 'bg-red-100 text-red-800' : 
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {task.status === 'completed' ? 'Completado' : 
+                            task.status === 'in_progress' ? 'En Progreso' : 
+                            task.status === 'blocked' ? 'Bloqueado' : 
+                            task.status === 'pending' ? 'Pendiente' : task.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">Fase: {task.phaseName}</p>
+                        <p className="text-sm mt-1">
+                          <span className="text-red-600 font-medium">
+                            Retraso predicho: {task.predictedDelay} días
+                          </span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        // Vista de historial
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+          <h2 className="text-lg font-semibold mb-4">Historial de predicciones</h2>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={historyData.history}
+                margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey={(item) => format(new Date(item.date), 'dd MMM', { locale: es })}
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={50} 
+                />
+                <YAxis yAxisId="left" label={{ value: 'Días de retraso', angle: -90, position: 'insideLeft' }} />
+                <YAxis yAxisId="right" orientation="right" label={{ value: 'Fecha de finalización', angle: 90, position: 'insideRight' }} hide />
+                <Tooltip 
+                  formatter={(value, name, props) => {
+                    if (name === 'predictedDelay') {
+                      return [`${Math.round(value)} días`, 'Retraso predicho'];
+                    } else if (name === 'predictedEndDate') {
+                      return [format(new Date(value), 'dd/MM/yyyy'), 'Fecha finalización'];
+                    }
+                    return [value, name];
+                  }}
+                  labelFormatter={(label) => `Fecha de predicción: ${label}`}
+                />
+                <Legend />
+                <Area
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="predictedDelay"
+                  name="Retraso predicho"
+                  fill="#ffcdd2"
+                  stroke="#ef4444"
+                />
+                <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="predictedDelay" 
+                  name="Retraso predicho" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 8 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectDelayPrediction;

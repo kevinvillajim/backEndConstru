@@ -1,0 +1,113 @@
+// src/frontend/pages/projects/ProjectPredictionPage.jsx
+
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { 
+  TrendingUp, ArrowLeft, BarChart2, AlertTriangle, Calendar,
+  Download, Share, RefreshCw
+} from 'lucide-react';
+
+// Importar componentes
+import ProjectDelayPrediction from '../../components/ProjectDelayPrediction';
+import PageHeader from '../../components/common/PageHeader';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+
+const ProjectPredictionPage = () => {
+  const { projectId } = useParams();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Función para refrescar las predicciones
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulamos la actualización de datos
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1500);
+    // En un caso real, aquí se volvería a hacer la llamada a la API
+  };
+  
+  // Función para exportar predicciones a PDF (simulada)
+  const handleExport = () => {
+    alert('Funcionalidad de exportación a PDF en desarrollo');
+    // En un caso real, se haría una llamada a la API para generar y descargar el PDF
+  };
+  
+  // Función para compartir predicciones (simulada)
+  const handleShare = () => {
+    alert('Funcionalidad de compartir en desarrollo');
+    // En un caso real, se mostraría un modal para compartir las predicciones
+  };
+  
+  return (
+    <div className="container mx-auto px-4 py-6">
+      {/* Cabecera de la página */}
+      <PageHeader title="Predicción Inteligente de Retrasos">
+        <div className="flex space-x-2">
+          <Link 
+            to={`/app/projects/${projectId}`} 
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft size={16} className="mr-1" />
+            Volver al proyecto
+          </Link>
+          <Link 
+            to={`/app/projects/${projectId}/dashboard`} 
+            className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+          >
+            <BarChart2 size={16} className="mr-1" />
+            Ver dashboard
+          </Link>
+        </div>
+      </PageHeader>
+      
+      {/* Barra de acciones */}
+      <div className="bg-white shadow rounded-lg mb-6 p-4 flex justify-between items-center">
+        <div className="flex items-center">
+          <AlertTriangle size={20} className="text-amber-500 mr-2" />
+          <h2 className="text-lg font-medium">Análisis predictivo de retrasos con IA</h2>
+        </div>
+        
+        <div className="flex space-x-3">
+          <button 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-sm font-medium transition"
+          >
+            {isRefreshing ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Actualizando...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} className="mr-2" />
+                Actualizar
+              </>
+            )}
+          </button>
+          
+          <button 
+            onClick={handleExport}
+            className="flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-sm font-medium transition"
+          >
+            <Download size={16} className="mr-2" />
+            Exportar PDF
+          </button>
+          
+          <button 
+            onClick={handleShare}
+            className="flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 text-sm font-medium transition"
+          >
+            <Share size={16} className="mr-2" />
+            Compartir
+          </button>
+        </div>
+      </div>
+      
+      {/* Componente de predicción de retrasos */}
+      <ProjectDelayPrediction projectId={projectId} />
+    </div>
+  );
+};
+
+export default ProjectPredictionPage;

@@ -47,8 +47,8 @@ Fase 2: Funcionalidades de Presupuestación y Seguimiento
 ✅ Versiones de presupuestos (CreateBudgetVersionUseCase)
 ✅ Comparativa entre versiones (CompareBudgetVersionsUseCase)
 ✅ Adición de costos de mano de obra e indirectos (AddLaborAndIndirectCostsUseCase)
-❌ Exportación de presupuestos a PDF (mencionado pero no implementado)
-❌ Integración con sistemas contables
+✅ Exportación de presupuestos a PDF (mencionado pero no implementado)
+✅ Integración con sistemas contables
 
 5. Seguimiento de Progreso
 
@@ -58,8 +58,8 @@ Fase 2: Funcionalidades de Presupuestación y Seguimiento
 ✅ Solicitudes de materiales (CreateMaterialRequestUseCase)
 ✅ Aprobación de solicitudes de materiales (ApproveMaterialRequestUseCase)
 ✅ Controladores y rutas correspondientes
-❌ Dashboard interactivo para seguimiento visual
-❌ Inteligencia predictiva para identificar retrasos anticipados
+✅ Dashboard interactivo para seguimiento visual
+✅ Inteligencia predictiva para identificar retrasos anticipados
 
 Fase 3: Integración Comercial y Facturación
 6. Marketplace de Materiales

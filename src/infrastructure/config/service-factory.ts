@@ -61,6 +61,10 @@ import {PdfGenerationService} from "../../infrastructure/services/PdfGenerationS
 import {TypeOrmAccountingTransactionRepository} from "../database/repositories/TypeOrmAccountingTransactionRepository";
 import {SyncBudgetWithAccountingUseCase} from "@application/accounting/SyncBudgetWithAccountingUseCase";
 import {AccountingController} from "@infrastructure/webserver/controllers/AccountingController";
+import {EnhancedProjectDashboardUseCase} from "../../application/project/EnhancedProjectDashboardUseCase";
+import {EnhancedProjectDashboardController} from "../webserver/controllers/EnhancedProjectDashboardController";
+import {PredictProjectDelaysUseCase} from "../../application/project/PredictProjectDelaysUseCase";
+import {ProjectPredictionController} from "../webserver/controllers/ProjectPredictionController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -119,6 +123,10 @@ let pdfGenerationService: PdfGenerationService;
 let accountingTransactionRepository: TypeOrmAccountingTransactionRepository;
 let syncBudgetWithAccountingUseCase: SyncBudgetWithAccountingUseCase;
 let accountingController: AccountingController;
+let enhancedProjectDashboardUseCase: EnhancedProjectDashboardUseCase;
+let enhancedProjectDashboardController: EnhancedProjectDashboardController;
+let predictProjectDelaysUseCase: PredictProjectDelaysUseCase;
+let projectPredictionController: ProjectPredictionController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -276,6 +284,22 @@ export function initializeServices() {
 			notificationService
 		);
 
+		enhancedProjectDashboardUseCase = new EnhancedProjectDashboardUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectBudgetRepository,
+			projectMetricsService
+		);
+
+		predictProjectDelaysUseCase = new PredictProjectDelaysUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectMetricsService,
+			notificationService
+		);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -341,6 +365,14 @@ export function initializeServices() {
 		accountingController = new AccountingController(
 			syncBudgetWithAccountingUseCase,
 			accountingTransactionRepository
+		);
+
+		enhancedProjectDashboardController = new EnhancedProjectDashboardController(
+			enhancedProjectDashboardUseCase
+		);
+
+		projectPredictionController = new ProjectPredictionController(
+			predictProjectDelaysUseCase
 		);
 
 		console.log("Services initialized successfully");
@@ -531,4 +563,22 @@ export function getAccountingController() {
 		);
 	}
 	return accountingController;
+}
+
+export function getEnhancedProjectDashboardController() {
+	if (!enhancedProjectDashboardController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return enhancedProjectDashboardController;
+}
+
+export function getProjectPredictionController() {
+	if (!projectPredictionController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return projectPredictionController;
 }

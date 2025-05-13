@@ -1,0 +1,112 @@
+// src/infrastructure/websocket/WebSocketService.ts
+// Servicio para gestionar las conexiones WebSocket
+
+import { Server as SocketServer } from 'socket.io';
+import { io } from '../webserver/server';
+
+/**
+ * Servicio para manejar la comunicación en tiempo real con WebSockets
+ * Implementa el patrón Singleton para garantizar una sola instancia
+ */
+export class WebSocketService {
+  private static instance: WebSocketService;
+  private io: SocketServer;
+
+  private constructor() {
+    this.io = io;
+  }
+
+  /**
+   * Obtiene la instancia única del servicio
+   */
+  public static getInstance(): WebSocketService {
+    if (!WebSocketService.instance) {
+      WebSocketService.instance = new WebSocketService();
+    }
+    return WebSocketService.instance;
+  }
+
+  /**
+   * Envía una notificación a un usuario específico
+   */
+  public sendNotificationToUser(userId: string, notification: any): void {
+    this.io.to(`user:${userId}`).emit('notification', notification);
+  }
+
+  /**
+   * Envía una notificación a todos los usuarios de un proyecto
+   */
+  public sendNotificationToProject(projectId: string, notification: any): void {
+    this.io.to(`project:${projectId}`).emit('notification', notification);
+  }
+
+  /**
+   * Envía una actualización del progreso del proyecto a todos los usuarios suscritos
+   */
+  public sendProjectProgressUpdate(projectId: string, progressData: any): void {
+    this.io.to(`project:${projectId}`).emit('project:progress-update', progressData);
+  }
+
+  /**
+   * Envía una actualización de tareas a todos los usuarios suscritos al proyecto
+   */
+  public sendTaskUpdate(projectId: string, taskData: any): void {
+    this.io.to(`project:${projectId}`).emit('project:task-update', taskData);
+  }
+
+  /**
+   * Envía una alerta sobre predicción de retraso a los usuarios del proyecto
+   */
+  public sendDelayPredictionAlert(projectId: string, predictionData: any): void {
+    this.io.to(`project:${projectId}`).emit('project:delay-prediction', predictionData);
+  }
+
+  /**
+   * Envía una actualización del dashboard a todos los usuarios suscritos al proyecto
+   */
+  public sendDashboardUpdate(projectId: string, dashboardData: any): void {
+    this.io.to(`project:${projectId}`).emit('project:dashboard-update', dashboardData);
+  }
+
+  /**
+   * Suscribe a un usuario a las actualizaciones de un proyecto específico
+   */
+  public subscribeUserToProject(userId: string, projectId: string): void {
+    // En un caso real, esto se haría cuando el usuario entra a la página del proyecto
+    // y se requeriría la validación de permisos
+    const room = `project:${projectId}`;
+    
+    // Buscar el socket del usuario
+    const sockets = this.io.sockets.adapter.rooms.get(`user:${userId}`);
+    if (sockets) {
+      for (const socketId of sockets) {
+        const socket = this.io.sockets.sockets.get(socketId);
+        if (socket) {
+          socket.join(room);
+          console.log(`Usuario ${userId} suscrito a ${room}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Desuscribe a un usuario de las actualizaciones de un proyecto específico
+   */
+  public unsubscribeUserFromProject(userId: string, projectId: string): void {
+    const room = `project:${projectId}`;
+    
+    // Buscar el socket del usuario
+    const sockets = this.io.sockets.adapter.rooms.get(`user:${userId}`);
+    if (sockets) {
+      for (const socketId of sockets) {
+        const socket = this.io.sockets.sockets.get(socketId);
+        if (socket) {
+          socket.leave(room);
+          console.log(`Usuario ${userId} desuscrito de ${room}`);
+        }
+      }
+    }
+  }
+}
+
+export default WebSocketService;

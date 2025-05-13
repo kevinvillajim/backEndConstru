@@ -1,0 +1,473 @@
+// Componente de React para visualizar el Dashboard (frontend)
+// src/frontend/components/ProjectDashboard.jsx
+
+import React, { useState, useEffect } from 'react';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, PieChart, Pie, Legend, RadarChart, PolarGrid,
+  PolarAngleAxis, PolarRadiusAxis, Radar
+} from 'recharts';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { 
+  AlertCircle, Calendar, Clock, DollarSign, BarChart2, 
+  Layers, Users, TrendingUp, AlertTriangle 
+} from 'lucide-react';
+
+const ProjectDashboard = ({ projectId }) => {
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/projects/${projectId}/enhanced-dashboard`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar los datos del dashboard');
+        }
+        
+        const result = await response.json();
+        setDashboardData(result.data);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error al cargar el dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [projectId]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-96">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="bg-red-100 p-4 rounded-md text-red-700">{error}</div>;
+  }
+
+  if (!dashboardData) {
+    return <div>No hay datos disponibles</div>;
+  }
+
+  // Formatear fechas para gráficos
+  const formattedProgressData = dashboardData.progressData.map(item => ({
+    ...item,
+    formattedDate: format(new Date(item.date), 'dd MMM', { locale: es })
+  }));
+  
+  return (
+    <div className="container mx-auto p-4">
+      {/* Cabecera del Dashboard */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">{dashboardData.projectName}</h1>
+        <div className="flex flex-wrap gap-4 mt-2">
+          <div className="bg-white p-4 rounded-lg shadow flex items-center">
+            <div className="mr-3 bg-blue-100 p-2 rounded-full">
+              <TrendingUp className="text-blue-600" size={20} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Progreso</p>
+              <p className="text-xl font-semibold">{Math.round(dashboardData.completionPercentage)}%</p>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow flex items-center">
+            <div className="mr-3 bg-green-100 p-2 rounded-full">
+              <Calendar className="text-green-600" size={20} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Fecha Inicio</p>
+              <p className="text-xl font-semibold">{format(new Date(dashboardData.startDate), 'dd/MM/yyyy')}</p>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow flex items-center">
+            <div className="mr-3 bg-purple-100 p-2 rounded-full">
+              <Calendar className="text-purple-600" size={20} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Fecha Fin Estimada</p>
+              <p className="text-xl font-semibold">
+                {dashboardData.estimatedEndDate 
+                  ? format(new Date(dashboardData.estimatedEndDate), 'dd/MM/yyyy')
+                  : 'No definida'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow flex items-center">
+            <div className="mr-3 bg-amber-100 p-2 rounded-full">
+              <Clock className="text-amber-600" size={20} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Días Restantes</p>
+              <p className="text-xl font-semibold">{dashboardData.daysRemaining}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Primera fila de widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Gráfico de Progreso */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Progreso del Proyecto</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={formattedProgressData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="formattedDate" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  name="Progreso Real" 
+                  dataKey="percentage" 
+                  stroke="#2563eb" 
+                  fill="#93c5fd" 
+                  activeDot={{ r: 8 }} 
+                />
+                <Area 
+                  type="monotone" 
+                  name="Progreso Esperado" 
+                  dataKey="expectedPercentage" 
+                  stroke="#9333ea" 
+                  fill="#c4b5fd" 
+                  strokeDasharray="5 5" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        
+        {/* Estado de Tareas */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Estado de Tareas</h2>
+          <div className="h-64 flex">
+            <div className="w-1/2">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={dashboardData.taskStatusCounts}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="count"
+                    nameKey="status"
+                    labelLine={false}
+                    label={({ status, percent }) => `${Math.round(percent * 100)}%`}
+                  >
+                    {dashboardData.taskStatusCounts.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [value, name]} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="w-1/2 flex flex-col justify-center">
+              {dashboardData.taskStatusCounts.map((item, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <div className="w-4 h-4 mr-2" style={{ backgroundColor: item.color }}></div>
+                  <span>{item.status}: {item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Segunda fila de widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* KPIs */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">KPIs del Proyecto</h2>
+          <div className="space-y-4">
+            {dashboardData.keyPerformanceIndicators.map((kpi, index) => (
+              <div key={index} className="relative pt-1">
+                <div className="flex mb-2 items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full" 
+                      style={{
+                        backgroundColor: kpi.status === 'good' ? '#dcfce7' : 
+                                       kpi.status === 'warning' ? '#fef9c3' : '#fee2e2',
+                        color: kpi.status === 'good' ? '#166534' : 
+                              kpi.status === 'warning' ? '#854d0e' : '#b91c1c'
+                      }}>
+                      {kpi.name}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold inline-block">
+                      {typeof kpi.value === 'number' ? kpi.value.toFixed(2) : kpi.value}{kpi.unit}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      / {typeof kpi.target === 'number' ? kpi.target.toFixed(2) : kpi.target}{kpi.unit}
+                    </span>
+                  </div>
+                </div>
+                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                  <div
+                    style={{ 
+                      width: `${Math.min(100, (kpi.value / kpi.target) * 100)}%`,
+                      backgroundColor: kpi.status === 'good' ? '#22c55e' : 
+                                     kpi.status === 'warning' ? '#eab308' : '#ef4444'
+                    }}
+                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center"
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Tareas Críticas */}
+        <div className="bg-white p-4 rounded-lg shadow col-span-2">
+          <h2 className="text-lg font-semibold mb-4">Tareas Críticas</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarea</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fase</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Retraso</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {dashboardData.criticalTasks.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" colSpan="4">
+                      No hay tareas críticas identificadas
+                    </td>
+                  </tr>
+                ) : (
+                  dashboardData.criticalTasks.slice(0, 5).map((task, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {task.taskName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.phaseName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${task.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
+                            task.status === 'blocked' ? 'bg-red-100 text-red-800' : 
+                            'bg-gray-100 text-gray-800'}`}>
+                          {task.status === 'completed' ? 'Completado' : 
+                           task.status === 'in_progress' ? 'En Progreso' : 
+                           task.status === 'blocked' ? 'Bloqueado' : 
+                           task.status === 'pending' ? 'Pendiente' : task.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {task.isDelayed ? 
+                          <span className="text-red-600 font-medium">{task.daysDelayed} días</span> :
+                          <span className="text-green-600">En tiempo</span>
+                        }
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      {/* Tercera fila de widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Progreso por Fase */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Progreso por Fase</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={dashboardData.phaseProgress}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" domain={[0, 100]} />
+                <YAxis dataKey="phaseName" type="category" width={120} />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    return [`${value.toFixed(1)}%`, name === 'completionPercentage' ? 'Completado' : 'Esperado'];
+                  }}
+                />
+                <Legend />
+                <Bar 
+                  name="Completado" 
+                  dataKey="completionPercentage" 
+                  fill="#3b82f6" 
+                  radius={[0, 4, 4, 0]}
+                />
+                <Bar 
+                  name="Esperado" 
+                  dataKey="expectedPercentage" 
+                  fill="#94a3b8" 
+                  radius={[0, 4, 4, 0]}
+                  stackId="a"
+                  fillOpacity={0.3}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        
+        {/* Riesgos Activos */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Riesgos Activos</h2>
+          <div className="h-64">
+            {dashboardData.activeRisks.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">No hay riesgos activos identificados</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col space-y-4 overflow-auto h-full pr-2">
+                  {dashboardData.activeRisks.map((risk, index) => (
+                    <div key={index} className="border-l-4 pl-4 border-yellow-500 py-2">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium">{risk.description}</h3>
+                        <span className={`ml-2 px-2 py-1 rounded text-xs font-bold ${
+                          risk.riskScore < 2 ? 'bg-yellow-100 text-yellow-800' :
+                          risk.riskScore < 3 ? 'bg-orange-100 text-orange-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {risk.riskScore.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center text-sm">
+                        <span className="text-gray-500 mr-4">Probabilidad: {(risk.probability * 100).toFixed(0)}%</span>
+                        <span className="text-gray-500">Impacto: {risk.impact}/5</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{risk.mitigationPlan}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Cuarta fila de widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Hitos del Proyecto */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Hitos del Proyecto</h2>
+          <div className="space-y-4">
+            {dashboardData.milestones.map((milestone, index) => (
+              <div key={index} className="flex">
+                <div className={`flex-shrink-0 w-4 h-4 mt-1 rounded-full mr-3 ${
+                  milestone.completed ? 'bg-green-500' : 
+                  milestone.isDelayed ? 'bg-red-500' : 'bg-blue-500'
+                }`}></div>
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start">
+                    <p className="font-medium">{milestone.name}</p>
+                    <p className="text-sm text-gray-500">{format(new Date(milestone.date), 'dd/MM/yyyy')}</p>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {milestone.completed ? (
+                      <span className="text-green-600">Completado</span>
+                    ) : milestone.isDelayed ? (
+                      <span className="text-red-600">Retrasado por {milestone.daysDelayed} días</span>
+                    ) : (
+                      <span className="text-blue-600">Pendiente</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Datos de Presupuesto */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Métricas de Presupuesto</h2>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Presupuesto estimado</p>
+              <p className="text-xl font-semibold">${dashboardData.budgetData.estimatedTotal.toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Costo actual</p>
+              <p className="text-xl font-semibold">${dashboardData.budgetData.currentCost.toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">CPI</p>
+              <p className={`text-xl font-semibold ${
+                dashboardData.budgetData.costPerformanceIndex >= 1 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {dashboardData.budgetData.costPerformanceIndex.toFixed(2)}
+              </p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">SPI</p>
+              <p className={`text-xl font-semibold ${
+                dashboardData.budgetData.schedulePerformanceIndex >= 1 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {dashboardData.budgetData.schedulePerformanceIndex.toFixed(2)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <h3 className="text-md font-semibold mb-2">Análisis de Valor Ganado (EVM)</h3>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={[{
+                    name: 'Valor Planeado (PV)',
+                    value: dashboardData.budgetData.plannedValue
+                  }, {
+                    name: 'Valor Ganado (EV)',
+                    value: dashboardData.budgetData.earnedValue
+                  }, {
+                    name: 'Costo Actual (AC)',
+                    value: dashboardData.budgetData.actualCost
+                  }]} 
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Valor']} />
+                  <Bar dataKey="value" name="Valor">
+                    {[
+                      <Cell key="pv" fill="#3b82f6" />,
+                      <Cell key="ev" fill="#10b981" />,
+                      <Cell key="ac" fill="#f97316" />
+                    ]}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectDashboard;

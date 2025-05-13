@@ -1,0 +1,118 @@
+// src/infrastructure/webserver/server.ts
+
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
+import { createServer } from 'http';
+import { Server as SocketServer } from 'socket.io';
+
+// Configuración
+import { config } from '../config';
+
+// Middlewares
+import { handleError } from './middlewares/errorMiddleware';
+import { authenticate } from './middlewares/authMiddleware';
+
+// Rutas
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import calculationRoutes from './routes/calculationRoutes';
+import projectRoutes from './routes/projectRoutes';
+import materialRoutes from './routes/materialRoutes';
+import projectScheduleRoutes from './routes/projectScheduleRoutes';
+import budgetRoutes from './routes/budgetRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import progressReportRoutes from './routes/progressReportRoutes';
+import projectMetricsRoutes from './routes/projectMetricsRoutes';
+import projectDashboardRoutes from './routes/projectDashboardRoutes';
+import accountingRoutes from './routes/accountingRoutes';
+// Importar las nuevas rutas
+import enhancedProjectDashboardRoutes from './routes/enhancedProjectDashboardRoutes';
+import projectPredictionRoutes from './routes/projectPredictionRoutes';
+
+// Inicializar la app
+const app = express();
+
+// Configurar middlewares
+app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configurar rutas estáticas para archivos subidos
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+
+// Configurar rutas API
+app.use('/api/auth', authRoutes);
+app.use('/api/users', authenticate, userRoutes);
+app.use('/api/calculations', authenticate, calculationRoutes);
+app.use('/api/projects', authenticate, projectRoutes);
+app.use('/api/materials', authenticate, materialRoutes);
+app.use('/api/schedule', authenticate, projectScheduleRoutes);
+app.use('/api/budgets', authenticate, budgetRoutes);
+app.use('/api/notifications', authenticate, notificationRoutes);
+app.use('/api/reports', authenticate, progressReportRoutes);
+app.use('/api/metrics', authenticate, projectMetricsRoutes);
+app.use('/api/dashboard', authenticate, projectDashboardRoutes);
+app.use('/api/accounting', authenticate, accountingRoutes);
+
+// Configurar las nuevas rutas
+app.use('/api', authenticate, enhancedProjectDashboardRoutes);
+app.use('/api', authenticate, projectPredictionRoutes);
+
+// Ruta para verificar estado del servidor
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date() });
+});
+
+// Middleware de manejo de errores
+app.use(handleError);
+
+// Crear servidor HTTP
+const httpServer = createServer(app);
+
+// Configurar WebSockets para notificaciones en tiempo real
+const io = new SocketServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// Gestionar eventos WebSocket
+io.on('connection', (socket) => {
+  console.log('Cliente conectado:', socket.id);
+
+  // Autenticar al usuario con el token
+  socket.on('authenticate', (token) => {
+    try {
+      // Verificar token (implementación simplificada)
+      const userId = 'user_id_from_token'; // En un caso real, se verificaría el token
+      socket.join(`user:${userId}`); // Unir al usuario a su sala privada
+      console.log(`Usuario ${userId} autenticado en socket ${socket.id}`);
+      socket.emit('authenticated', { success: true });
+    } catch (error) {
+      console.error('Error de autenticación de socket:', error);
+      socket.emit('authenticated', { success: false, error: 'Token inválido' });
+    }
+  });
+
+  // Manejar desconexiones
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id);
+  });
+});
+
+// Exportar servidor HTTP y app para pruebas
+export { httpServer, app, io };
+
+// Iniciar servidor si no estamos en modo de prueba
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = config.port || 5000;
+  httpServer.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en puerto ${PORT}`);
+  });
+}

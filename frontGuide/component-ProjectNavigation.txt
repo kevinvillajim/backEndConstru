@@ -1,0 +1,81 @@
+// src/frontend/components/common/ProjectNavigation.jsx
+// Este componente representa la navegación específica de proyectos
+
+import React from 'react';
+import { NavLink, useParams } from 'react-router-dom';
+import { 
+  Calendar, DollarSign, FileText, Users, 
+  BarChart2, TrendingUp, Home, Clock
+} from 'lucide-react';
+
+const ProjectNavigation = () => {
+  const { projectId } = useParams();
+  
+  // Clase para estilos de navegación activa e inactiva
+  const baseClass = "flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors";
+  const activeClass = `${baseClass} bg-blue-100 text-blue-700`;
+  const inactiveClass = `${baseClass} text-gray-600 hover:bg-gray-100 hover:text-gray-900`;
+  
+  return (
+    <nav className="space-y-1 bg-white rounded-lg shadow-sm p-2 my-4">
+      <NavLink 
+        to={`/app/projects/${projectId}`} 
+        end
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <Home size={18} className="mr-3" />
+        Resumen
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/dashboard`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <BarChart2 size={18} className="mr-3" />
+        Dashboard
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/predictions`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <TrendingUp size={18} className="mr-3" />
+        Predicciones
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/schedule`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <Calendar size={18} className="mr-3" />
+        Cronograma
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/budget`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <DollarSign size={18} className="mr-3" />
+        Presupuesto
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/documents`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <FileText size={18} className="mr-3" />
+        Documentos
+      </NavLink>
+      
+      <NavLink 
+        to={`/app/projects/${projectId}/team`}
+        className={({ isActive }) => isActive ? activeClass : inactiveClass}
+      >
+        <Users size={18} className="mr-3" />
+        Equipo
+      </NavLink>
+    </nav>
+  );
+};
+
+export default ProjectNavigation;

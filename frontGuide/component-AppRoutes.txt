@@ -1,0 +1,87 @@
+// src/frontend/routes/AppRoutes.jsx
+// Este archivo establece las rutas principales de la aplicación
+
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+// Importar layouts
+import DashboardLayout from '../layouts/DashboardLayout';
+import AuthLayout from '../layouts/AuthLayout';
+
+// Importar páginas de autenticación
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
+import ForgotPassword from '../pages/auth/ForgotPassword';
+
+// Importar páginas principales
+import Dashboard from '../pages/Dashboard';
+import Projects from '../pages/projects/Projects';
+import ProjectDetails from '../pages/projects/ProjectDetails';
+import Calculations from '../pages/calculations/Calculations';
+import CalculationDetails from '../pages/calculations/CalculationDetails';
+import Materials from '../pages/materials/Materials';
+import Profile from '../pages/Profile';
+
+// Importar páginas de gestión de proyectos
+import ProjectSchedule from '../pages/projects/ProjectSchedule';
+import ProjectBudget from '../pages/projects/ProjectBudget';
+import ProjectDocuments from '../pages/projects/ProjectDocuments';
+import ProjectTeam from '../pages/projects/ProjectTeam';
+
+// Importar los nuevos componentes de dashboard y predicciones
+import ProjectDashboardPage from '../pages/projects/ProjectDashboardPage';
+import ProjectPredictionPage from '../pages/projects/ProjectPredictionPage';
+
+// Importar componente para ruta protegida
+import ProtectedRoute from '../components/common/ProtectedRoute';
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Rutas de autenticación */}
+      <Route path="/" element={<AuthLayout />}>
+        <Route index element={<Navigate to="/login" replace />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+      </Route>
+
+      {/* Rutas protegidas */}
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="profile" element={<Profile />} />
+        
+        {/* Rutas de proyectos */}
+        <Route path="projects" element={<Projects />} />
+        <Route path="projects/:projectId" element={<ProjectDetails />} />
+        <Route path="projects/:projectId/schedule" element={<ProjectSchedule />} />
+        <Route path="projects/:projectId/budget" element={<ProjectBudget />} />
+        <Route path="projects/:projectId/documents" element={<ProjectDocuments />} />
+        <Route path="projects/:projectId/team" element={<ProjectTeam />} />
+        
+        {/* Nuevas rutas para dashboard y predicciones */}
+        <Route path="projects/:projectId/dashboard" element={<ProjectDashboardPage />} />
+        <Route path="projects/:projectId/predictions" element={<ProjectPredictionPage />} />
+        
+        {/* Rutas de cálculos */}
+        <Route path="calculations" element={<Calculations />} />
+        <Route path="calculations/:calculationId" element={<CalculationDetails />} />
+        
+        {/* Rutas de materiales */}
+        <Route path="materials" element={<Materials />} />
+      </Route>
+
+      {/* Ruta para cualquier otra URL no definida */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
