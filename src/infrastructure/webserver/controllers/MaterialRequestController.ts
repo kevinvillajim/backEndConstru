@@ -4,12 +4,8 @@ import {CreateMaterialRequestUseCase} from "../../../application/project/CreateM
 import {ApproveMaterialRequestUseCase} from "../../../application/project/ApproveMaterialRequestUseCase";
 import {MaterialRequestRepository} from "../../../domain/repositories/MaterialRequestRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 import {MaterialRequestStatus} from "../../../domain/models/project/MaterialRequest";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
 
 export class MaterialRequestController {
 	constructor(

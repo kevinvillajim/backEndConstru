@@ -3,11 +3,7 @@ import {Request, Response} from "express";
 import {ExportCalculationTemplateUseCase} from "../../../application/calculation/ExportCalculationTemplateUseCase";
 import {ImportCalculationTemplateUseCase} from "../../../application/calculation/ImportCalculationTemplateUseCase";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class TemplateImportExportController {
 	constructor(

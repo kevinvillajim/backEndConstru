@@ -4,11 +4,8 @@ import {CreateOrderFromMaterialRequestsUseCase} from "../../../application/order
 import {OrderRepository} from "../../../domain/repositories/OrderRepository";
 import {OrderItemRepository} from "../../../domain/repositories/OrderItemRepository";
 import {handleError} from "../utils/errorHandler";
-import {User, UserRole} from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {UserRole} from "../../../domain/models/user/User";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class OrderController {
 	constructor(

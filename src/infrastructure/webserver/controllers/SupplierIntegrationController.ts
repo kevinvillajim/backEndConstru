@@ -1,6 +1,5 @@
 // src/infrastructure/webserver/controllers/SupplierIntegrationController.ts
 import {Request, Response} from "express";
-import {User} from "../../../domain/models/user/User";
 import {handleError} from "../utils/errorHandler";
 import {ImportMaterialsFromSupplierUseCase} from "../../../application/material/ImportMaterialsFromSupplierUseCase";
 import {SupplierIntegrationService} from "../../../domain/services/SupplierIntegrationService";
@@ -8,10 +7,7 @@ import {ExampleSupplierAdapter} from "../../external/supplier/ExampleSupplierAda
 import {MaterialRepository} from "../../../domain/repositories/MaterialRepository";
 import {CategoryRepository} from "../../../domain/repositories/CategoryRepository";
 import {NotificationService} from "../../../domain/services/NotificationService";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class SupplierIntegrationController {
 	constructor(

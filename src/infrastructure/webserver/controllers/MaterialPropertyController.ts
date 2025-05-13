@@ -1,12 +1,8 @@
 // src/infrastructure/webserver/controllers/MaterialPropertyController.ts
 import {Request, Response} from "express";
-import {User} from "../../../domain/models/user/User";
 import {ManageMaterialPropertiesUseCase} from "../../../application/material/ManageMaterialPropertiesUseCase";
 import {handleError} from "../utils/errorHandler";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class MaterialPropertyController {
 	constructor(

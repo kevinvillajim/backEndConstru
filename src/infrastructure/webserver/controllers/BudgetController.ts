@@ -5,17 +5,13 @@ import {GetProjectBudgetsUseCase} from "../../../application/budget/GetProjectBu
 import {CreateBudgetVersionUseCase} from "../../../application/budget/CreateBudgetVersionUseCase";
 import {ProjectBudgetRepository} from "../../../domain/repositories/ProjectBudgetRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 import { BudgetStatus } from "../../../domain/models/project/ProjectBudget";
 import { CompareBudgetVersionsUseCase } from "../../../application/budget/CompareBudgetVersionsUseCase";
 import { AddLaborAndIndirectCostsUseCase } from "../../../application/budget/AddLaborAndIndirectCostsUseCase";
 import {PdfGenerationService} from "../../services/PdfGenerationService";
 import path from "path";
 import fs from "fs";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
 
 export class BudgetController {
 	constructor(

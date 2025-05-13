@@ -8,11 +8,7 @@ import {
 	ProfessionType,
 } from "../../../domain/models/calculation/CalculationTemplate";
 import { handleError } from "../utils/errorHandler";
-import { User } from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class CalculationTemplateController {
 	constructor(

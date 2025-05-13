@@ -4,12 +4,8 @@ import {UpdateTaskProgressUseCase} from "../../../application/project/UpdateTask
 import {AssignTaskUseCase} from "../../../application/project/AssignTaskUseCase";
 import {TaskRepository} from "../../../domain/repositories/TaskRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
 import {TaskStatus} from "../../../domain/models/project/Task";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class TaskController {
 	constructor(

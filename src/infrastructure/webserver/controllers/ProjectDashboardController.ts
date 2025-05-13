@@ -1,12 +1,8 @@
 // src/infrastructure/webserver/controllers/ProjectDashboardController.ts
 import {Request, Response} from "express";
 import {GetProjectDashboardDataUseCase} from "../../../application/project/GetProjectDashboardDataUseCase";
-import {User} from "../../../domain/models/user/User";
 import {handleError} from "../utils/errorHandler";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class ProjectDashboardController {
 	constructor(

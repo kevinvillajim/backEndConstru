@@ -2,13 +2,9 @@
 import {Request, Response} from "express";
 import {SyncBudgetWithAccountingUseCase} from "../../../application/accounting/SyncBudgetWithAccountingUseCase";
 import {AccountingServiceFactory} from "../../services/accounting/AccountingServiceFactory";
-import {User} from "../../../domain/models/user/User";
-import {handleError} from "../utils/errorHandler";
+import { RequestWithUser } from "../middlewares/authMiddleware";
+import { handleError } from "../utils/errorHandler";
 import {AccountingTransactionRepository} from "../../../domain/repositories/AccountingTransactionRepository";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
 
 export class AccountingController {
 	constructor(

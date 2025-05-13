@@ -1,14 +1,10 @@
 // src/infrastructure/webserver/controllers/AuthController.ts
 import {Request, Response} from "express";
-import {User} from "../../../domain/models/user/User";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
 import {UserRole, SubscriptionPlan} from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
 
 // Authentication successful cookie settings
 const AUTH_COOKIE_SETTINGS = {

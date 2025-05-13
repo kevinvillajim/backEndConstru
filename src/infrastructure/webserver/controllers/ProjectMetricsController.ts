@@ -1,12 +1,8 @@
 // src/infrastructure/webserver/controllers/ProjectMetricsController.ts
 import {Request, Response} from "express";
 import {GetProjectMetricsUseCase} from "../../../application/project/GetProjectMetricsUseCase";
-import {User} from "../../../domain/models/user/User";
 import {handleError} from "../utils/errorHandler";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class ProjectMetricsController {
 	constructor(private getProjectMetricsUseCase: GetProjectMetricsUseCase) {}

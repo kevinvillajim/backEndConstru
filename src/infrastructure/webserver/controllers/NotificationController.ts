@@ -1,15 +1,11 @@
 // src/infrastructure/webserver/controllers/NotificationController.ts
 import {Request, Response} from "express";
 import {NotificationService} from "../../../domain/services/NotificationService";
-import {User} from "../../../domain/models/user/User";
 import { handleError } from "../utils/errorHandler";
 import {
 	getPushNotificationService,
 } from "../../config/service-factory";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class NotificationController {
 	constructor(private notificationService: NotificationService) {}

@@ -3,11 +3,7 @@ import {Request, Response} from "express";
 import {PhaseRepository} from "../../../domain/repositories/PhaseRepository";
 import {TaskRepository} from "../../../domain/repositories/TaskRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class PhaseController {
 	constructor(

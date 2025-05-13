@@ -51,4 +51,13 @@ router.get("/:id/price-history", (req, res) => {
 	return materialController.getPriceHistory(req, res);
 });
 
+router.get(
+	"/materials/:materialId/compare-prices",
+	authenticate,
+	(req, res) => {
+		const materialController = getMaterialController();
+		return materialController.comparePrices(req, res);
+	}
+);
+
 export default router;

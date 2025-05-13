@@ -3,12 +3,8 @@ import {Request, Response} from "express";
 import {TwoFactorAuthService} from "../../../domain/services/TwoFactorAuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {AuthService} from "../../../domain/services/AuthService";
-import {User} from "../../../domain/models/user/User";
 import {handleError} from "../utils/errorHandler";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class TwoFactorAuthController {
 	constructor(

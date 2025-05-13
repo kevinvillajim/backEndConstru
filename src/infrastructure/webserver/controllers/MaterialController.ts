@@ -2,16 +2,13 @@
 import {Request, Response} from "express";
 import {MaterialRepository} from "../../../domain/repositories/MaterialRepository";
 import {handleError} from "../utils/errorHandler";
-import {User, UserRole} from "../../../domain/models/user/User";
+import { UserRole } from "../../../domain/models/user/User";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdateMaterialPricesUseCase";
 import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
 import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
 import { AppDataSource } from "@infrastructure/database/data-source";
 import {getNotificationService} from "../../config/service-factory";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
 
 export class MaterialController {
 	private compareMaterialPricesUseCase: any;

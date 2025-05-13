@@ -30,14 +30,3 @@ router.patch("/:orderId/status", authenticate, (req, res) => {
 });
 
 export default router;
-
-// Actualizar src/infrastructure/webserver/routes/materialRoutes.ts
-// Agregar endpoint para comparación de precios
-router.get(
-	"/materials/:materialId/compare-prices",
-	authenticate,
-	(req, res) => {
-		const materialController = getMaterialController();
-		return materialController.comparePrices(req, res);
-	}
-);

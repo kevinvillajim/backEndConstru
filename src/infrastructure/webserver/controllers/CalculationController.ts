@@ -5,12 +5,7 @@ import {GetTemplateRecommendationsUseCase} from "../../../application/calculatio
 import {SaveCalculationResultUseCase} from "../../../application/calculation/SaveCalculationResultUseCase";
 import {CalculationRequest} from "../../../domain/models/calculation/CalculationResult";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
-
-// Interfaz extendida para Request con usuario
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class CalculationController {
 	constructor(

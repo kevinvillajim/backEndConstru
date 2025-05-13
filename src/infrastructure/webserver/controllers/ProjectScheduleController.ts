@@ -2,11 +2,7 @@
 import {Request, Response} from "express";
 import {GenerateProjectScheduleUseCase} from "../../../application/project/GenerateProjectScheduleUseCase";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
-
-interface RequestWithUser extends Request {
-	user?: User;
-}
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class ProjectScheduleController {
 	constructor(
