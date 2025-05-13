@@ -1,5 +1,3 @@
-// src/infrastructure/webserver/routes/docs/budgetRoutes.documented.ts
-
 /**
  * @swagger
  * /api/budgets/generate:

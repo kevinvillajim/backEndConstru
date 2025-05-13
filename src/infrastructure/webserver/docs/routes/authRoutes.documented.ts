@@ -1,5 +1,3 @@
-// src/infrastructure/webserver/routes/docs/authRoutes.documented.ts
-
 /**
  * @swagger
  * /api/auth/login:

@@ -513,7 +513,22 @@ const options = {
 	// Path to the API docs
 	apis: [
 		"./src/infrastructure/webserver/routes/*.ts",
-		"./src/infrastructure/webserver/docs/routes/*.ts",
+        "./src/infrastructure/webserver/docs/routes/*.ts",
+        
+        //uno por uno para test, test completo depsues lo borro
+		// "./src/infrastructure/webserver/docs/routes/authRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/budgetRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/calculationRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/materialRequestRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/materialRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/notificationRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/orderRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/phaseRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/progressReportRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/projectDashboardRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/projectMetricsRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/taskRoutes.documented.ts",
+		// "./src/infrastructure/webserver/docs/routes/templateImportExportRoutes.documented.ts",
 		"./src/infrastructure/webserver/controllers/*.ts",
 		"./src/domain/models/**/*.ts",
 	],

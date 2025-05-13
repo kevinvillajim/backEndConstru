@@ -60,13 +60,11 @@
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [name, price, createdAt, viewCount, orderCount, rating]
  *         description: Campo por el cual ordenar
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
- *           enum: [ASC, DESC]
  *           default: ASC
  *         description: Orden de clasificación
  *     responses:
@@ -601,7 +599,7 @@
  *                     type: number
  *                   longitude:
  *                     type: number
- * *                   city:
+ *                   city:
  *                     type: string
  *                   province:
  *                     type: string

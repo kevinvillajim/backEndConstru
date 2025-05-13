@@ -1,5 +1,3 @@
-// src/infrastructure/webserver/routes/docs/calculationRoutes.documented.ts
-
 /**
  * @swagger
  * /api/calculations/execute:
