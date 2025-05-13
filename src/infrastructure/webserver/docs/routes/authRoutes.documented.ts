@@ -1,15 +1,4 @@
-// src/infrastructure/webserver/routes/authRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {
-	validateLoginRequest,
-	validateRegisterRequest,
-	validateForgotPasswordRequest,
-	validatePasswordResetRequest,
-} from "../../validators/authValidator";
-import {getAuthController, getTwoFactorAuthController} from "../../../config/service-factory";
-
-const router = Router();
+// src/infrastructure/webserver/routes/docs/authRoutes.documented.ts
 
 /**
  * @swagger
@@ -76,10 +65,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/login", validateLoginRequest, (req, res) => {
-	const authController = getAuthController();
-	return authController.login(req, res);
-});
 
 /**
  * @swagger
@@ -125,10 +110,6 @@ router.post("/login", validateLoginRequest, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/register", validateRegisterRequest, (req, res) => {
-	const authController = getAuthController();
-	return authController.register(req, res);
-});
 
 /**
  * @swagger
@@ -159,10 +140,6 @@ router.post("/register", validateRegisterRequest, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/refresh-token", (req, res) => {
-	const authController = getAuthController();
-	return authController.refreshToken(req, res);
-});
 
 /**
  * @swagger
@@ -187,10 +164,6 @@ router.post("/refresh-token", (req, res) => {
  *                   type: string
  *                   example: Sesión cerrada exitosamente
  */
-router.post("/logout", (req, res) => {
-	const authController = getAuthController();
-	return authController.logout(req, res);
-});
 
 /**
  * @swagger
@@ -228,10 +201,6 @@ router.post("/logout", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/verify-email/:token", (req, res) => {
-	const authController = getAuthController();
-	return authController.verifyEmail(req, res);
-});
 
 /**
  * @swagger
@@ -274,10 +243,6 @@ router.get("/verify-email/:token", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/forgot-password", validateForgotPasswordRequest, (req, res) => {
-	const authController = getAuthController();
-	return authController.forgotPassword(req, res);
-});
 
 /**
  * @swagger
@@ -332,14 +297,6 @@ router.post("/forgot-password", validateForgotPasswordRequest, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post(
-	"/reset-password/:token",
-	validatePasswordResetRequest,
-	(req, res) => {
-		const authController = getAuthController();
-		return authController.resetPassword(req, res);
-	}
-);
 
 /**
  * @swagger
@@ -368,10 +325,6 @@ router.post(
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/profile", authenticate, (req, res) => {
-	const authController = getAuthController();
-	return authController.getProfile(req, res);
-});
 
 /**
  * @swagger
@@ -542,10 +495,6 @@ router.get("/profile", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/2fa/setup", authenticate, (req, res) => {
-  const twoFactorAuthController = getTwoFactorAuthController();
-  return twoFactorAuthController.setupTwoFactor(req, res);
-});
 
 /**
  * @swagger
@@ -601,10 +550,6 @@ router.post("/2fa/setup", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/2fa/verify", authenticate, (req, res) => {
-  const twoFactorAuthController = getTwoFactorAuthController();
-  return twoFactorAuthController.verifyAndEnableTwoFactor(req, res);
-});
 
 /**
  * @swagger
@@ -647,10 +592,6 @@ router.post("/2fa/verify", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/2fa/disable", authenticate, (req, res) => {
-  const twoFactorAuthController = getTwoFactorAuthController();
-  return twoFactorAuthController.disableTwoFactor(req, res);
-});
 
 /**
  * @swagger
@@ -705,10 +646,6 @@ router.post("/2fa/disable", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/2fa/validate", (req, res) => {
-  const twoFactorAuthController = getTwoFactorAuthController();
-  return twoFactorAuthController.validateTwoFactorToken(req, res);
-});
 
 /**
  * @swagger
@@ -757,11 +694,3 @@ router.post("/2fa/validate", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/2fa/recovery", (req, res) => {
-  const twoFactorAuthController = getTwoFactorAuthController();
-  return twoFactorAuthController.useRecoveryCode(req, res);
-});
-
-// More routes will be documented in a similar way...
-
-export default router;

@@ -513,6 +513,7 @@ const options = {
 	// Path to the API docs
 	apis: [
 		"./src/infrastructure/webserver/routes/*.ts",
+		"./src/infrastructure/webserver/docs/routes/*.ts",
 		"./src/infrastructure/webserver/controllers/*.ts",
 		"./src/domain/models/**/*.ts",
 	],

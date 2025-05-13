@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/orderRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getOrderController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/orders/from-material-requests:
@@ -75,10 +68,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/from-material-requests", authenticate, (req, res) => {
-	const orderController = getOrderController();
-	return orderController.createFromMaterialRequests(req, res);
-});
 
 /**
  * @swagger
@@ -143,10 +132,6 @@ router.post("/from-material-requests", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/user", authenticate, (req, res) => {
-	const orderController = getOrderController();
-	return orderController.getUserOrders(req, res);
-});
 
 /**
  * @swagger
@@ -216,10 +201,6 @@ router.get("/user", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:orderId", authenticate, (req, res) => {
-	const orderController = getOrderController();
-	return orderController.getOrderDetails(req, res);
-});
 
 /**
  * @swagger
@@ -292,9 +273,3 @@ router.get("/:orderId", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch("/:orderId/status", authenticate, (req, res) => {
-	const orderController = getOrderController();
-	return orderController.updateOrderStatus(req, res);
-});
-
-export default router;

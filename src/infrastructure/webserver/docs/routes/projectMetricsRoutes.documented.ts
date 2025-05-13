@@ -1,13 +1,3 @@
-// src/infrastructure/webserver/routes/projectMetricsRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {
-	getProjectMetricsController,
-	getProjectPredictionController,
-} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/metrics/project/{projectId}:
@@ -78,10 +68,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/project/:projectId", authenticate, (req, res) => {
-	const metricsController = getProjectMetricsController();
-	return metricsController.getProjectMetrics(req, res);
-});
 
 /**
  * @swagger
@@ -167,10 +153,6 @@ router.get("/project/:projectId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/predictions/:projectId/delays", authenticate, (req, res) => {
-	const predictionController = getProjectPredictionController();
-	return predictionController.predictDelays(req, res);
-});
 
 /**
  * @swagger
@@ -232,9 +214,3 @@ router.get("/predictions/:projectId/delays", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/predictions/:projectId/history", authenticate, (req, res) => {
-	const predictionController = getProjectPredictionController();
-	return predictionController.getPredictionHistory(req, res);
-});
-
-export default router;

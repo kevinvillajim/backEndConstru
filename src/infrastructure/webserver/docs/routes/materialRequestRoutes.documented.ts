@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/materialRequestRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getMaterialRequestController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/material-requests:
@@ -66,10 +59,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/", authenticate, (req, res) => {
-	const materialRequestController = getMaterialRequestController();
-	return materialRequestController.createRequest(req, res);
-});
 
 /**
  * @swagger
@@ -128,10 +117,6 @@ router.post("/", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/:requestId/approve", authenticate, (req, res) => {
-	const materialRequestController = getMaterialRequestController();
-	return materialRequestController.approveRequest(req, res);
-});
 
 /**
  * @swagger
@@ -202,10 +187,6 @@ router.post("/:requestId/approve", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:requestId/reject", authenticate, (req, res) => {
-	const materialRequestController = getMaterialRequestController();
-	return materialRequestController.rejectRequest(req, res);
-});
 
 /**
  * @swagger
@@ -256,10 +237,6 @@ router.post("/:requestId/reject", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/project/:projectId", authenticate, (req, res) => {
-	const materialRequestController = getMaterialRequestController();
-	return materialRequestController.getProjectRequests(req, res);
-});
 
 /**
  * @swagger
@@ -335,9 +312,3 @@ router.get("/project/:projectId", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:requestId/delivery", authenticate, (req, res) => {
-	const materialRequestController = getMaterialRequestController();
-	return materialRequestController.confirmDelivery(req, res);
-});
-
-export default router;

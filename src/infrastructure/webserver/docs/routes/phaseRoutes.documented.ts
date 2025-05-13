@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/phaseRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getPhaseController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/phases/{phaseId}:
@@ -46,10 +39,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:phaseId", authenticate, (req, res) => {
-	const phaseController = getPhaseController();
-	return phaseController.getPhaseDetails(req, res);
-});
 
 /**
  * @swagger
@@ -99,10 +88,6 @@ router.get("/:phaseId", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:phaseId/tasks", authenticate, (req, res) => {
-	const phaseController = getPhaseController();
-	return phaseController.getPhaseTasks(req, res);
-});
 
 /**
  * @swagger
@@ -172,9 +157,3 @@ router.get("/:phaseId/tasks", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch("/:phaseId/dates", authenticate, (req, res) => {
-	const phaseController = getPhaseController();
-	return phaseController.updatePhaseDates(req, res);
-});
-
-export default router;

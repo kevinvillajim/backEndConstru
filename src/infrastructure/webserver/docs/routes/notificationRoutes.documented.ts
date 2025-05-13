@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/notificationRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getNotificationController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/notifications:
@@ -78,10 +71,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.getUserNotifications(req, res);
-});
 
 /**
  * @swagger
@@ -125,10 +114,6 @@ router.get("/", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.patch("/:notificationId/read", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.markAsRead(req, res);
-});
 
 /**
  * @swagger
@@ -164,10 +149,6 @@ router.patch("/:notificationId/read", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.patch("/mark-all-read", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.markAllAsRead(req, res);
-});
 
 /**
  * @swagger
@@ -211,10 +192,6 @@ router.patch("/mark-all-read", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete("/:notificationId", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.deleteNotification(req, res);
-});
 
 /**
  * @swagger
@@ -250,10 +227,6 @@ router.delete("/:notificationId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete("/delete-all", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.deleteAllNotifications(req, res);
-});
 
 /**
  * @swagger
@@ -303,10 +276,6 @@ router.delete("/delete-all", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/preferences", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.getNotificationPreferences(req, res);
-});
 
 /**
  * @swagger
@@ -363,10 +332,6 @@ router.get("/preferences", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.patch("/preferences", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.updateNotificationPreferences(req, res);
-});
 
 /**
  * @swagger
@@ -414,10 +379,6 @@ router.patch("/preferences", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/devices", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.registerDevice(req, res);
-});
 
 /**
  * @swagger
@@ -460,9 +421,3 @@ router.post("/devices", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete("/devices/:deviceToken", authenticate, (req, res) => {
-	const notificationController = getNotificationController();
-	return notificationController.unregisterDevice(req, res);
-});
-
-export default router;

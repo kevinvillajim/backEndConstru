@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/materialRoutes.documented.ts
-import { Router } from 'express';
-import { authenticate } from '../../middlewares/authMiddleware';
-import { getMaterialController } from '../../../config/service-factory';
-
-const router = Router();
-
 /**
  * @swagger
  * /api/materials:
@@ -112,10 +105,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/', (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.getMaterials(req, res);
-});
 
 /**
  * @swagger
@@ -153,10 +142,6 @@ router.get('/', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.getMaterialById(req, res);
-});
 
 /**
  * @swagger
@@ -238,10 +223,6 @@ router.get('/:id', (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.createMaterial(req, res);
-});
 
 /**
  * @swagger
@@ -322,10 +303,6 @@ router.post('/', authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put('/:id', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.updateMaterial(req, res);
-});
 
 /**
  * @swagger
@@ -371,10 +348,6 @@ router.put('/:id', authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/:id', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.deleteMaterial(req, res);
-});
 
 /**
  * @swagger
@@ -438,10 +411,6 @@ router.delete('/:id', authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch('/:id/stock', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.updateStock(req, res);
-});
 
 /**
  * @swagger
@@ -537,10 +506,6 @@ router.patch('/:id/stock', authenticate, (req, res) => {
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-router.post('/bulk-update-prices', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.bulkUpdatePrices(req, res);
-});
 
 /**
  * @swagger
@@ -603,10 +568,6 @@ router.post('/bulk-update-prices', authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id/price-history', (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.getPriceHistory(req, res);
-});
 
 /**
  * @swagger
@@ -698,9 +659,3 @@ router.get('/:id/price-history', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/:materialId/compare-prices', authenticate, (req, res) => {
-  const materialController = getMaterialController();
-  return materialController.comparePrices(req, res);
-});
-
-export default router;

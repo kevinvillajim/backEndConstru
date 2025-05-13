@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/progressReportRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getProgressReportController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/reports/progress/{projectId}:
@@ -81,10 +74,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/progress/:projectId", authenticate, (req, res) => {
-	const progressReportController = getProgressReportController();
-	return progressReportController.generateReport(req, res);
-});
 
 /**
  * @swagger
@@ -122,9 +111,3 @@ router.get("/progress/:projectId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/progress/:projectId/export-pdf", authenticate, (req, res) => {
-	const progressReportController = getProgressReportController();
-	return progressReportController.exportReportToPdf(req, res);
-});
-
-export default router;

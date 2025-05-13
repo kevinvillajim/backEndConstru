@@ -1,10 +1,3 @@
-// src/infrastructure/webserver/routes/templateImportExportRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getTemplateImportExportController} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/calculations/templates/export/{templateId}:
@@ -64,10 +57,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/export/:templateId", authenticate, (req, res) => {
-	const importExportController = getTemplateImportExportController();
-	return importExportController.exportTemplate(req, res);
-});
 
 /**
  * @swagger
@@ -135,10 +124,6 @@ router.get("/export/:templateId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/export-multiple", authenticate, (req, res) => {
-	const importExportController = getTemplateImportExportController();
-	return importExportController.exportMultipleTemplates(req, res);
-});
 
 /**
  * @swagger
@@ -214,10 +199,6 @@ router.get("/export-multiple", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/import", authenticate, (req, res) => {
-	const importExportController = getTemplateImportExportController();
-	return importExportController.importTemplate(req, res);
-});
 
 /**
  * @swagger
@@ -303,9 +284,3 @@ router.post("/import", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/import-multiple", authenticate, (req, res) => {
-	const importExportController = getTemplateImportExportController();
-	return importExportController.importMultipleTemplates(req, res);
-});
-
-export default router;

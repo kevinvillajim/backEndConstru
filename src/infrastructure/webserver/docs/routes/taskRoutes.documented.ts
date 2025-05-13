@@ -1,9 +1,4 @@
-// src/infrastructure/webserver/routes/taskRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getTaskController} from "../../../config/service-factory";
-
-const router = Router();
+// src/infrastructure/webserver/routes/docs/taskRoutes.documented.ts
 
 /**
  * @swagger
@@ -65,10 +60,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.patch("/:taskId/progress", authenticate, (req, res) => {
-	const taskController = getTaskController();
-	return taskController.updateTaskProgress(req, res);
-});
 
 /**
  * @swagger
@@ -127,10 +118,6 @@ router.patch("/:taskId/progress", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/:taskId/assign", authenticate, (req, res) => {
-	const taskController = getTaskController();
-	return taskController.assignTask(req, res);
-});
 
 /**
  * @swagger
@@ -173,9 +160,3 @@ router.post("/:taskId/assign", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:taskId", authenticate, (req, res) => {
-	const taskController = getTaskController();
-	return taskController.getTaskDetails(req, res);
-});
-
-export default router;

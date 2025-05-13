@@ -1,13 +1,3 @@
-// src/infrastructure/webserver/routes/projectDashboardRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {
-	getProjectDashboardController,
-	getEnhancedProjectDashboardController,
-} from "../../../config/service-factory";
-
-const router = Router();
-
 /**
  * @swagger
  * /api/dashboards/project/{projectId}:
@@ -70,10 +60,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/project/:projectId", authenticate, (req, res) => {
-	const dashboardController = getProjectDashboardController();
-	return dashboardController.getProjectDashboard(req, res);
-});
 
 /**
  * @swagger
@@ -153,10 +139,6 @@ router.get("/project/:projectId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/enhanced/:projectId", authenticate, (req, res) => {
-	const enhancedDashboardController = getEnhancedProjectDashboardController();
-	return enhancedDashboardController.getEnhancedDashboard(req, res);
-});
 
 /**
  * @swagger
@@ -206,9 +188,3 @@ router.get("/enhanced/:projectId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/enhanced/:projectId/:widgetType", authenticate, (req, res) => {
-	const enhancedDashboardController = getEnhancedProjectDashboardController();
-	return enhancedDashboardController.getDashboardWidget(req, res);
-});
-
-export default router;

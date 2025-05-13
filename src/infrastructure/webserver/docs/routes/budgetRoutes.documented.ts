@@ -1,9 +1,4 @@
-// src/infrastructure/webserver/routes/budgetRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {getBudgetController} from "../../../config/service-factory";
-
-const router = Router();
+// src/infrastructure/webserver/routes/docs/budgetRoutes.documented.ts
 
 /**
  * @swagger
@@ -76,10 +71,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/generate", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.generateFromCalculation(req, res);
-});
 
 /**
  * @swagger
@@ -167,10 +158,6 @@ router.post("/generate", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/project/:projectId", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.getProjectBudgets(req, res);
-});
 
 /**
  * @swagger
@@ -213,10 +200,6 @@ router.get("/project/:projectId", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:budgetId", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.getBudgetDetails(req, res);
-});
 
 /**
  * @swagger
@@ -283,10 +266,6 @@ router.get("/:budgetId", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/:budgetId/version", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.createVersion(req, res);
-});
 
 /**
  * @swagger
@@ -351,10 +330,6 @@ router.post("/:budgetId/version", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:budgetId/status", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.updateStatus(req, res);
-});
 
 /**
  * @swagger
@@ -438,10 +413,6 @@ router.put("/:budgetId/status", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/compare", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.compareBudgetVersions(req, res);
-});
 
 /**
  * @swagger
@@ -533,10 +504,6 @@ router.post("/compare", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/:budgetId/costs", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.addLaborAndIndirectCosts(req, res);
-});
 
 /**
  * @swagger
@@ -586,9 +553,3 @@ router.post("/:budgetId/costs", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:budgetId/export-pdf", authenticate, (req, res) => {
-	const budgetController = getBudgetController();
-	return budgetController.exportBudgetToPdf(req, res);
-});
-
-export default router;

@@ -1,12 +1,4 @@
-// src/infrastructure/webserver/routes/calculationRoutes.documented.ts
-import {Router} from "express";
-import {authenticate} from "../../middlewares/authMiddleware";
-import {
-	getCalculationController,
-	getCalculationTemplateController,
-} from "../../../config/service-factory";
-
-const router = Router();
+// src/infrastructure/webserver/routes/docs/calculationRoutes.documented.ts
 
 /**
  * @swagger
@@ -62,10 +54,6 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/execute", authenticate, (req, res) => {
-	const calculationController = getCalculationController();
-	return calculationController.executeCalculation(req, res);
-});
 
 /**
  * @swagger
@@ -140,10 +128,6 @@ router.post("/execute", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/save-result", authenticate, (req, res) => {
-	const calculationController = getCalculationController();
-	return calculationController.saveCalculationResult(req, res);
-});
 
 /**
  * @swagger
@@ -206,10 +190,6 @@ router.post("/save-result", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/recommendations", authenticate, (req, res) => {
-	const calculationController = getCalculationController();
-	return calculationController.getRecommendations(req, res);
-});
 
 /**
  * @swagger
@@ -312,10 +292,6 @@ router.get("/recommendations", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post("/templates", authenticate, (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.createTemplate(req, res);
-});
 
 /**
  * @swagger
@@ -353,10 +329,6 @@ router.post("/templates", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/templates/:id", (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.getTemplateById(req, res);
-});
 
 /**
  * @swagger
@@ -477,10 +449,6 @@ router.get("/templates/:id", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/templates", (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.getTemplates(req, res);
-});
 
 /**
  * @swagger
@@ -523,10 +491,6 @@ router.get("/templates", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/templates/:id/preview", (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.previewTemplate(req, res);
-});
 
 /**
  * @swagger
@@ -621,10 +585,6 @@ router.get("/templates/:id/preview", (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/templates/:id", authenticate, (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.updateTemplate(req, res);
-});
 
 /**
  * @swagger
@@ -674,9 +634,3 @@ router.put("/templates/:id", authenticate, (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/templates/:id", authenticate, (req, res) => {
-	const templateController = getCalculationTemplateController();
-	return templateController.deleteTemplate(req, res);
-});
-
-export default router;
