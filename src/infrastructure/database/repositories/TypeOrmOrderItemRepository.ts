@@ -94,7 +94,7 @@ export class TypeOrmOrderItemRepository implements OrderItemRepository {
 			quantity: entity.quantity,
 			unitPrice: entity.unitPrice,
 			subtotal: entity.subtotal,
-			status: entity.status,
+			status: entity.status as "pending" | "processing" | "shipped" | "delivered" | "cancelled",
 			materialRequestId: entity.materialRequestId,
 			notes: entity.notes,
 			createdAt: entity.createdAt,

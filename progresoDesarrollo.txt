@@ -67,9 +67,9 @@ Fase 3: Integración Comercial y Facturación
 ✅ Catálogo básico de materiales
 ✅ Sistema de solicitudes de materiales
 ✅ Aprobación y rechazo de solicitudes
-❌ Comparación de precios entre proveedores
-❌ Integración con inventarios de proveedores
-❌ Proceso completo de pedidos y entregas
+✅ Comparación de precios entre proveedores
+✅ Integración con inventarios de proveedores
+✅ Proceso completo de pedidos y entregas
 
 7. Facturación Electrónica
 
@@ -126,6 +126,8 @@ API y Validación
 ✅ Respuestas estandarizadas
 ✅ Documentación básica en el código
 ❌ Documentación de API con Swagger/OpenAPI
+
+el sistema deberia tener tambien algo para que tome la desicion en base a lo cerca que le queda el proveedor, el precio que tiene el proveedor o en otras palabras la ganacia de la venta para la app, la calificacion del seller, si el transporte del seller es gratuito, bueno en fin que determine la mejor opcion
 
 Análisis del Flujo y Recomendaciones
 Fortalezas del Código

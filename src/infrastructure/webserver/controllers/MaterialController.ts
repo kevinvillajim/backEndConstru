@@ -2,7 +2,7 @@
 import {Request, Response} from "express";
 import {MaterialRepository} from "../../../domain/repositories/MaterialRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
+import {User, UserRole} from "../../../domain/models/user/User";
 import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdateMaterialPricesUseCase";
 import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
 import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
@@ -13,12 +13,12 @@ interface RequestWithUser extends Request {
 	user?: User;
 }
 
-private compareMaterialPricesUseCase: CompareMaterialPricesUseCase;
-
 export class MaterialController {
+	private compareMaterialPricesUseCase: any;
+
 	constructor(
 		private materialRepository: MaterialRepository,
-		compareMaterialPricesUseCase?: CompareMaterialPricesUseCase
+		compareMaterialPricesUseCase?: any
 	) {
 		// Si se proporciona el caso de uso para comparación, lo usamos, si no, es null
 		this.compareMaterialPricesUseCase = compareMaterialPricesUseCase || null;
@@ -498,14 +498,13 @@ export class MaterialController {
 			}
 
 			// Verificar que el usuario es admin
-			if (req.user.role !== "ADMIN") {
-				res.status(403).json({
-					success: false,
-					message:
-						"Solo los administradores pueden acceder a esta funcionalidad",
-				});
-				return;
-			}
+			if (req.user.role !== UserRole.ADMIN) {
+    res.status(403).json({
+        success: false,
+        message: "Solo los administradores pueden acceder a esta funcionalidad",
+    });
+    return;
+}
 
 			const comparison = await this.compareMaterialPricesUseCase.execute(
 				materialId,

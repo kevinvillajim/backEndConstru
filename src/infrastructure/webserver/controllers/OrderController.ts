@@ -4,7 +4,7 @@ import {CreateOrderFromMaterialRequestsUseCase} from "../../../application/order
 import {OrderRepository} from "../../../domain/repositories/OrderRepository";
 import {OrderItemRepository} from "../../../domain/repositories/OrderItemRepository";
 import {handleError} from "../utils/errorHandler";
-import {User} from "../../../domain/models/user/User";
+import {User, UserRole} from "../../../domain/models/user/User";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -152,7 +152,7 @@ export class OrderController {
 			}
 
 			// Verificar propiedad (o permisos de admin)
-			if (order.userId !== req.user.id && req.user.role !== "ADMIN") {
+			if (order.userId !== req.user.id && req.user.role !== UserRole.ADMIN) {
 				res.status(403).json({
 					success: false,
 					message: "No tienes permiso para acceder a esta orden",
@@ -223,7 +223,10 @@ export class OrderController {
 			}
 
 			// Solo admin o el vendedor pueden actualizar el estado
-			if (req.user.role !== "ADMIN" && req.user.role !== "SELLER") {
+			if (
+				req.user.role !== UserRole.ADMIN &&
+				req.user.role !== UserRole.SELLER
+			) {
 				res.status(403).json({
 					success: false,
 					message: "No tienes permiso para actualizar esta orden",

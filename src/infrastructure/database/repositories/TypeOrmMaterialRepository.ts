@@ -1,5 +1,5 @@
 // src/infrastructure/database/repositories/TypeOrmMaterialRepository.ts
-import {Repository} from "typeorm";
+import {Repository, Brackets} from "typeorm";
 import {AppDataSource} from "../data-source";
 import {
 	MaterialRepository,
@@ -273,7 +273,7 @@ export class TypeOrmMaterialRepository implements MaterialRepository {
 			return false;
 		}
 	}
-	
+
 	async findSimilar(name: string, categoryId: string): Promise<Material[]> {
 		// Buscar materiales similares por nombre y categoría
 		const queryBuilder = this.repository
