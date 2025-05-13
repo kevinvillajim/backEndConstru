@@ -91,9 +91,9 @@ async function bootstrap() {
 		const projectMetricsRoutes =
 			require("./infrastructure/webserver/routes/projectMetricsRoutes").default;
 		const orderRoutes = require("./infrastructure/webserver/routes/orderRoutes").default;
+		const advancedRecommendationRoutes =
+			require("./infrastructure/webserver/routes/advancedRecommendationRoutes").default;
 		
-
-
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
@@ -109,6 +109,7 @@ async function bootstrap() {
 		app.use("/api/dashboards", projectDashboardRoutes);
 		app.use("/api/metrics", projectMetricsRoutes);
 		app.use("/api/orders", orderRoutes);
+		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
 
 		// Global error handler
 		app.use(

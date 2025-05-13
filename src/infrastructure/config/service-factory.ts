@@ -70,6 +70,11 @@ import {TypeOrmOrderItemRepository} from "../database/repositories/TypeOrmOrderI
 import {CompareMaterialPricesUseCase} from "../../application/material/CompareMaterialPricesUseCase";
 import {CreateOrderFromMaterialRequestsUseCase} from "../../application/order/CreateOrderFromMaterialRequestsUseCase";
 import {OrderController} from "../webserver/controllers/OrderController";
+import {GetAdvancedRecommendationsUseCase} from "@application/recommendation/GetAdvancedRecommendationsUseCase";
+import {AdvancedRecommendationService} from "@domain/services/AdvancedRecommendationService";
+import {UserPatternAnalysisService} from "@domain/services/UserPatternAnalysisService";
+import {TypeOrmUserInteractionRepository} from "@infrastructure/database/repositories/TypeOrmUserInteractionRepository";
+
 // Global service instances
 let userRepository: TypeOrmUserRepository;
 let authService: AuthService;
@@ -136,6 +141,10 @@ let orderItemRepository: TypeOrmOrderItemRepository;
 let compareMaterialPricesUseCase: CompareMaterialPricesUseCase;
 let createOrderFromMaterialRequestsUseCase: CreateOrderFromMaterialRequestsUseCase;
 let orderController: OrderController;
+let userInteractionRepository: TypeOrmUserInteractionRepository;
+let userPatternAnalysisService: UserPatternAnalysisService;
+let advancedRecommendationService: AdvancedRecommendationService;
+let advancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -160,6 +169,7 @@ export function initializeServices() {
 			new TypeOrmAccountingTransactionRepository();
 		orderRepository = new TypeOrmOrderRepository();
 		orderItemRepository = new TypeOrmOrderItemRepository();
+		userInteractionRepository = new TypeOrmUserInteractionRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -173,6 +183,8 @@ export function initializeServices() {
 		);
 		projectMetricsService = new ProjectMetricsService();
 		pdfGenerationService = new PdfGenerationService();
+		userPatternAnalysisService = new UserPatternAnalysisService();
+		advancedRecommendationService = new AdvancedRecommendationService();
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -325,6 +337,14 @@ export function initializeServices() {
 				projectRepository,
 				notificationService
 			);
+
+		advancedRecommendationsUseCase = new GetAdvancedRecommendationsUseCase(
+			userRepository,
+			calculationTemplateRepository,
+			userInteractionRepository,
+			userPatternAnalysisService,
+			advancedRecommendationService
+		);
 
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
@@ -625,4 +645,40 @@ export function getOrderController() {
 		);
 	}
 	return orderController;
+}
+
+export function getUserPatternAnalysisService() {
+	if (!userPatternAnalysisService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return userPatternAnalysisService;
+}
+
+export function getAdvancedRecommendationService() {
+	if (!advancedRecommendationService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return advancedRecommendationService;
+}
+
+export function getUserInteractionRepository() {
+	if (!userInteractionRepository) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return userInteractionRepository;
+}
+
+export function getAdvancedRecommendationsUseCase() {
+	if (!advancedRecommendationsUseCase) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return advancedRecommendationsUseCase;
 }

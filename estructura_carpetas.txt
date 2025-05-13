@@ -4,10 +4,12 @@ C:.
 |   .env
 |   .gitignore
 |   estructura_carpetas.txt
+|   guiaImportExportFormulaTemplates-txt
 |   guiaNotificationsBack.txt
 |   ormconfig.json
 |   package-lock.json
 |   package.json
+|   pending.txt
 |   planDesarrollo.txt
 |   progresoDesarrollo.txt
 |   README.md
@@ -135,11 +137,7 @@ C:.
 |                   authValidator.js
 |                   calculationValidator.js
 |                   templateValidator.js
-|                   
-+---frontGuide
-|       component-notification-front.txt
-|       websocket-client.txt
-|                       
+|                                    
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -178,6 +176,9 @@ C:.
 |   |   index.ts
 |   |   
 |   +---application
+|   |   +---accounting
+|   |   |       SyncBudgetWithAccountingUseCase.ts
+|   |   |       
 |   |   +---auth
 |   |   +---budget
 |   |   |       AddLaborAndIndirectCostsUseCase.ts
@@ -188,20 +189,37 @@ C:.
 |   |   +---calculation
 |   |   |       CreateCalculationTemplateUseCase.ts
 |   |   |       ExecuteCalculationUseCase.ts
+|   |   |       ExportCalculationTemplateUseCase.ts
 |   |   |       GenerateBudgetFromCalculationUseCase.ts
 |   |   |       GetTemplateRecommendationsUseCase.ts
+|   |   |       ImportCalculationTemplateUseCase.ts
 |   |   |       SaveCalculationResultUseCase.ts
 |   |   |       
 |   |   +---common
 |   |   +---invoice
 |   |   +---material
+|   |   |       BulkUpdateMaterialPricesUseCase.ts
+|   |   |       CompareMaterialPricesUseCase.ts
+|   |   |       ImportMaterialsFromSupplierUseCase.ts
+|   |   |       ManageMaterialPropertiesUseCase.ts
+|   |   |       
+|   |   +---order
+|   |   |       CreateOrderFromMaterialRequestsUseCase.ts
+|   |   |       
 |   |   +---project
 |   |   |       ApproveMaterialRequestUseCase.ts
 |   |   |       AssignTaskUseCase.ts
 |   |   |       CreateMaterialRequestUseCase.ts
+|   |   |       EnhancedProjectDashboardUseCase.ts
 |   |   |       GenerateProgressReportUseCase.ts
 |   |   |       GenerateProjectScheduleUseCase.ts
+|   |   |       GetProjectDashboardDataUseCase.ts
+|   |   |       GetProjectMetricsUseCase.ts
+|   |   |       PredictProjectDelaysUseCase.ts
 |   |   |       UpdateTaskProgressUseCase.ts
+|   |   |       
+|   |   +---recommendation
+|   |   |       GetAdvancedRecommendationsUseCase.ts
 |   |   |       
 |   |   +---subscription
 |   |   \---user
@@ -227,7 +245,14 @@ C:.
 |   |   |   |       
 |   |   |   +---invoice
 |   |   |   +---material
+|   |   |   |       Category.ts
 |   |   |   |       Material.ts
+|   |   |   |       MaterialPropertyDefinition.ts
+|   |   |   |       MaterialPropertyValue.ts
+|   |   |   |       
+|   |   |   +---order
+|   |   |   |       Order.ts
+|   |   |   |       OrderItem.ts
 |   |   |   |       
 |   |   |   +---project
 |   |   |   |       BudgetItem.ts
@@ -242,27 +267,38 @@ C:.
 |   |   |           User.ts
 |   |   |           
 |   |   +---repositories
+|   |   |       AccountingTransactionRepository.ts
 |   |   |       BudgetItemRepository.ts
 |   |   |       CalculationParameterRepository.ts
 |   |   |       CalculationResultRepository.ts
 |   |   |       CalculationTemplateRepository.ts
+|   |   |       CategoryRepository.ts
 |   |   |       GeographicalZoneRepository.ts
+|   |   |       MaterialPropertyRepository.ts
 |   |   |       MaterialRepository.ts
 |   |   |       MaterialRequestRepository.ts
 |   |   |       NotificationRepository.ts
+|   |   |       OrderItemRepository.ts
+|   |   |       OrderRepository.ts
 |   |   |       PhaseRepository.ts
 |   |   |       ProjectBudgetRepository.ts
 |   |   |       ProjectRepository.ts
 |   |   |       RefreshTokenRepository.ts
 |   |   |       TaskRepository.ts
+|   |   |       UserInteractionRepository.ts
 |   |   |       UserRepository.ts
 |   |   |       
 |   |   \---services
+|   |           AccountingService.ts
+|   |           AdvancedRecommendationService.ts
 |   |           AuthService.ts
 |   |           CalculationService.ts
 |   |           NotificationService.ts
+|   |           ProjectMetricsService.ts
 |   |           RecommendationService.ts
+|   |           SupplierIntegrationService.ts
 |   |           TemplateValidationService.ts
+|   |           UserPatternAnalysisService.ts
 |   |           
 |   +---infrastructure
 |   |   +---config
@@ -274,6 +310,7 @@ C:.
 |   |   |   |   database.service.ts
 |   |   |   |   
 |   |   |   +---entities
+|   |   |   |       AccountingTransactionEntity.ts
 |   |   |   |       BudgetItemEntity.ts
 |   |   |   |       CalculationFeedbackEntity.ts
 |   |   |   |       CalculationGuideEntity.ts
@@ -288,8 +325,12 @@ C:.
 |   |   |   |       InvoiceItemEntity.ts
 |   |   |   |       MaterialEntity.ts
 |   |   |   |       MaterialPriceHistoryEntity.ts
+|   |   |   |       MaterialPropertyDefinitionEntity.ts
+|   |   |   |       MaterialPropertyValueEntity.ts
 |   |   |   |       MaterialRequestEntity.ts
 |   |   |   |       NotificationEntity.ts
+|   |   |   |       OrderEntity.ts
+|   |   |   |       OrderItemEntity.ts
 |   |   |   |       PhaseEntity.ts
 |   |   |   |       ProjectBudgetEntity.ts
 |   |   |   |       ProjectDocumentEntity.ts
@@ -306,19 +347,25 @@ C:.
 |   |   |   |       1747074112577-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
+|   |   |   |       TypeOrmAccountingTransactionRepository.ts
 |   |   |   |       TypeOrmBudgetItemRepository.ts
 |   |   |   |       TypeOrmCalculationParameterRepository.ts
 |   |   |   |       TypeOrmCalculationResultRepository.ts
 |   |   |   |       TypeOrmCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmCategoryRepository.ts
 |   |   |   |       TypeOrmGeographicalZoneRepository.ts
+|   |   |   |       TypeOrmMaterialPropertyRepository.ts
 |   |   |   |       TypeOrmMaterialRepository.ts
 |   |   |   |       TypeOrmMaterialRequestRepository.ts
 |   |   |   |       TypeOrmNotificationRepository.ts
+|   |   |   |       TypeOrmOrderItemRepository.ts
+|   |   |   |       TypeOrmOrderRepository.ts
 |   |   |   |       TypeOrmPhaseRepository.ts
 |   |   |   |       TypeOrmProjectBudgetRepository.ts
 |   |   |   |       TypeOrmProjectRepository.ts
 |   |   |   |       TypeOrmRefreshTokenRepository.ts
 |   |   |   |       TypeOrmTaskRepository.ts
+|   |   |   |       TypeOrmUserInteractionRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
@@ -348,40 +395,70 @@ C:.
 |   |   +---external
 |   |   |   +---notifications
 |   |   |   +---payment
-|   |   |   \---sri
+|   |   |   +---sri
+|   |   |   \---supplier
+|   |   |           ExampleSupplierAdapter.ts
+|   |   |           
 |   |   +---security
 |   |   |   +---encryption
 |   |   |   \---jwt
 |   |   +---services
-|   |   |       NotificationServiceImpl.ts
-|   |   |       
+|   |   |   |   NotificationServiceImpl.ts
+|   |   |   |   PdfGenerationService.ts
+|   |   |   |   
+|   |   |   +---accounting
+|   |   |   |       AccountingServiceFactory.ts
+|   |   |   |       
+|   |   |   \---supplier
+|   |   |           ConcreteSupplierIntegrationService.ts
+|   |   |           
 |   |   +---webserver
 |   |   |   +---controllers
+|   |   |   |       AccountingController.ts
+|   |   |   |       AdvancedRecommendationController.ts
 |   |   |   |       AuthController.ts
 |   |   |   |       BudgetController.ts
 |   |   |   |       CalculationController.ts
 |   |   |   |       CalculationTemplateController.ts
+|   |   |   |       EnhancedProjectDashboardController.ts
 |   |   |   |       MaterialController.ts
+|   |   |   |       MaterialPropertyController.ts
 |   |   |   |       MaterialRequestController.ts
 |   |   |   |       NotificationController.ts
+|   |   |   |       OrderController.ts
 |   |   |   |       PhaseController.ts
 |   |   |   |       ProgressReportController.ts
+|   |   |   |       ProjectDashboardController.ts
+|   |   |   |       ProjectMetricsController.ts
+|   |   |   |       ProjectPredictionController.ts
 |   |   |   |       ProjectScheduleController.ts
+|   |   |   |       SupplierIntegrationController.ts
 |   |   |   |       TaskController.ts
+|   |   |   |       TemplateImportExportController.ts
 |   |   |   |       
 |   |   |   +---middlewares
 |   |   |   |       authMiddleware.ts
 |   |   |   |       validationMiddleware.ts
 |   |   |   |       
 |   |   |   +---routes
+|   |   |   |       accountingRoutes.ts
+|   |   |   |       advancedRecommendationRoutes.ts
 |   |   |   |       authRoutes.ts
 |   |   |   |       budgetRoutes.ts
 |   |   |   |       calculationRoutes.ts
+|   |   |   |       enhancedProjectDashboardRoutes.ts
+|   |   |   |       materialPropertyRoutes.ts
 |   |   |   |       materialRequestRoutes.ts
 |   |   |   |       materialRoutes.ts
 |   |   |   |       notificationRoutes.ts
+|   |   |   |       orderRoutes.ts
 |   |   |   |       progressReportRoutes.ts
+|   |   |   |       projectDashboardRoutes.ts
+|   |   |   |       projectMetricsRoutes.ts
+|   |   |   |       projectPredictionRoutes.ts
 |   |   |   |       projectScheduleRoutes.ts
+|   |   |   |       supplierIntegrationRoutes.ts
+|   |   |   |       templateImportExportRoutes.ts
 |   |   |   |       
 |   |   |   +---utils
 |   |   |   |       errorHandler.ts
@@ -393,6 +470,7 @@ C:.
 |   |   |           materialRequestValidator.ts
 |   |   |           materialValidator.ts
 |   |   |           projectScheduleValidator.ts
+|   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts
 |   |   |           
 |   |   \---websocket
