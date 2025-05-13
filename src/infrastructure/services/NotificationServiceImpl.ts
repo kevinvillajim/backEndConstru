@@ -7,7 +7,9 @@ import {
 import {NotificationRepository} from "../../domain/repositories/NotificationRepository";
 import {UserRepository} from "../../domain/repositories/UserRepository";
 import {ProjectRepository} from "../../domain/repositories/ProjectRepository";
-import {WebSocketService} from "../websocket/WebSocketService";
+import { WebSocketService } from "../websocket/WebSocketService";
+import {EmailService} from "../../domain/services/EmailService";
+import {PushNotificationService} from "../../domain/services/PushNotificationService";
 import {
 	NotificationPriority,
 	NotificationType,
@@ -18,7 +20,9 @@ export class NotificationServiceImpl implements NotificationService {
 	constructor(
 		private notificationRepository: NotificationRepository,
 		private userRepository: UserRepository,
-		private projectRepository: ProjectRepository
+		private projectRepository: ProjectRepository,
+		private emailService: EmailService,
+		private pushNotificationService: PushNotificationService
 	) {}
 
 	/**
@@ -42,7 +46,9 @@ export class NotificationServiceImpl implements NotificationService {
 				title: options.title,
 				content: options.content,
 				type: options.type,
-				priority: options.priority as NotificationPriority || NotificationPriority.MEDIUM,
+				priority:
+					(options.priority as NotificationPriority) ||
+					NotificationPriority.MEDIUM,
 				actionUrl: options.actionUrl,
 				actionText: options.actionText,
 				relatedEntityType: options.relatedEntityType,
@@ -64,7 +70,9 @@ export class NotificationServiceImpl implements NotificationService {
 			WebSocketService.getInstance().sendNotificationToUser(userId, {
 				userId,
 				type: options.type,
-				priority: options.priority as NotificationPriority || NotificationPriority.MEDIUM,
+				priority:
+					(options.priority as NotificationPriority) ||
+					NotificationPriority.MEDIUM,
 				title: options.title,
 				content: options.content,
 				actionUrl: options.actionUrl,
@@ -74,28 +82,81 @@ export class NotificationServiceImpl implements NotificationService {
 				icon: options.icon,
 			});
 
-			// 4. Enviar por otros canales si está habilitado
-			if (options.sendEmail) {
-				// Implementar envío de email
-				// TODO: Integrar con servicio de email
-				savedNotification.emailSent = true;
-				await this.notificationRepository.update(savedNotification.id, {
-					emailSent: true,
-				});
+			// 4. Verificar preferencias del usuario y enviar por canales adicionales
+			const userPreferences = user.preferences?.notifications;
+
+			// Enviar por email si está habilitado en las preferencias del usuario
+			const shouldSendEmail =
+				userPreferences?.email &&
+				(options.sendEmail ||
+					options.priority === NotificationPriority.HIGH ||
+					options.priority === NotificationPriority.CRITICAL);
+
+			if (shouldSendEmail) {
+				try {
+					await this.emailService.sendNotificationEmail(user.email, {
+						title: options.title,
+						content: options.content,
+						actionUrl: options.actionUrl,
+						actionText: options.actionText,
+					});
+					savedNotification.emailSent = true;
+					await this.notificationRepository.update(savedNotification.id, {
+						emailSent: true,
+					});
+				} catch (error) {
+					console.error(
+						`Error sending email notification to ${user.email}:`,
+						error
+					);
+				}
 			}
 
-			if (options.sendPush) {
-				// Implementar envío de notificación push
-				// TODO: Integrar con servicio de notificaciones push
-				savedNotification.pushSent = true;
-				await this.notificationRepository.update(savedNotification.id, {
-					pushSent: true,
-				});
+			// Enviar notificación push si está habilitado en las preferencias
+			const shouldSendPush =
+				userPreferences?.push &&
+				(options.sendPush ||
+					options.priority === NotificationPriority.HIGH ||
+					options.priority === NotificationPriority.CRITICAL);
+
+			if (shouldSendPush) {
+				try {
+					await this.pushNotificationService.sendToUser(userId, {
+						userId,
+						title: options.title,
+						body: options.content,
+						icon: options.icon,
+						data: {
+							type: options.type,
+							relatedEntityType: options.relatedEntityType,
+							relatedEntityId: options.relatedEntityId,
+						},
+						action:
+							options.actionUrl && options.actionText
+								? {url: options.actionUrl, text: options.actionText}
+								: undefined,
+					});
+					savedNotification.pushSent = true;
+					await this.notificationRepository.update(savedNotification.id, {
+						pushSent: true,
+					});
+				} catch (error) {
+					console.error(
+						`Error sending push notification to user ${userId}:`,
+						error
+					);
+				}
 			}
 
-			if (options.sendSms) {
-				// Implementar envío de SMS
-				// TODO: Integrar con servicio de SMS
+			// Enviar SMS si está habilitado en las preferencias
+			const shouldSendSMS =
+				userPreferences?.sms &&
+				(options.sendSms || options.priority === NotificationPriority.CRITICAL);
+
+			if (shouldSendSMS) {
+				// TODO: Implementar envío de SMS con un servicio real
+				// Por ahora, solo actualizamos el estado
+				console.log(`[SMS] Would send SMS to user ${userId}: ${options.title}`);
 				savedNotification.smsSent = true;
 				await this.notificationRepository.update(savedNotification.id, {
 					smsSent: true,
@@ -115,7 +176,9 @@ export class NotificationServiceImpl implements NotificationService {
 				title: options.title,
 				content: options.content,
 				type: options.type,
-				priority: options.priority as NotificationPriority || NotificationPriority.MEDIUM,
+				priority:
+					(options.priority as NotificationPriority) ||
+					NotificationPriority.MEDIUM,
 				isRead: false,
 				createdAt: new Date(),
 				success: false,
@@ -316,4 +379,124 @@ export class NotificationServiceImpl implements NotificationService {
 			return false;
 		}
 	}
+
+	/**
+   * Actualiza las preferencias de notificación de un usuario
+   */
+  async updateUserNotificationPreferences(
+    userId: string, 
+    preferences: {
+      email?: boolean;
+      push?: boolean;
+      sms?: boolean;
+      projectUpdates?: boolean;
+      materialRecommendations?: boolean;
+      pricingAlerts?: boolean;
+      weeklyReports?: boolean;
+    }
+  ): Promise<boolean> {
+    try {
+      // 1. Obtener el usuario actual
+      const user = await this.userRepository.findById(userId);
+      if (!user) {
+        throw new Error(`Usuario no encontrado: ${userId}`);
+      }
+
+      // 2. Preparar el objeto de preferencias actualizado
+      const currentPreferences = user.preferences || {
+        notifications: { email: true, push: true, sms: false },
+        projectUpdates: true,
+        materialRecommendations: true,
+        pricingAlerts: true,
+        weeklyReports: true,
+        languagePreference: "es"
+      };
+
+      // 3. Actualizar las preferencias de notificaciones
+      if (preferences.email !== undefined) {
+        currentPreferences.notifications.email = preferences.email;
+      }
+      
+      if (preferences.push !== undefined) {
+        currentPreferences.notifications.push = preferences.push;
+      }
+      
+      if (preferences.sms !== undefined) {
+        currentPreferences.notifications.sms = preferences.sms;
+      }
+
+      // 4. Actualizar otras preferencias relacionadas
+      if (preferences.projectUpdates !== undefined) {
+        currentPreferences.projectUpdates = preferences.projectUpdates;
+      }
+      
+      if (preferences.materialRecommendations !== undefined) {
+        currentPreferences.materialRecommendations = preferences.materialRecommendations;
+      }
+      
+      if (preferences.pricingAlerts !== undefined) {
+        currentPreferences.pricingAlerts = preferences.pricingAlerts;
+      }
+      
+      if (preferences.weeklyReports !== undefined) {
+        currentPreferences.weeklyReports = preferences.weeklyReports;
+      }
+
+      // 5. Guardar las preferencias actualizadas
+      await this.userRepository.update(userId, {
+        preferences: currentPreferences
+      });
+
+      return true;
+    } catch (error) {
+      console.error(`Error updating notification preferences for user ${userId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene las preferencias de notificación de un usuario
+   */
+  async getUserNotificationPreferences(userId: string): Promise<any> {
+    try {
+      const user = await this.userRepository.findById(userId);
+      if (!user) {
+        throw new Error(`Usuario no encontrado: ${userId}`);
+      }
+
+      // Si el usuario no tiene preferencias, retornar valores predeterminados
+      if (!user.preferences) {
+        return {
+          notifications: {
+            email: true,
+            push: true,
+            sms: false
+          },
+          projectUpdates: true,
+          materialRecommendations: true,
+          pricingAlerts: true,
+          weeklyReports: true
+        };
+      }
+
+      return {
+        notifications: user.preferences.notifications || {
+          email: true,
+          push: true,
+          sms: false
+        },
+        projectUpdates: user.preferences.projectUpdates !== undefined ? 
+          user.preferences.projectUpdates : true,
+        materialRecommendations: user.preferences.materialRecommendations !== undefined ? 
+          user.preferences.materialRecommendations : true,
+        pricingAlerts: user.preferences.pricingAlerts !== undefined ? 
+          user.preferences.pricingAlerts : true,
+        weeklyReports: user.preferences.weeklyReports !== undefined ? 
+          user.preferences.weeklyReports : true
+      };
+    } catch (error) {
+      console.error(`Error getting notification preferences for user ${userId}:`, error);
+      throw error;
+    }
+  }
 }

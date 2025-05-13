@@ -98,4 +98,25 @@ export interface NotificationService {
 	 * Elimina todas las notificaciones de un usuario
 	 */
 	deleteAllUserNotifications(userId: string): Promise<boolean>;
+
+	/**
+	 * Actualiza las preferencias de notificación de un usuario
+	 */
+	updateUserNotificationPreferences(
+		userId: string,
+		preferences: {
+			email?: boolean;
+			push?: boolean;
+			sms?: boolean;
+			projectUpdates?: boolean;
+			materialRecommendations?: boolean;
+			pricingAlerts?: boolean;
+			weeklyReports?: boolean;
+		}
+	): Promise<boolean>;
+
+	/**
+	 * Obtiene las preferencias de notificación de un usuario
+	 */
+	getUserNotificationPreferences(userId: string): Promise<any>;
 }

@@ -2,7 +2,10 @@
 import {Request, Response} from "express";
 import {NotificationService} from "../../../domain/services/NotificationService";
 import {User} from "../../../domain/models/user/User";
-import {handleError} from "../utils/errorHandler";
+import { handleError } from "../utils/errorHandler";
+import {
+	getPushNotificationService,
+} from "../../config/service-factory";
 
 interface RequestWithUser extends Request {
 	user?: User;
@@ -278,6 +281,196 @@ export class NotificationController {
 			res.status(400).json({
 				success: false,
 				message: typedError.message || "Error al enviar notificación",
+			});
+		}
+	}
+
+	/**
+	 * Obtiene las preferencias de notificación del usuario
+	 */
+	/**
+	 * Obtiene las preferencias de notificación del usuario
+	 */
+	async getNotificationPreferences(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			const preferences =
+				await this.notificationService.getUserNotificationPreferences(
+					req.user.id
+				);
+
+			res.status(200).json({
+				success: true,
+				data: preferences,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message:
+					typedError.message || "Error al obtener preferencias de notificación",
+			});
+		}
+	}
+
+	/**
+	 * Actualiza las preferencias de notificación del usuario
+	 */
+	async updateNotificationPreferences(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			const {
+				email,
+				push,
+				sms,
+				projectUpdates,
+				materialRecommendations,
+				pricingAlerts,
+				weeklyReports,
+			} = req.body;
+
+			const success =
+				await this.notificationService.updateUserNotificationPreferences(
+					req.user.id,
+					{
+						email,
+						push,
+						sms,
+						projectUpdates,
+						materialRecommendations,
+						pricingAlerts,
+						weeklyReports,
+					}
+				);
+
+			if (success) {
+				res.status(200).json({
+					success: true,
+					message: "Preferencias de notificación actualizadas",
+				});
+			} else {
+				res.status(400).json({
+					success: false,
+					message: "No se pudieron actualizar las preferencias de notificación",
+				});
+			}
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message:
+					typedError.message ||
+					"Error al actualizar preferencias de notificación",
+			});
+		}
+	}
+
+	/**
+	 * Registra un dispositivo para notificaciones push
+	 */
+	async registerDevice(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			const {deviceToken} = req.body;
+
+			if (!deviceToken) {
+				res.status(400).json({
+					success: false,
+					message: "Token de dispositivo requerido",
+				});
+				return;
+			}
+
+			const pushService = getPushNotificationService();
+			const success = await pushService.registerDevice(
+				req.user.id,
+				deviceToken
+			);
+
+			if (success) {
+				res.status(200).json({
+					success: true,
+					message: "Dispositivo registrado correctamente",
+				});
+			} else {
+				res.status(400).json({
+					success: false,
+					message: "No se pudo registrar el dispositivo",
+				});
+			}
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al registrar dispositivo",
+			});
+		}
+	}
+
+	/**
+	 * Elimina el registro de un dispositivo
+	 */
+	async unregisterDevice(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			const {deviceToken} = req.params;
+
+			const pushService = getPushNotificationService();
+			const success = await pushService.unregisterDevice(
+				req.user.id,
+				deviceToken
+			);
+
+			if (success) {
+				res.status(200).json({
+					success: true,
+					message: "Dispositivo eliminado correctamente",
+				});
+			} else {
+				res.status(400).json({
+					success: false,
+					message: "No se pudo eliminar el dispositivo",
+				});
+			}
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al eliminar dispositivo",
 			});
 		}
 	}

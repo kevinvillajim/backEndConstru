@@ -37,4 +37,26 @@ router.post("/test", authenticate, (req, res) => {
 	return notificationController.testSendNotification(req, res);
 });
 
+// Rutas para gestionar preferencias de notificaciones
+router.get("/preferences", authenticate, (req, res) => {
+  const notificationController = getNotificationController();
+  return notificationController.getNotificationPreferences(req, res);
+});
+
+router.put("/preferences", authenticate, (req, res) => {
+  const notificationController = getNotificationController();
+  return notificationController.updateNotificationPreferences(req, res);
+});
+
+// Rutas para gestionar dispositivos para notificaciones push
+router.post("/devices", authenticate, (req, res) => {
+  const notificationController = getNotificationController();
+  return notificationController.registerDevice(req, res);
+});
+
+router.delete("/devices/:deviceToken", authenticate, (req, res) => {
+  const notificationController = getNotificationController();
+  return notificationController.unregisterDevice(req, res);
+});
+
 export default router;

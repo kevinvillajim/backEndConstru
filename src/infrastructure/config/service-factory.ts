@@ -74,6 +74,10 @@ import {GetAdvancedRecommendationsUseCase} from "@application/recommendation/Get
 import {AdvancedRecommendationService} from "@domain/services/AdvancedRecommendationService";
 import {UserPatternAnalysisService} from "@domain/services/UserPatternAnalysisService";
 import {TypeOrmUserInteractionRepository} from "@infrastructure/database/repositories/TypeOrmUserInteractionRepository";
+import {EmailService} from "../../domain/services/EmailService";
+import {EmailServiceImpl} from "../services/EmailServiceImpl";
+import {PushNotificationService} from "../../domain/services/PushNotificationService";
+import {PushNotificationServiceImpl} from "../services/PushNotificationServiceImpl";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -145,6 +149,8 @@ let userInteractionRepository: TypeOrmUserInteractionRepository;
 let userPatternAnalysisService: UserPatternAnalysisService;
 let advancedRecommendationService: AdvancedRecommendationService;
 let advancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase;
+let emailService: EmailServiceImpl;
+let pushNotificationService: PushNotificationServiceImpl;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -179,12 +185,23 @@ export function initializeServices() {
 		notificationService = new NotificationServiceImpl(
 			notificationRepository,
 			userRepository,
-			projectRepository
+			projectRepository,
+			emailService,
+			pushNotificationService
 		);
 		projectMetricsService = new ProjectMetricsService();
 		pdfGenerationService = new PdfGenerationService();
 		userPatternAnalysisService = new UserPatternAnalysisService();
 		advancedRecommendationService = new AdvancedRecommendationService();
+		emailService = new EmailServiceImpl(
+			process.env.EMAIL_API_KEY || "mock-key",
+			process.env.EMAIL_FROM_ADDRESS || "noreply@constru-app.com"
+		);
+
+		pushNotificationService = new PushNotificationServiceImpl(
+			process.env.PUSH_API_KEY || "mock-key",
+			process.env.PUSH_APP_ID || "constru-app"
+		);
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -681,4 +698,22 @@ export function getAdvancedRecommendationsUseCase() {
 		);
 	}
 	return advancedRecommendationsUseCase;
+}
+
+export function getEmailService() {
+	if (!emailService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return emailService;
+}
+
+export function getPushNotificationService() {
+	if (!pushNotificationService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return pushNotificationService;
 }
