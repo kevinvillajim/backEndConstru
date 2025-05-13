@@ -1,13 +1,13 @@
 // src/infrastructure/webserver/routes/authRoutes.documented.ts
 import {Router} from "express";
-import {authenticate} from "../middlewares/authMiddleware";
+import {authenticate} from "../../middlewares/authMiddleware";
 import {
 	validateLoginRequest,
 	validateRegisterRequest,
 	validateForgotPasswordRequest,
 	validatePasswordResetRequest,
-} from "../validators/authValidator";
-import {getAuthController} from "../../config/service-factory";
+} from "../../validators/authValidator";
+import {getAuthController, getTwoFactorAuthController} from "../../../config/service-factory";
 
 const router = Router();
 
@@ -504,6 +504,263 @@ router.get("/profile", authenticate, (req, res) => {
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
+
+/**
+ * @swagger
+ * /api/auth/2fa/setup:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Configurar autenticación de dos factores
+ *     description: Genera un código QR para configurar la autenticación de dos factores
+ *     security:
+ *       - cookieAuth: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Configuración iniciada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Configuración de autenticación de dos factores iniciada
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     qrCodeUrl:
+ *                       type: string
+ *                       description: URL para escanear con la aplicación de autenticación
+ *                     secret:
+ *                       type: string
+ *                       description: Clave secreta para entrada manual
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+router.post("/2fa/setup", authenticate, (req, res) => {
+  const twoFactorAuthController = getTwoFactorAuthController();
+  return twoFactorAuthController.setupTwoFactor(req, res);
+});
+
+/**
+ * @swagger
+ * /api/auth/2fa/verify:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Verificar y habilitar autenticación de dos factores
+ *     description: Verifica el token TOTP y habilita 2FA para la cuenta
+ *     security:
+ *       - cookieAuth: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Token de verificación TOTP
+ *     responses:
+ *       200:
+ *         description: Autenticación de dos factores habilitada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Autenticación de dos factores habilitada exitosamente
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     recoveryCodes:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Códigos de recuperación de respaldo
+ *       400:
+ *         description: Token inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+router.post("/2fa/verify", authenticate, (req, res) => {
+  const twoFactorAuthController = getTwoFactorAuthController();
+  return twoFactorAuthController.verifyAndEnableTwoFactor(req, res);
+});
+
+/**
+ * @swagger
+ * /api/auth/2fa/disable:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Deshabilitar autenticación de dos factores
+ *     description: Desactiva la autenticación de dos factores para la cuenta
+ *     security:
+ *       - cookieAuth: []
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Contraseña actual del usuario
+ *     responses:
+ *       200:
+ *         description: Autenticación de dos factores deshabilitada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Autenticación de dos factores deshabilitada exitosamente
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ */
+router.post("/2fa/disable", authenticate, (req, res) => {
+  const twoFactorAuthController = getTwoFactorAuthController();
+  return twoFactorAuthController.disableTwoFactor(req, res);
+});
+
+/**
+ * @swagger
+ * /api/auth/2fa/validate:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Validar token de 2FA durante login
+ *     description: Valida un token TOTP durante el inicio de sesión
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - token
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               token:
+ *                 type: string
+ *                 description: Token TOTP de 6 dígitos
+ *     responses:
+ *       200:
+ *         description: Token válido, inicio de sesión exitoso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Autenticación de dos factores exitosa
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Token inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post("/2fa/validate", (req, res) => {
+  const twoFactorAuthController = getTwoFactorAuthController();
+  return twoFactorAuthController.validateTwoFactorToken(req, res);
+});
+
+/**
+ * @swagger
+ * /api/auth/2fa/recovery:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Usar código de recuperación
+ *     description: Inicia sesión usando un código de recuperación de 2FA
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - recoveryCode
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               recoveryCode:
+ *                 type: string
+ *                 description: Código de recuperación
+ *     responses:
+ *       200:
+ *         description: Código válido, inicio de sesión exitoso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login exitoso con código de recuperación
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Código inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post("/2fa/recovery", (req, res) => {
+  const twoFactorAuthController = getTwoFactorAuthController();
+  return twoFactorAuthController.useRecoveryCode(req, res);
+});
 
 // More routes will be documented in a similar way...
 
