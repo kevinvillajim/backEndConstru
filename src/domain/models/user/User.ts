@@ -128,6 +128,9 @@ export interface User {
 	passwordResetToken?: string;
 	passwordResetExpires?: Date;
 	adminId?: string;
+	twoFactorEnabled?: boolean;
+	twoFactorSecret?: string;
+	recoveryCodes?: string[];
 	createdAt: Date;
 	updatedAt: Date;
 	deletedAt?: Date;

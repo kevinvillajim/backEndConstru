@@ -12,6 +12,7 @@ import http from "http";
 import {AppDataSource} from "./infrastructure/database/data-source";
 import { initializeServices } from "./infrastructure/config/service-factory";
 import { WebSocketService } from "./infrastructure/websocket/WebSocketService";
+import {setupSwagger} from "./infrastructure/webserver/docs/swagger";
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,9 @@ async function bootstrap() {
 			res.send("ConstructorAPP API");
 		});
 
+		// Setup Swagger documentation
+		setupSwagger(app);
+
 		// Import routes AFTER services are initialized
 		const authRoutes =
 			require("./infrastructure/webserver/routes/authRoutes").default;
@@ -78,22 +82,29 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/projectScheduleRoutes").default;
 		const notificationRoutes =
 			require("./infrastructure/webserver/routes/notificationRoutes").default;
-		const progressReportRoutes = require("./infrastructure/webserver/routes/progressReportRoutes").default;
-		const materialRequestRoutes = require("./infrastructure/webserver/routes/materialRequestRoutes").default;
+		const progressReportRoutes =
+			require("./infrastructure/webserver/routes/progressReportRoutes").default;
+		const materialRequestRoutes =
+			require("./infrastructure/webserver/routes/materialRequestRoutes").default;
 		const materialRoutes =
 			require("./infrastructure/webserver/routes/materialRoutes").default;
 		const templateImportExportRoutes =
 			require("./infrastructure/webserver/routes/templateImportExportRoutes").default;
-		const supplierIntegrationRoutes = require ("./infrastructure/webserver/routes/supplierIntegrationRoutes").default;
-		const materialPropertyRoutes = require ("./infrastructure/webserver/routes/materialPropertyRoutes").default;
+		const supplierIntegrationRoutes =
+			require("./infrastructure/webserver/routes/supplierIntegrationRoutes").default;
+		const materialPropertyRoutes =
+			require("./infrastructure/webserver/routes/materialPropertyRoutes").default;
 		const projectDashboardRoutes =
 			require("./infrastructure/webserver/routes/projectDashboardRoutes").default;
 		const projectMetricsRoutes =
 			require("./infrastructure/webserver/routes/projectMetricsRoutes").default;
-		const orderRoutes = require("./infrastructure/webserver/routes/orderRoutes").default;
+		const orderRoutes =
+			require("./infrastructure/webserver/routes/orderRoutes").default;
 		const advancedRecommendationRoutes =
 			require("./infrastructure/webserver/routes/advancedRecommendationRoutes").default;
-		
+		const twoFactorAuthRoutes =
+			require("./infrastructure/webserver/routes/twoFactorAuthRoutes").default;
+
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
@@ -110,6 +121,8 @@ async function bootstrap() {
 		app.use("/api/metrics", projectMetricsRoutes);
 		app.use("/api/orders", orderRoutes);
 		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
+		app.use("/api/auth", authRoutes);
+		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 
 		// Global error handler
 		app.use(
@@ -133,6 +146,9 @@ async function bootstrap() {
 		const PORT = process.env.PORT || 4000;
 		app.listen(PORT, () => {
 			console.log(`Server running on port ${PORT}`);
+			console.log(
+				`API Documentation available at http://localhost:${PORT}/api-docs`
+			);
 		});
 
 		return app;

@@ -78,6 +78,8 @@ import {EmailService} from "../../domain/services/EmailService";
 import {EmailServiceImpl} from "../services/EmailServiceImpl";
 import {PushNotificationService} from "../../domain/services/PushNotificationService";
 import {PushNotificationServiceImpl} from "../services/PushNotificationServiceImpl";
+import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
+import {TwoFactorAuthController} from "../webserver/controllers/TwoFactorAuthController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -151,6 +153,8 @@ let advancedRecommendationService: AdvancedRecommendationService;
 let advancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase;
 let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
+let twoFactorAuthService: TwoFactorAuthService;
+let twoFactorAuthController: TwoFactorAuthController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -202,6 +206,7 @@ export function initializeServices() {
 			process.env.PUSH_API_KEY || "mock-key",
 			process.env.PUSH_APP_ID || "constru-app"
 		);
+		twoFactorAuthService = new TwoFactorAuthService();
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -445,6 +450,12 @@ export function initializeServices() {
 			createOrderFromMaterialRequestsUseCase,
 			orderRepository,
 			orderItemRepository
+		);
+
+		twoFactorAuthController = new TwoFactorAuthController(
+			twoFactorAuthService,
+			userRepository,
+			authService
 		);
 
 		console.log("Services initialized successfully");
@@ -716,4 +727,23 @@ export function getPushNotificationService() {
 		);
 	}
 	return pushNotificationService;
+}
+
+export function getTwoFactorAuthController() {
+	if (!twoFactorAuthController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return twoFactorAuthController;
+}
+
+// Add a factory method to get the 2FA service
+export function getTwoFactorAuthService() {
+	if (!twoFactorAuthService) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return twoFactorAuthService;
 }

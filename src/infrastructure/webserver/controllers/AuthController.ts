@@ -46,7 +46,7 @@ export class AuthController {
 	 */
 	async login(req: Request, res: Response): Promise<void> {
 		try {
-			const {email, password} = req.body;
+			const {email, password, totpToken} = req.body;
 
 			// Validate input
 			if (!email || !password) {
@@ -100,6 +100,29 @@ export class AuthController {
 				});
 				return;
 			}
+
+			// Check if 2FA is enabled for this user
+			if (user.twoFactorEnabled) {
+				// If 2FA is enabled, check if TOTP token was provided
+				if (!totpToken) {
+					// No token provided, inform client that 2FA is required
+					res.status(200).json({
+						success: true,
+						requireTwoFactor: true,
+						message: "Se requiere autenticación de dos factores",
+						data: {
+							email: user.email,
+						},
+					});
+					return;
+				}
+
+				// TOTP token was provided, validate it in the 2FA validation endpoint
+				// We'll let that endpoint handle the authentication flow
+				return;
+			}
+
+			// 2FA is not enabled, proceed with normal login flow
 
 			// Generate tokens
 			const tokens = this.authService.generateTokens(user);

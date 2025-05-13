@@ -220,6 +220,10 @@ export class RecommendationService {
 			[ProfessionType.ELECTRICIAN]: "Electricistas",
 			[ProfessionType.CONTRACTOR]: "Contratistas",
 			[ProfessionType.ALL]: "Todos los profesionales",
+			[ProfessionType.SAFETY_ENGINEER]: "",
+			[ProfessionType.MECHANICAL_ENGINEER]: "",
+			[ProfessionType.ELECTRICAL_ENGINEER]: "",
+			[ProfessionType.TELECOMMUNICATIONS_ENGINEER]: ""
 		};
 
 		return names[profession] || "Profesionales";

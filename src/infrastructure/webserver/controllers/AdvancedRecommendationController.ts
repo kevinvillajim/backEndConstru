@@ -1,5 +1,6 @@
 // src/infrastructure/webserver/controllers/AdvancedRecommendationController.ts
-import {Request, Response} from "express";
+import {Response} from "express";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 import {GetAdvancedRecommendationsUseCase} from "../../../application/recommendation/GetAdvancedRecommendationsUseCase";
 
 export class AdvancedRecommendationController {
@@ -7,7 +8,10 @@ export class AdvancedRecommendationController {
 		private getAdvancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase
 	) {}
 
-	async getTemplateRecommendations(req: Request, res: Response): Promise<void> {
+	async getTemplateRecommendations(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
 		try {
 			const userId = req.user?.id;
 
@@ -43,7 +47,10 @@ export class AdvancedRecommendationController {
 		}
 	}
 
-	async getMaterialRecommendations(req: Request, res: Response): Promise<void> {
+	async getMaterialRecommendations(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
 		try {
 			const userId = req.user?.id;
 
@@ -79,7 +86,10 @@ export class AdvancedRecommendationController {
 		}
 	}
 
-	async registerUserInteraction(req: Request, res: Response): Promise<void> {
+	async registerUserInteraction(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
 		try {
 			// Esta ruta sería para registrar una interacción del usuario desde el frontend
 			// Implementación omitida por brevedad
