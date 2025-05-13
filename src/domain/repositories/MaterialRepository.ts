@@ -15,6 +15,7 @@ export interface MaterialRepository {
 	updateStock(id: string, quantity: number): Promise<boolean>;
 	updateViewCount(id: string): Promise<boolean>;
 	saveHistoricalPrice(data: HistoricalPriceData): Promise<boolean>;
+	findSimilar(name: string, categoryId: string): Promise<Material[]>;
 }
 
 export interface HistoricalPriceData {

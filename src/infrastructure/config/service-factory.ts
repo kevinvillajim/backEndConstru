@@ -65,7 +65,11 @@ import {EnhancedProjectDashboardUseCase} from "../../application/project/Enhance
 import {EnhancedProjectDashboardController} from "../webserver/controllers/EnhancedProjectDashboardController";
 import {PredictProjectDelaysUseCase} from "../../application/project/PredictProjectDelaysUseCase";
 import {ProjectPredictionController} from "../webserver/controllers/ProjectPredictionController";
-
+import {TypeOrmOrderRepository} from "../database/repositories/TypeOrmOrderRepository";
+import {TypeOrmOrderItemRepository} from "../database/repositories/TypeOrmOrderItemRepository";
+import {CompareMaterialPricesUseCase} from "../../application/material/CompareMaterialPricesUseCase";
+import {CreateOrderFromMaterialRequestsUseCase} from "../../application/order/CreateOrderFromMaterialRequestsUseCase";
+import {OrderController} from "../webserver/controllers/OrderController";
 // Global service instances
 let userRepository: TypeOrmUserRepository;
 let authService: AuthService;
@@ -127,6 +131,11 @@ let enhancedProjectDashboardUseCase: EnhancedProjectDashboardUseCase;
 let enhancedProjectDashboardController: EnhancedProjectDashboardController;
 let predictProjectDelaysUseCase: PredictProjectDelaysUseCase;
 let projectPredictionController: ProjectPredictionController;
+let orderRepository: TypeOrmOrderRepository;
+let orderItemRepository: TypeOrmOrderItemRepository;
+let compareMaterialPricesUseCase: CompareMaterialPricesUseCase;
+let createOrderFromMaterialRequestsUseCase: CreateOrderFromMaterialRequestsUseCase;
+let orderController: OrderController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -149,6 +158,8 @@ export function initializeServices() {
 		materialRequestRepository = new TypeOrmMaterialRequestRepository();
 		accountingTransactionRepository =
 			new TypeOrmAccountingTransactionRepository();
+		orderRepository = new TypeOrmOrderRepository();
+		orderItemRepository = new TypeOrmOrderItemRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -300,6 +311,21 @@ export function initializeServices() {
 			notificationService
 		);
 
+		compareMaterialPricesUseCase = new CompareMaterialPricesUseCase(
+			materialRepository,
+			userRepository
+		);
+
+		createOrderFromMaterialRequestsUseCase =
+			new CreateOrderFromMaterialRequestsUseCase(
+				orderRepository,
+				orderItemRepository,
+				materialRequestRepository,
+				materialRepository,
+				projectRepository,
+				notificationService
+			);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -352,7 +378,10 @@ export function initializeServices() {
 			importCalculationTemplateUseCase
 		);
 
-		materialController = new MaterialController(materialRepository);
+		materialController = new MaterialController(
+			materialRepository,
+			compareMaterialPricesUseCase
+		);
 
 		projectDashboardController = new ProjectDashboardController(
 			getProjectDashboardDataUseCase
@@ -373,6 +402,12 @@ export function initializeServices() {
 
 		projectPredictionController = new ProjectPredictionController(
 			predictProjectDelaysUseCase
+		);
+
+		orderController = new OrderController(
+			createOrderFromMaterialRequestsUseCase,
+			orderRepository,
+			orderItemRepository
 		);
 
 		console.log("Services initialized successfully");
@@ -581,4 +616,13 @@ export function getProjectPredictionController() {
 		);
 	}
 	return projectPredictionController;
+}
+
+export function getOrderController() {
+	if (!orderController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return orderController;
 }

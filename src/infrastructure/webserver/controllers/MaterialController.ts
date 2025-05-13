@@ -13,8 +13,16 @@ interface RequestWithUser extends Request {
 	user?: User;
 }
 
+private compareMaterialPricesUseCase: CompareMaterialPricesUseCase;
+
 export class MaterialController {
-	constructor(private materialRepository: MaterialRepository) {}
+	constructor(
+		private materialRepository: MaterialRepository,
+		compareMaterialPricesUseCase?: CompareMaterialPricesUseCase
+	) {
+		// Si se proporciona el caso de uso para comparación, lo usamos, si no, es null
+		this.compareMaterialPricesUseCase = compareMaterialPricesUseCase || null;
+	}
 
 	/**
 	 * Obtiene todos los materiales con filtros opcionales
@@ -468,6 +476,52 @@ export class MaterialController {
 			res.status(500).json({
 				success: false,
 				message: typedError.message || "Error al obtener historial de precios",
+			});
+		}
+	}
+
+	/**
+	 * Compara precios de un material entre diferentes proveedores
+	 * Solo accesible para administradores
+	 */
+	async comparePrices(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			const {materialId} = req.params;
+			const {projectLocation} = req.body;
+
+			if (!req.user) {
+				res.status(401).json({
+					success: false,
+					message: "Usuario no autenticado",
+				});
+				return;
+			}
+
+			// Verificar que el usuario es admin
+			if (req.user.role !== "ADMIN") {
+				res.status(403).json({
+					success: false,
+					message:
+						"Solo los administradores pueden acceder a esta funcionalidad",
+				});
+				return;
+			}
+
+			const comparison = await this.compareMaterialPricesUseCase.execute(
+				materialId,
+				req.user.id,
+				projectLocation
+			);
+
+			res.status(200).json({
+				success: true,
+				data: comparison,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			res.status(400).json({
+				success: false,
+				message: typedError.message || "Error al comparar precios",
 			});
 		}
 	}

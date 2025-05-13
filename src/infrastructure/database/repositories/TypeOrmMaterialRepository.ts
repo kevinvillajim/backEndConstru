@@ -273,4 +273,42 @@ export class TypeOrmMaterialRepository implements MaterialRepository {
 			return false;
 		}
 	}
+	
+	async findSimilar(name: string, categoryId: string): Promise<Material[]> {
+		// Buscar materiales similares por nombre y categoría
+		const queryBuilder = this.repository
+			.createQueryBuilder("material")
+			.where("material.category_id = :categoryId", {categoryId})
+			.andWhere("material.is_active = :isActive", {isActive: true});
+
+		// Buscar por palabras clave del nombre
+		const keywords = name
+			.split(" ")
+			.filter((word) => word.length > 3) // Ignorar palabras muy cortas
+			.map((word) => word.trim());
+
+		if (keywords.length > 0) {
+			queryBuilder.andWhere(
+				new Brackets((qb) => {
+					keywords.forEach((keyword, index) => {
+						if (index === 0) {
+							qb.where("material.name LIKE :keyword" + index, {
+								["keyword" + index]: `%${keyword}%`,
+							});
+						} else {
+							qb.orWhere("material.name LIKE :keyword" + index, {
+								["keyword" + index]: `%${keyword}%`,
+							});
+						}
+					});
+				})
+			);
+		}
+
+		// Excluir el material actual si estamos buscando alternativas
+		queryBuilder.andWhere("material.name != :exactName", {exactName: name});
+
+		const materials = await queryBuilder.getMany();
+		return materials.map((entity) => this.toDomainModel(entity));
+	}
 }
