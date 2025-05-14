@@ -171,12 +171,16 @@ export class InvoiceController {
 				// Si el servicio aún no está disponible
 				res.status(503).json({
 					success: false,
-					message: factoryError.message,
+					 message: factoryError instanceof Error ? factoryError.message : "Error desconocido",
 					inDevelopment: true,
 				});
 			}
 		} catch (error) {
-			const typedError = handleError(error);
+			 const typedError = handleError(error);
+				res.status(400).json({
+					success: false,
+					message: typedError.message || "Error al sincronizar con SRI",
+				});
 		}
 	}
 
@@ -199,7 +203,12 @@ export class InvoiceController {
 					sriService = SriServiceFactory.createService(sriConfig);
 				} catch (factoryError) {
 					// Continuar sin SRI si no está disponible
-					console.warn("Servicio SRI no disponible:", factoryError.message);
+					console.warn(
+						"Servicio SRI no disponible:",
+						factoryError instanceof Error
+							? factoryError.message
+							: "Error desconocido"
+					);
 				}
 			}
 

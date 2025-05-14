@@ -86,23 +86,30 @@ export class SendInvoiceByEmailUseCase {
 		// 6. Enviar email
 		try {
 			const client = await this.userRepository.findById(invoice.clientId);
-			const html = `<p>Estimado/a ${client ? `${client.firstName} ${client.lastName}` : "Cliente"}:</p>`;
-
+			const clientName = client
+				? `${client.firstName} ${client.lastName}`
+				: "Cliente";
+			
+			const seller = await this.userRepository.findById(invoice.sellerId);
+			const sellerName = seller
+				? `${seller.firstName} ${seller.lastName}`
+				: "El equipo de ventas";
+			
 			const result = await this.emailService.sendEmail({
 				to: recipientEmail,
 				subject: `Factura ${invoice.invoiceNumber}`,
 				html: `
-          <h1>Factura ${invoice.invoiceNumber}</h1>
-          <p>Estimado/a ${client?.name || "Cliente"}:</p>
-          <p>Adjunto encontrará la factura ${invoice.invoiceNumber} por un monto de $${invoice.total.toFixed(2)}.</p>
-          <p>Fecha de emisión: ${invoice.issueDate.toLocaleDateString()}</p>
-          <p>Fecha de vencimiento: ${invoice.dueDate.toLocaleDateString()}</p>
-          ${invoice.sriAuthorization ? `<p>Número de Autorización SRI: ${invoice.sriAuthorization}</p>` : ""}
-          <p>Si tiene alguna pregunta, no dude en contactarnos.</p>
-          <p>Atentamente,</p>
-          <p>${seller?.name || "El equipo de ventas"}</p>
-          <p>CONSTRU App</p>
-        `,
+  				  <h1>Factura ${invoice.invoiceNumber}</h1>
+  				  <p>Estimado/a ${clientName}:</p>
+  				  <p>Adjunto encontrará la factura ${invoice.invoiceNumber} por un monto de $${invoice.total.toFixed(2)}.</p>
+  				  <p>Fecha de emisión: ${invoice.issueDate.toLocaleDateString()}</p>
+  				  <p>Fecha de vencimiento: ${invoice.dueDate.toLocaleDateString()}</p>
+  				  ${invoice.sriAuthorization ? `<p>Número de Autorización SRI: ${invoice.sriAuthorization}</p>` : ""}
+  				  <p>Si tiene alguna pregunta, no dude en contactarnos.</p>
+  				  <p>Atentamente,</p>
+  				  <p>${sellerName}</p>
+  				  <p>CONSTRU App</p>
+  				`,
 				attachments,
 			});
 
@@ -123,7 +130,7 @@ export class SendInvoiceByEmailUseCase {
 				});
 			}
 
-			return result;
+			return result.success;
 		} catch (error) {
 			console.error("Error al enviar email de factura:", error);
 

@@ -4,8 +4,17 @@ import fs from "fs";
 import path from "path";
 import {ProjectBudget} from "../../domain/models/project/ProjectBudget";
 import {BudgetItem} from "../../domain/models/project/BudgetItem";
+import { InvoiceRepository } from "@domain/repositories/InvoiceRepository";
+import { UserRepository } from "@domain/repositories/UserRepository";
+import { TypeOrmInvoiceRepository } from "@infrastructure/database/repositories/TypeOrmInvoiceRepository";
+import { TypeOrmUserRepository } from "@infrastructure/database/repositories/TypeOrmUserRepository";
 
 export class PdfGenerationService {
+	constructor(
+		private invoiceRepository?: InvoiceRepository,
+		private userRepository?: UserRepository
+	) {}
+
 	/**
 	 * Genera un PDF para un presupuesto
 	 * @param budget Datos del presupuesto
@@ -367,17 +376,28 @@ export class PdfGenerationService {
 	 */
 	async generateInvoicePdf(invoiceId: string): Promise<Buffer> {
 		// Obtener datos de la factura
-		const invoiceRepository = new TypeOrmInvoiceRepository();
-		const invoice = await invoiceRepository.findById(invoiceId);
+		if (!this.invoiceRepository) {
+			throw new Error(
+				"Invoice repository not initialized in PdfGenerationService"
+			);
+		}
+
+		if (!this.userRepository) {
+			throw new Error(
+				"User repository not initialized in PdfGenerationService"
+			);
+		}
+
+		// Obtener datos de la factura
+		const invoice = await this.invoiceRepository.findById(invoiceId);
 
 		if (!invoice) {
 			throw new Error(`Factura no encontrada: ${invoiceId}`);
 		}
 
 		// Obtener datos de cliente y vendedor
-		const userRepository = new TypeOrmUserRepository();
-		const client = await userRepository.findById(invoice.clientId);
-		const seller = await userRepository.findById(invoice.sellerId);
+		const client = await this.userRepository.findById(invoice.clientId);
+		const seller = await this.userRepository.findById(invoice.sellerId);
 
 		if (!client || !seller) {
 			throw new Error("No se pudo obtener información de cliente o vendedor");
@@ -451,15 +471,15 @@ export class PdfGenerationService {
       <div class="invoice-header">
         <div>
           <h3>EMISOR</h3>
-          <p><strong>${seller.name}</strong><br>
-          ${seller.address || ""}<br>
+          <p><strong>${seller.firstName} ${seller.lastName}</strong><br>
+          ${seller.addresses && seller.addresses.length > 0 ? seller.addresses[0].street + ", " + seller.addresses[0].city : ""}<br>
           ${seller.email || ""}<br>
           ${seller.phone || ""}</p>
         </div>
         <div>
           <h3>CLIENTE</h3>
-          <p><strong>${client.name}</strong><br>
-          ${client.address || ""}<br>
+          <p><strong>${client.firstName} ${client.lastName}</strong><br>
+          ${client.addresses && client.addresses.length > 0 ? client.addresses[0].street + ", " + client.addresses[0].city : ""}<br>
           ${client.email || ""}<br>
           ${client.phone || ""}</p>
         </div>
@@ -628,5 +648,33 @@ export class PdfGenerationService {
 		};
 
 		return await this.htmlToPdf(html, pdfOptions);
+	}
+
+	/**
+	 * Convierte HTML a PDF
+	 */
+	private async htmlToPdf(html: string, options: any): Promise<Buffer> {
+		// In a real implementation, you would use a library like puppeteer or html-pdf
+		// This is a simplified implementation for demonstration
+		try {
+			// Mock implementation - in production, replace with actual PDF generation
+			console.log("Converting HTML to PDF with options:", options);
+
+			// Return a mock PDF buffer
+			return Buffer.from(`Mock PDF content for: ${html.substring(0, 50)}...`);
+
+			// Example with puppeteer (would need to be installed):
+			/*
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(html);
+    const pdfBuffer = await page.pdf(options);
+    await browser.close();
+    return pdfBuffer;
+    */
+		} catch (error) {
+			console.error("Error converting HTML to PDF:", error);
+			throw error;
+		}
 	}
 }
