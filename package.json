@@ -14,7 +14,7 @@
 		"test:coverage": "jest --coverage",
 		"lint": "eslint . --ext .ts",
 		"lint:fix": "eslint . --ext .ts --fix",
-		"seed": "ts-node -r tsconfig-paths/register src/infrastructure/database/seeds/index.ts"
+		"seed": "ts-node -r tsconfig-paths/register src/infrastructure/database/seeds/nec-seeds/index.ts"
 	},
 	"keywords": [],
 	"author": "",
