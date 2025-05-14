@@ -4,12 +4,15 @@ export interface EmailOptions {
 	subject: string;
 	text?: string;
 	html?: string;
-	attachments?: Array<{
-		filename: string;
-		content: string | Buffer;
-		contentType?: string;
-	}>;
+	attachments?: EmailAttachment[];
 }
+
+export interface EmailAttachment {
+	filename: string;
+	content: string | Buffer;
+	contentType?: string;
+}
+
 
 export interface EmailResult {
 	success: boolean;

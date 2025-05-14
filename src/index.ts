@@ -104,9 +104,8 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/advancedRecommendationRoutes").default;
 		const twoFactorAuthRoutes =
 			require("./infrastructure/webserver/routes/twoFactorAuthRoutes").default;
-		//Documentation
-		
-		
+		const invoiceRoutes =
+  			require("./infrastructure/webserver/routes/invoiceRoutes").default;
 		
 		// Configure routes
 		app.use("/api/auth", authRoutes);
@@ -126,6 +125,7 @@ async function bootstrap() {
 		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
 		app.use("/api/auth", authRoutes);
 		app.use("/api/auth/2fa", twoFactorAuthRoutes);
+		app.use("/api/invoices", invoiceRoutes);
 
 		// Global error handler
 		app.use(

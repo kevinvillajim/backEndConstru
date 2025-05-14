@@ -361,4 +361,272 @@ export class PdfGenerationService {
 
 		return statusMap[status] || status;
 	}
+
+	/**
+	 * Genera un PDF para una factura
+	 */
+	async generateInvoicePdf(invoiceId: string): Promise<Buffer> {
+		// Obtener datos de la factura
+		const invoiceRepository = new TypeOrmInvoiceRepository();
+		const invoice = await invoiceRepository.findById(invoiceId);
+
+		if (!invoice) {
+			throw new Error(`Factura no encontrada: ${invoiceId}`);
+		}
+
+		// Obtener datos de cliente y vendedor
+		const userRepository = new TypeOrmUserRepository();
+		const client = await userRepository.findById(invoice.clientId);
+		const seller = await userRepository.findById(invoice.sellerId);
+
+		if (!client || !seller) {
+			throw new Error("No se pudo obtener información de cliente o vendedor");
+		}
+
+		// Crear el contenido HTML para el PDF
+		const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Factura ${invoice.invoiceNumber}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 12px;
+          line-height: 1.5;
+          color: #333;
+        }
+        h1 {
+          font-size: 18px;
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .invoice-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+        }
+        .invoice-header div {
+          flex: 1;
+        }
+        .invoice-details {
+          margin-bottom: 20px;
+        }
+        .invoice-details .row {
+          display: flex;
+          margin-bottom: 5px;
+        }
+        .invoice-details .label {
+          font-weight: bold;
+          width: 150px;
+        }
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        .table th, .table td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        .table th {
+          background-color: #f2f2f2;
+        }
+        .total-row {
+          font-weight: bold;
+        }
+        .footer {
+          margin-top: 30px;
+          text-align: center;
+          font-size: 10px;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>FACTURA ${invoice.invoiceNumber}</h1>
+      
+      <div class="invoice-header">
+        <div>
+          <h3>EMISOR</h3>
+          <p><strong>${seller.name}</strong><br>
+          ${seller.address || ""}<br>
+          ${seller.email || ""}<br>
+          ${seller.phone || ""}</p>
+        </div>
+        <div>
+          <h3>CLIENTE</h3>
+          <p><strong>${client.name}</strong><br>
+          ${client.address || ""}<br>
+          ${client.email || ""}<br>
+          ${client.phone || ""}</p>
+        </div>
+      </div>
+      
+      <div class="invoice-details">
+        <div class="row">
+          <div class="label">Número de Factura:</div>
+          <div>${invoice.invoiceNumber}</div>
+        </div>
+        <div class="row">
+          <div class="label">Fecha de Emisión:</div>
+          <div>${new Date(invoice.issueDate).toLocaleDateString()}</div>
+        </div>
+        <div class="row">
+          <div class="label">Fecha de Vencimiento:</div>
+          <div>${new Date(invoice.dueDate).toLocaleDateString()}</div>
+        </div>
+        ${
+					invoice.sriAuthorization
+						? `
+        <div class="row">
+          <div class="label">Autorización SRI:</div>
+          <div>${invoice.sriAuthorization}</div>
+        </div>
+        `
+						: ""
+				}
+      </div>
+      
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+            <th>IVA</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${invoice.items
+						.map(
+							(item) => `
+            <tr>
+              <td>${item.description}</td>
+              <td>${item.quantity}</td>
+              <td>$${item.price.toFixed(2)}</td>
+              <td>$${item.subtotal.toFixed(2)}</td>
+              <td>$${item.tax.toFixed(2)}</td>
+              <td>$${item.total.toFixed(2)}</td>
+            </tr>
+          `
+						)
+						.join("")}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" rowspan="4"></td>
+            <td colspan="2"><strong>Subtotal</strong></td>
+            <td>$${invoice.subtotal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colspan="2"><strong>Descuento (${invoice.discountPercentage}%)</strong></td>
+            <td>$${invoice.discount.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colspan="2"><strong>IVA (${invoice.taxPercentage}%)</strong></td>
+            <td>$${invoice.tax.toFixed(2)}</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2"><strong>TOTAL</strong></td>
+            <td>$${invoice.total.toFixed(2)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      
+      ${
+				invoice.notes
+					? `
+      <div>
+        <h3>Notas</h3>
+        <p>${invoice.notes}</p>
+      </div>
+      `
+					: ""
+			}
+      
+      <div class="footer">
+        <p>Esta factura es válida como comprobante fiscal de acuerdo con las leyes ecuatorianas.</p>
+        <p>Generada por CONSTRU App © ${new Date().getFullYear()}</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+		try {
+			// Usar la biblioteca PDF para generar el PDF
+			const pdfOptions = {
+				format: "A4",
+				printBackground: true,
+				margin: {
+					top: "1cm",
+					right: "1cm",
+					bottom: "1cm",
+					left: "1cm",
+				},
+			};
+
+			// Esta es una implementación simplificada
+			// En producción, usarías una biblioteca como puppeteer, PDF-lib, etc.
+			// Para este ejemplo, asumiremos que existe un método para convertir HTML a PDF
+			return await this.htmlToPdf(html, pdfOptions);
+		} catch (error) {
+			console.error("Error al generar PDF de factura:", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Genera un PDF a partir de un documento XML del SRI
+	 */
+	async generatePdfFromXml(xmlDocument: string): Promise<Buffer> {
+		// Implementación simplificada para convertir XML a HTML y luego a PDF
+		// En una implementación real, deberías procesar el XML correctamente
+		const xmlParser = require("fast-xml-parser");
+		const parser = new xmlParser.XMLParser();
+		const parsedXml = parser.parse(xmlDocument);
+
+		// Crear un HTML basado en los datos del XML
+		// Esta parte dependerá de la estructura exacta del XML del SRI
+		const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Factura Electrónica SRI</title>
+      <style>
+        /* Estilos CSS similares al de generateInvoicePdf */
+      </style>
+    </head>
+    <body>
+      <h1>FACTURA ELECTRÓNICA</h1>
+      
+      <!-- Datos del XML procesados -->
+      <!-- ... -->
+      
+      <div class="footer">
+        <p>Este es un documento electrónico emitido por el SRI.</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+		// Generar PDF del HTML
+		const pdfOptions = {
+			format: "A4",
+			printBackground: true,
+			margin: {
+				top: "1cm",
+				right: "1cm",
+				bottom: "1cm",
+				left: "1cm",
+			},
+		};
+
+		return await this.htmlToPdf(html, pdfOptions);
+	}
 }

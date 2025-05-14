@@ -80,6 +80,12 @@ import {PushNotificationService} from "../../domain/services/PushNotificationSer
 import {PushNotificationServiceImpl} from "../services/PushNotificationServiceImpl";
 import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
 import {TwoFactorAuthController} from "../webserver/controllers/TwoFactorAuthController";
+import {InvoiceRepository} from "../../domain/repositories/InvoiceRepository";
+import {TypeOrmInvoiceRepository} from "../database/repositories/TypeOrmInvoiceRepository";
+import {SyncInvoiceWithSriUseCase} from "../../application/invoice/SyncInvoiceWithSriUseCase";
+import {SendInvoiceByEmailUseCase} from "../../application/invoice/SendInvoiceByEmailUseCase";
+import {UpdateInvoicePaymentUseCase} from "../../application/invoice/UpdateInvoicePaymentUseCase";
+import {InvoiceController} from "../webserver/controllers/InvoiceController";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -155,6 +161,11 @@ let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
 let twoFactorAuthService: TwoFactorAuthService;
 let twoFactorAuthController: TwoFactorAuthController;
+let invoiceRepository: TypeOrmInvoiceRepository;
+let syncInvoiceWithSriUseCase: SyncInvoiceWithSriUseCase;
+let sendInvoiceByEmailUseCase: SendInvoiceByEmailUseCase;
+let updateInvoicePaymentUseCase: UpdateInvoicePaymentUseCase;
+let invoiceController: InvoiceController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -180,6 +191,7 @@ export function initializeServices() {
 		orderRepository = new TypeOrmOrderRepository();
 		orderItemRepository = new TypeOrmOrderItemRepository();
 		userInteractionRepository = new TypeOrmUserInteractionRepository();
+		invoiceRepository = new TypeOrmInvoiceRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -368,6 +380,27 @@ export function initializeServices() {
 			advancedRecommendationService
 		);
 
+		syncInvoiceWithSriUseCase = new SyncInvoiceWithSriUseCase(
+			invoiceRepository,
+			userRepository,
+			notificationService
+		);
+
+		sendInvoiceByEmailUseCase = new SendInvoiceByEmailUseCase(
+			invoiceRepository,
+			userRepository,
+			emailService,
+			pdfGenerationService,
+			notificationService
+		);
+
+		updateInvoicePaymentUseCase = new UpdateInvoicePaymentUseCase(
+			invoiceRepository,
+			userRepository,
+			accountingTransactionRepository,
+			notificationService
+		);
+
 		// Initialize controllers
 		authController = new AuthController(authService, userRepository);
 		calculationTemplateController = new CalculationTemplateController(
@@ -456,6 +489,14 @@ export function initializeServices() {
 			twoFactorAuthService,
 			userRepository,
 			authService
+		);
+
+		invoiceController = new InvoiceController(
+			invoiceRepository,
+			syncInvoiceWithSriUseCase,
+			sendInvoiceByEmailUseCase,
+			updateInvoicePaymentUseCase,
+			pdfGenerationService
 		);
 
 		console.log("Services initialized successfully");
@@ -738,7 +779,6 @@ export function getTwoFactorAuthController() {
 	return twoFactorAuthController;
 }
 
-// Add a factory method to get the 2FA service
 export function getTwoFactorAuthService() {
 	if (!twoFactorAuthService) {
 		throw new Error(
@@ -746,4 +786,13 @@ export function getTwoFactorAuthService() {
 		);
 	}
 	return twoFactorAuthService;
+}
+
+export function getInvoiceController() {
+	if (!invoiceController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return invoiceController;
 }
