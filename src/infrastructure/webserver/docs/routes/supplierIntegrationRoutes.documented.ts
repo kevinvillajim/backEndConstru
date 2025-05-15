@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/suppliers:
+ * /suppliers:
  *   get:
  *     tags:
  *       - SupplierIntegration
@@ -47,7 +47,7 @@
 
 /**
  * @swagger
- * /api/suppliers/{supplierId}/products:
+ * /suppliers/{supplierId}/products:
  *   get:
  *     tags:
  *       - SupplierIntegration
@@ -128,7 +128,7 @@
 
 /**
  * @swagger
- * /api/suppliers/{supplierId}/search:
+ * /suppliers/{supplierId}/search:
  *   get:
  *     tags:
  *       - SupplierIntegration
@@ -210,7 +210,7 @@
 
 /**
  * @swagger
- * /api/suppliers/{supplierId}/import:
+ * /suppliers/{supplierId}/import:
  *   post:
  *     tags:
  *       - SupplierIntegration

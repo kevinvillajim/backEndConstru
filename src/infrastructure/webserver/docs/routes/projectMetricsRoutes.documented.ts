@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/metrics/project/{projectId}:
+ * /metrics/project/{projectId}:
  *   get:
  *     tags:
  *       - Metrics
@@ -71,7 +71,7 @@
 
 /**
  * @swagger
- * /api/metrics/predictions/{projectId}/delays:
+ * /metrics/predictions/{projectId}/delays:
  *   get:
  *     tags:
  *       - Metrics
@@ -156,7 +156,7 @@
 
 /**
  * @swagger
- * /api/metrics/predictions/{projectId}/history:
+ * /metrics/predictions/{projectId}/history:
  *   get:
  *     tags:
  *       - Metrics

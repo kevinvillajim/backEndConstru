@@ -204,6 +204,16 @@ export class UserEntity {
 	@OneToMany(() => UserEntity, (user) => user.admin)
 	workers: UserEntity[];
 
+	// Campos para autenticación de dos factores
+	@Column({name: "two_factor_enabled", default: false})
+	twoFactorEnabled: boolean;
+
+	@Column({name: "two_factor_secret", nullable: true})
+	twoFactorSecret: string;
+
+	@Column({type: "simple-array", name: "recovery_codes", nullable: true})
+	recoveryCodes: string[];
+
 	@CreateDateColumn({name: "created_at"})
 	createdAt: Date;
 

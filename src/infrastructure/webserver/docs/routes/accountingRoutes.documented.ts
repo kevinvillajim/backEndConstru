@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/accounting/systems:
+ * /accounting/systems:
  *   get:
  *     tags:
  *       - Accounting
@@ -45,7 +45,7 @@
 
 /**
  * @swagger
- * /api/accounting/budgets/{budgetId}/sync:
+ * /accounting/budgets/{budgetId}/sync:
  *   post:
  *     tags:
  *       - Accounting
@@ -124,7 +124,7 @@
 
 /**
  * @swagger
- * /api/accounting/budgets/{budgetId}/sync-history:
+ * /accounting/budgets/{budgetId}/sync-history:
  *   get:
  *     tags:
  *       - Accounting

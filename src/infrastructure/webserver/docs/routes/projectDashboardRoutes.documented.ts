@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/dashboards/project/{projectId}:
+ * /dashboards/project/{projectId}:
  *   get:
  *     tags:
  *       - Dashboards
@@ -63,7 +63,7 @@
 
 /**
  * @swagger
- * /api/dashboards/enhanced/{projectId}:
+ * /dashboards/enhanced/{projectId}:
  *   get:
  *     tags:
  *       - Dashboards
@@ -142,7 +142,7 @@
 
 /**
  * @swagger
- * /api/dashboards/enhanced/{projectId}/{widgetType}:
+ * /dashboards/enhanced/{projectId}/{widgetType}:
  *   get:
  *     tags:
  *       - Dashboards

@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/recommendations/templates:
+ * /recommendations/templates:
  *   get:
  *     tags:
  *       - Recommendations
@@ -70,7 +70,7 @@
 
 /**
  * @swagger
- * /api/recommendations/materials:
+ * /recommendations/materials:
  *   post:
  *     tags:
  *       - Recommendations
@@ -144,7 +144,7 @@
 
 /**
  * @swagger
- * /api/recommendations/interactions:
+ * /recommendations/interactions:
  *   post:
  *     tags:
  *       - Recommendations

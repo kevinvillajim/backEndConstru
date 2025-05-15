@@ -2,7 +2,7 @@
 
 /**
  * @swagger
- * /api/tasks/{taskId}/progress:
+ * /tasks/{taskId}/progress:
  *   patch:
  *     tags:
  *       - Tasks
@@ -63,7 +63,7 @@
 
 /**
  * @swagger
- * /api/tasks/{taskId}/assign:
+ * /tasks/{taskId}/assign:
  *   post:
  *     tags:
  *       - Tasks
@@ -121,7 +121,7 @@
 
 /**
  * @swagger
- * /api/tasks/{taskId}:
+ * /tasks/{taskId}:
  *   get:
  *     tags:
  *       - Tasks

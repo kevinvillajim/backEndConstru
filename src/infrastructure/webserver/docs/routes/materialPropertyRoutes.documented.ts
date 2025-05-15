@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/material-properties/categories/{categoryId}/properties:
+ * /material-properties/categories/{categoryId}/properties:
  *   get:
  *     tags:
  *       - MaterialProperties
@@ -54,7 +54,7 @@
 
 /**
  * @swagger
- * /api/material-properties/properties:
+ * /material-properties/properties:
  *   post:
  *     tags:
  *       - MaterialProperties
@@ -133,7 +133,7 @@
 
 /**
  * @swagger
- * /api/material-properties/properties/{definitionId}:
+ * /material-properties/properties/{definitionId}:
  *   put:
  *     tags:
  *       - MaterialProperties
@@ -199,7 +199,7 @@
 
 /**
  * @swagger
- * /api/material-properties/properties/{definitionId}:
+ * /material-properties/properties/{definitionId}:
  *   delete:
  *     tags:
  *       - MaterialProperties
@@ -244,7 +244,7 @@
 
 /**
  * @swagger
- * /api/material-properties/materials/{materialId}/properties:
+ * /material-properties/materials/{materialId}/properties:
  *   get:
  *     tags:
  *       - MaterialProperties
@@ -299,7 +299,7 @@
 
 /**
  * @swagger
- * /api/material-properties/materials/{materialId}/properties:
+ * /material-properties/materials/{materialId}/properties:
  *   post:
  *     tags:
  *       - MaterialProperties
@@ -364,7 +364,7 @@
 
 /**
  * @swagger
- * /api/material-properties/materials/{materialId}/properties:
+ * /material-properties/materials/{materialId}/properties:
  *   delete:
  *     tags:
  *       - MaterialProperties

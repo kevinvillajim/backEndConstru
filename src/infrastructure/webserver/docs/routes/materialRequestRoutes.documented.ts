@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/material-requests:
+ * /material-requests:
  *   post:
  *     tags:
  *       - MaterialRequests
@@ -62,7 +62,7 @@
 
 /**
  * @swagger
- * /api/material-requests/{requestId}/approve:
+ * /material-requests/{requestId}/approve:
  *   post:
  *     tags:
  *       - MaterialRequests
@@ -120,7 +120,7 @@
 
 /**
  * @swagger
- * /api/material-requests/{requestId}/reject:
+ * /material-requests/{requestId}/reject:
  *   post:
  *     tags:
  *       - MaterialRequests
@@ -190,7 +190,7 @@
 
 /**
  * @swagger
- * /api/material-requests/project/{projectId}:
+ * /material-requests/project/{projectId}:
  *   get:
  *     tags:
  *       - MaterialRequests
@@ -240,7 +240,7 @@
 
 /**
  * @swagger
- * /api/material-requests/{requestId}/delivery:
+ * /material-requests/{requestId}/delivery:
  *   post:
  *     tags:
  *       - MaterialRequests

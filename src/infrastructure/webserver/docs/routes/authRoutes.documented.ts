@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/auth/login:
+ * /auth/login:
  *   post:
  *     tags:
  *       - Auth
@@ -66,7 +66,7 @@
 
 /**
  * @swagger
- * /api/auth/register:
+ * /auth/register:
  *   post:
  *     tags:
  *       - Auth
@@ -111,7 +111,7 @@
 
 /**
  * @swagger
- * /api/auth/refresh-token:
+ * /auth/refresh-token:
  *   post:
  *     tags:
  *       - Auth
@@ -141,7 +141,7 @@
 
 /**
  * @swagger
- * /api/auth/logout:
+ * /auth/logout:
  *   post:
  *     tags:
  *       - Auth
@@ -165,7 +165,7 @@
 
 /**
  * @swagger
- * /api/auth/verify-email/{token}:
+ * /auth/verify-email/{token}:
  *   get:
  *     tags:
  *       - Auth
@@ -202,7 +202,7 @@
 
 /**
  * @swagger
- * /api/auth/forgot-password:
+ * /auth/forgot-password:
  *   post:
  *     tags:
  *       - Auth
@@ -244,7 +244,7 @@
 
 /**
  * @swagger
- * /api/auth/reset-password/{token}:
+ * /auth/reset-password/{token}:
  *   post:
  *     tags:
  *       - Auth
@@ -298,7 +298,7 @@
 
 /**
  * @swagger
- * /api/auth/profile:
+ * /auth/profile:
  *   get:
  *     tags:
  *       - Auth
@@ -326,7 +326,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/setup:
+ * /auth/2fa/setup:
  *   post:
  *     tags:
  *       - Auth
@@ -361,7 +361,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/verify:
+ * /auth/2fa/verify:
  *   post:
  *     tags:
  *       - Auth
@@ -416,7 +416,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/disable:
+ * /auth/2fa/disable:
  *   post:
  *     tags:
  *       - Auth
@@ -458,7 +458,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/setup:
+ * /auth/2fa/setup:
  *   post:
  *     tags:
  *       - Auth
@@ -496,7 +496,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/verify:
+ * /auth/2fa/verify:
  *   post:
  *     tags:
  *       - Auth
@@ -551,7 +551,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/disable:
+ * /auth/2fa/disable:
  *   post:
  *     tags:
  *       - Auth
@@ -593,7 +593,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/validate:
+ * /auth/2fa/validate:
  *   post:
  *     tags:
  *       - Auth
@@ -647,7 +647,7 @@
 
 /**
  * @swagger
- * /api/auth/2fa/recovery:
+ * /auth/2fa/recovery:
  *   post:
  *     tags:
  *       - Auth

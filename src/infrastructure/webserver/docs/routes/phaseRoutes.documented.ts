@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/phases/{phaseId}:
+ * /phases/{phaseId}:
  *   get:
  *     tags:
  *       - Phases
@@ -42,7 +42,7 @@
 
 /**
  * @swagger
- * /api/phases/{phaseId}/tasks:
+ * /phases/{phaseId}/tasks:
  *   get:
  *     tags:
  *       - Phases
@@ -91,7 +91,7 @@
 
 /**
  * @swagger
- * /api/phases/{phaseId}/dates:
+ * /phases/{phaseId}/dates:
  *   patch:
  *     tags:
  *       - Phases

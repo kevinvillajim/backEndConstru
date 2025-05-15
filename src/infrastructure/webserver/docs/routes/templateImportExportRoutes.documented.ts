@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/calculations/templates/export/{templateId}:
+ * /calculations/templates/export/{templateId}:
  *   get:
  *     tags:
  *       - CalculationTemplates
@@ -60,7 +60,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/export-multiple:
+ * /calculations/templates/export-multiple:
  *   get:
  *     tags:
  *       - CalculationTemplates
@@ -127,7 +127,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/import:
+ * /calculations/templates/import:
  *   post:
  *     tags:
  *       - CalculationTemplates
@@ -202,7 +202,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/import-multiple:
+ * /calculations/templates/import-multiple:
  *   post:
  *     tags:
  *       - CalculationTemplates

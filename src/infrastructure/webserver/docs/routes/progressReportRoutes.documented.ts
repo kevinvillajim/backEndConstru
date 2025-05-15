@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/reports/progress/{projectId}:
+ * /reports/progress/{projectId}:
  *   get:
  *     tags:
  *       - Reports
@@ -77,7 +77,7 @@
 
 /**
  * @swagger
- * /api/reports/progress/{projectId}/export-pdf:
+ * /reports/progress/{projectId}/export-pdf:
  *   get:
  *     tags:
  *       - Reports

@@ -1,7 +1,7 @@
 // src/infrastructure/webserver/docs/routes/invoiceRoutes.documented.ts
 /**
  * @swagger
- * /api/invoices:
+ * /invoices:
  *   get:
  *     tags:
  *       - Invoices
@@ -120,7 +120,7 @@
 
 /**
  * @swagger
- * /api/invoices/{invoiceId}:
+ * /invoices/{invoiceId}:
  *   get:
  *     tags:
  *       - Invoices
@@ -242,7 +242,7 @@
 
 /**
  * @swagger
- * /api/invoices/{invoiceId}/pdf:
+ * /invoices/{invoiceId}/pdf:
  *   get:
  *     tags:
  *       - Invoices
@@ -277,7 +277,7 @@
 
 /**
  * @swagger
- * /api/invoices/{invoiceId}/sri:
+ * /invoices/{invoiceId}/sri:
  *   post:
  *     tags:
  *       - Invoices
@@ -346,7 +346,7 @@
 
 /**
  * @swagger
- * /api/invoices/{invoiceId}/email:
+ * /invoices/{invoiceId}/email:
  *   post:
  *     tags:
  *       - Invoices
@@ -400,7 +400,7 @@
 
 /**
  * @swagger
- * /api/invoices/{invoiceId}/payment:
+ * /invoices/{invoiceId}/payment:
  *   post:
  *     tags:
  *       - Invoices

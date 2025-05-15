@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/calculations/execute:
+ * /calculations/execute:
  *   post:
  *     tags:
  *       - Calculations
@@ -55,7 +55,7 @@
 
 /**
  * @swagger
- * /api/calculations/save-result:
+ * /calculations/save-result:
  *   post:
  *     tags:
  *       - Calculations
@@ -129,7 +129,7 @@
 
 /**
  * @swagger
- * /api/calculations/recommendations:
+ * /calculations/recommendations:
  *   get:
  *     tags:
  *       - Calculations
@@ -191,7 +191,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates:
+ * /calculations/templates:
  *   post:
  *     tags:
  *       - CalculationTemplates
@@ -293,7 +293,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/{id}:
+ * /calculations/templates/{id}:
  *   get:
  *     tags:
  *       - CalculationTemplates
@@ -330,7 +330,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates:
+ * /calculations/templates:
  *   get:
  *     tags:
  *       - CalculationTemplates
@@ -450,7 +450,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/{id}/preview:
+ * /calculations/templates/{id}/preview:
  *   get:
  *     tags:
  *       - CalculationTemplates
@@ -492,7 +492,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/{id}:
+ * /calculations/templates/{id}:
  *   put:
  *     tags:
  *       - CalculationTemplates
@@ -586,7 +586,7 @@
 
 /**
  * @swagger
- * /api/calculations/templates/{id}:
+ * /calculations/templates/{id}:
  *   delete:
  *     tags:
  *       - CalculationTemplates

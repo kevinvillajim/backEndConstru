@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/projects/{projectId}/schedule:
+ * /projects/{projectId}/schedule:
  *   post:
  *     tags:
  *       - ProjectSchedule

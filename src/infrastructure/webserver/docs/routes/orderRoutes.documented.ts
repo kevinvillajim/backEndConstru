@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/orders/from-material-requests:
+ * /orders/from-material-requests:
  *   post:
  *     tags:
  *       - Orders
@@ -71,7 +71,7 @@
 
 /**
  * @swagger
- * /api/orders/user:
+ * /orders/user:
  *   get:
  *     tags:
  *       - Orders
@@ -135,7 +135,7 @@
 
 /**
  * @swagger
- * /api/orders/{orderId}:
+ * /orders/{orderId}:
  *   get:
  *     tags:
  *       - Orders
@@ -204,7 +204,7 @@
 
 /**
  * @swagger
- * /api/orders/{orderId}/status:
+ * /orders/{orderId}/status:
  *   patch:
  *     tags:
  *       - Orders

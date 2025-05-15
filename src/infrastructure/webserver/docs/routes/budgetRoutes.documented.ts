@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/budgets/generate:
+ * /budgets/generate:
  *   post:
  *     tags:
  *       - Budgets
@@ -72,7 +72,7 @@
 
 /**
  * @swagger
- * /api/budgets/project/{projectId}:
+ * /budgets/project/{projectId}:
  *   get:
  *     tags:
  *       - Budgets
@@ -159,7 +159,7 @@
 
 /**
  * @swagger
- * /api/budgets/{budgetId}:
+ * /budgets/{budgetId}:
  *   get:
  *     tags:
  *       - Budgets
@@ -201,7 +201,7 @@
 
 /**
  * @swagger
- * /api/budgets/{budgetId}/version:
+ * /budgets/{budgetId}/version:
  *   post:
  *     tags:
  *       - Budgets
@@ -267,7 +267,7 @@
 
 /**
  * @swagger
- * /api/budgets/{budgetId}/status:
+ * /budgets/{budgetId}/status:
  *   put:
  *     tags:
  *       - Budgets
@@ -331,7 +331,7 @@
 
 /**
  * @swagger
- * /api/budgets/compare:
+ * /budgets/compare:
  *   post:
  *     tags:
  *       - Budgets
@@ -414,7 +414,7 @@
 
 /**
  * @swagger
- * /api/budgets/{budgetId}/costs:
+ * /budgets/{budgetId}/costs:
  *   post:
  *     tags:
  *       - Budgets
@@ -505,7 +505,7 @@
 
 /**
  * @swagger
- * /api/budgets/{budgetId}/export-pdf:
+ * /budgets/{budgetId}/export-pdf:
  *   get:
  *     tags:
  *       - Budgets

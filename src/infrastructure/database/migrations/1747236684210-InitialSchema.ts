@@ -1,14 +1,12 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitialSchema1747184109484 implements MigrationInterface {
-    name = 'InitialSchema1747184109484'
+export class InitialSchema1747236684210 implements MigrationInterface {
+    name = 'InitialSchema1747236684210'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE \`orders\` (\`id\` varchar(36) NOT NULL, \`project_id\` varchar(255) NOT NULL, \`user_id\` varchar(255) NOT NULL, \`reference\` varchar(255) NOT NULL, \`status\` enum ('pending', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending', \`payment_status\` enum ('pending', 'paid', 'refunded', 'failed') NOT NULL DEFAULT 'pending', \`subtotal\` decimal(10,2) NOT NULL, \`tax_amount\` decimal(10,2) NOT NULL, \`shipping_amount\` decimal(10,2) NOT NULL, \`discount_amount\` decimal(10,2) NOT NULL, \`total\` decimal(10,2) NOT NULL, \`notes\` text NULL, \`shipping_address\` json NOT NULL, \`estimated_delivery_date\` date NULL, \`actual_delivery_date\` date NULL, \`tracking_info\` json NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`order_items\` (\`id\` varchar(36) NOT NULL, \`order_id\` varchar(255) NOT NULL, \`material_id\` varchar(255) NOT NULL, \`quantity\` decimal(10,2) NOT NULL, \`unit_price\` decimal(10,2) NOT NULL, \`subtotal\` decimal(10,2) NOT NULL, \`status\` enum ('pending', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL, \`material_request_id\` varchar(255) NULL, \`notes\` text NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`material_property_definitions\` (\`id\` varchar(36) NOT NULL, \`name\` varchar(255) NOT NULL, \`description\` text NULL, \`propertyType\` enum ('text', 'number', 'boolean', 'date', 'select', 'multiselect', 'color', 'dimension') NOT NULL DEFAULT 'text', \`is_required\` tinyint NOT NULL DEFAULT 0, \`is_filterable\` tinyint NOT NULL DEFAULT 0, \`is_visible_in_list\` tinyint NOT NULL DEFAULT 1, \`display_order\` int NOT NULL DEFAULT '0', \`options\` json NULL, \`category_id\` varchar(255) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`material_property_values\` (\`id\` varchar(36) NOT NULL, \`material_id\` varchar(255) NOT NULL, \`property_definition_id\` varchar(255) NOT NULL, \`text_value\` text NULL, \`number_value\` decimal(18,6) NULL, \`boolean_value\` tinyint NULL, \`date_value\` datetime NULL, \`array_value\` text NULL, \`json_value\` json NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`accounting_transactions\` (\`id\` varchar(36) NOT NULL, \`external_id\` varchar(255) NULL, \`date\` date NOT NULL, \`description\` varchar(255) NOT NULL, \`amount\` decimal(12,2) NOT NULL, \`type\` enum ('INCOME', 'EXPENSE', 'BUDGET') NOT NULL, \`status\` enum ('PENDING', 'PROCESSED', 'ERROR') NOT NULL DEFAULT 'PENDING', \`entity_type\` varchar(255) NOT NULL, \`entity_id\` varchar(255) NOT NULL, \`account_code\` varchar(255) NULL, \`user_id\` varchar(255) NOT NULL, \`accounting_system\` varchar(255) NULL, \`metadata\` json NULL, \`error_message\` text NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`two_factor_enabled\` tinyint NOT NULL DEFAULT 0`);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`two_factor_secret\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`recovery_codes\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP FOREIGN KEY \`FK_4f0f50d9922a0ed51c214f5556b\``);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`phone\` \`phone\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`mobile_phone\` \`mobile_phone\` varchar(255) NULL`);
@@ -134,6 +132,15 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`average_completion_time_ms\` \`average_completion_time_ms\` int NULL`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`average_calculation_time_ms\` \`average_calculation_time_ms\` int NULL`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`user_rating\` \`user_rating\` decimal(3,2) NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_7d269f828eae70d35bffc315669\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_b1efb9ee932ba7548dbab94754f\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_77a611a071acaa0cf60c3fcebc1\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`material_id\` \`material_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`category_id\` \`category_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`project_type\` \`project_type\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`supplier_id\` \`supplier_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`reason\` \`reason\` text NULL`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`expires_at\` \`expires_at\` datetime NULL`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_14047a1c98dc98ce5b95d897110\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_7a2b54d9d51d59f9a5ac3903145\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_e54cbc691fe8044c9f63eec86bb\``);
@@ -146,16 +153,14 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`session_id\` \`session_id\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`ip_address\` \`ip_address\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`user_agent\` \`user_agent\` text NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_7d269f828eae70d35bffc315669\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_b1efb9ee932ba7548dbab94754f\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_77a611a071acaa0cf60c3fcebc1\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`material_id\` \`material_id\` varchar(255) NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`category_id\` \`category_id\` varchar(255) NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`project_type\` \`project_type\` varchar(255) NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`supplier_id\` \`supplier_id\` varchar(255) NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`reason\` \`reason\` text NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`expires_at\` \`expires_at\` datetime NULL`);
-        await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`type\` \`type\` enum ('price_change', 'project_delay', 'material_request', 'task_assignment', 'document_upload', 'payment_due', 'inventory_low', 'calculation_complete', 'system_announcement', 'budget_approval', 'price_update', 'material_import') NOT NULL`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`notes\` \`notes\` text NULL`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`estimated_delivery_date\` \`estimated_delivery_date\` date NULL`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`actual_delivery_date\` \`actual_delivery_date\` date NULL`);
+        await queryRunner.query(`ALTER TABLE \`orders\` DROP COLUMN \`tracking_info\``);
+        await queryRunner.query(`ALTER TABLE \`orders\` ADD \`tracking_info\` json NULL`);
+        await queryRunner.query(`ALTER TABLE \`order_items\` DROP FOREIGN KEY \`FK_a21e9d18e98c6f9f489a75027d4\``);
+        await queryRunner.query(`ALTER TABLE \`order_items\` CHANGE \`material_request_id\` \`material_request_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`order_items\` CHANGE \`notes\` \`notes\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`read_at\` \`read_at\` datetime NULL`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`action_url\` \`action_url\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`action_text\` \`action_text\` varchar(255) NULL`);
@@ -163,6 +168,16 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`related_entity_id\` \`related_entity_id\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`expires_at\` \`expires_at\` datetime NULL`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`icon\` \`icon\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` CHANGE \`description\` \`description\` text NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` DROP COLUMN \`options\``);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` ADD \`options\` json NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`text_value\` \`text_value\` text NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`number_value\` \`number_value\` decimal(18,6) NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`boolean_value\` \`boolean_value\` tinyint NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`date_value\` \`date_value\` datetime NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`array_value\` \`array_value\` text NULL`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` DROP COLUMN \`json_value\``);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` ADD \`json_value\` json NULL`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` DROP FOREIGN KEY \`FK_a968dc1f591174a862e947a099a\``);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` CHANGE \`wholesale_price\` \`wholesale_price\` decimal(10,2) NULL`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` CHANGE \`wholesale_min_quantity\` \`wholesale_min_quantity\` int NULL`);
@@ -227,6 +242,12 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` ADD \`dataAnalysis\` json NULL`);
         await queryRunner.query(`ALTER TABLE \`calculation_guides\` CHANGE \`images\` \`images\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`calculation_guides\` CHANGE \`video_url\` \`video_url\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`external_id\` \`external_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`account_code\` \`account_code\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`accounting_system\` \`accounting_system\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` DROP COLUMN \`metadata\``);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` ADD \`metadata\` json NULL`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`error_message\` \`error_message\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` ADD CONSTRAINT \`FK_4f0f50d9922a0ed51c214f5556b\` FOREIGN KEY (\`admin_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD CONSTRAINT \`FK_8dafddecd6032a3c7f93152c546\` FOREIGN KEY (\`parent_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD CONSTRAINT \`FK_c00f2503acc369fff5d14531c3d\` FOREIGN KEY (\`created_by\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -239,20 +260,13 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`phases\` ADD CONSTRAINT \`FK_5cc8558954b6360a5b7fb5f45fa\` FOREIGN KEY (\`projectId\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`budget_items\` ADD CONSTRAINT \`FK_ec3099cfe554eeff19bf6fbb952\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` ADD CONSTRAINT \`FK_1040ea5eb6a7bc8f68f5aca6856\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_14047a1c98dc98ce5b95d897110\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_7a2b54d9d51d59f9a5ac3903145\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_e54cbc691fe8044c9f63eec86bb\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_7d269f828eae70d35bffc315669\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_b1efb9ee932ba7548dbab94754f\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_77a611a071acaa0cf60c3fcebc1\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`orders\` ADD CONSTRAINT \`FK_f860cce2698a1155277bc8ec5dc\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`orders\` ADD CONSTRAINT \`FK_a922b820eeef29ac1c6800e826a\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`order_items\` ADD CONSTRAINT \`FK_145532db85752b29c57d2b7b1f1\` FOREIGN KEY (\`order_id\`) REFERENCES \`orders\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`order_items\` ADD CONSTRAINT \`FK_6cf209654257dd47e6451f575ca\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_14047a1c98dc98ce5b95d897110\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_7a2b54d9d51d59f9a5ac3903145\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_e54cbc691fe8044c9f63eec86bb\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`order_items\` ADD CONSTRAINT \`FK_a21e9d18e98c6f9f489a75027d4\` FOREIGN KEY (\`material_request_id\`) REFERENCES \`material_requests\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` ADD CONSTRAINT \`FK_171d1f683987ebaa93622ffb6eb\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`material_property_values\` ADD CONSTRAINT \`FK_d7f03d84c75568d4331f8f871a9\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`material_property_values\` ADD CONSTRAINT \`FK_80c088158ba9e6176bd007b4bb7\` FOREIGN KEY (\`property_definition_id\`) REFERENCES \`material_property_definitions\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` ADD CONSTRAINT \`FK_a968dc1f591174a862e947a099a\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`invoices\` ADD CONSTRAINT \`FK_9ba18dbe4ea525518c4b32df4b6\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`invoice_items\` ADD CONSTRAINT \`FK_7fb6895fc8fad9f5200e91abb59\` FOREIGN KEY (\`invoiceId\`) REFERENCES \`invoices\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -264,11 +278,9 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_feedback\` ADD CONSTRAINT \`FK_51b6edc66f271d96867617f04a9\` FOREIGN KEY (\`applied_to_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` ADD CONSTRAINT \`FK_043809e28ff744481f88690fcc4\` FOREIGN KEY (\`improved_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` ADD CONSTRAINT \`FK_16b423eef8496fd15c5a550e726\` FOREIGN KEY (\`reviewed_by\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` ADD CONSTRAINT \`FK_0b7068ced0585a03ca7f3bb6d44\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` DROP FOREIGN KEY \`FK_0b7068ced0585a03ca7f3bb6d44\``);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` DROP FOREIGN KEY \`FK_16b423eef8496fd15c5a550e726\``);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` DROP FOREIGN KEY \`FK_043809e28ff744481f88690fcc4\``);
         await queryRunner.query(`ALTER TABLE \`calculation_feedback\` DROP FOREIGN KEY \`FK_51b6edc66f271d96867617f04a9\``);
@@ -280,20 +292,13 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`invoice_items\` DROP FOREIGN KEY \`FK_7fb6895fc8fad9f5200e91abb59\``);
         await queryRunner.query(`ALTER TABLE \`invoices\` DROP FOREIGN KEY \`FK_9ba18dbe4ea525518c4b32df4b6\``);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` DROP FOREIGN KEY \`FK_a968dc1f591174a862e947a099a\``);
-        await queryRunner.query(`ALTER TABLE \`material_property_values\` DROP FOREIGN KEY \`FK_80c088158ba9e6176bd007b4bb7\``);
-        await queryRunner.query(`ALTER TABLE \`material_property_values\` DROP FOREIGN KEY \`FK_d7f03d84c75568d4331f8f871a9\``);
-        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` DROP FOREIGN KEY \`FK_171d1f683987ebaa93622ffb6eb\``);
         await queryRunner.query(`ALTER TABLE \`order_items\` DROP FOREIGN KEY \`FK_a21e9d18e98c6f9f489a75027d4\``);
-        await queryRunner.query(`ALTER TABLE \`order_items\` DROP FOREIGN KEY \`FK_6cf209654257dd47e6451f575ca\``);
-        await queryRunner.query(`ALTER TABLE \`order_items\` DROP FOREIGN KEY \`FK_145532db85752b29c57d2b7b1f1\``);
-        await queryRunner.query(`ALTER TABLE \`orders\` DROP FOREIGN KEY \`FK_a922b820eeef29ac1c6800e826a\``);
-        await queryRunner.query(`ALTER TABLE \`orders\` DROP FOREIGN KEY \`FK_f860cce2698a1155277bc8ec5dc\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_77a611a071acaa0cf60c3fcebc1\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_b1efb9ee932ba7548dbab94754f\``);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_7d269f828eae70d35bffc315669\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_e54cbc691fe8044c9f63eec86bb\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_7a2b54d9d51d59f9a5ac3903145\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_14047a1c98dc98ce5b95d897110\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_77a611a071acaa0cf60c3fcebc1\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_b1efb9ee932ba7548dbab94754f\``);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` DROP FOREIGN KEY \`FK_7d269f828eae70d35bffc315669\``);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` DROP FOREIGN KEY \`FK_1040ea5eb6a7bc8f68f5aca6856\``);
         await queryRunner.query(`ALTER TABLE \`budget_items\` DROP FOREIGN KEY \`FK_ec3099cfe554eeff19bf6fbb952\``);
         await queryRunner.query(`ALTER TABLE \`phases\` DROP FOREIGN KEY \`FK_5cc8558954b6360a5b7fb5f45fa\``);
@@ -306,6 +311,12 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP FOREIGN KEY \`FK_c00f2503acc369fff5d14531c3d\``);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP FOREIGN KEY \`FK_8dafddecd6032a3c7f93152c546\``);
         await queryRunner.query(`ALTER TABLE \`users\` DROP FOREIGN KEY \`FK_4f0f50d9922a0ed51c214f5556b\``);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`error_message\` \`error_message\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` DROP COLUMN \`metadata\``);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` ADD \`metadata\` longtext COLLATE "utf8mb4_bin" NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`accounting_system\` \`accounting_system\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`account_code\` \`account_code\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`external_id\` \`external_id\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`calculation_guides\` CHANGE \`video_url\` \`video_url\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`calculation_guides\` CHANGE \`images\` \`images\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` DROP COLUMN \`dataAnalysis\``);
@@ -370,6 +381,16 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`material_price_history\` CHANGE \`wholesale_min_quantity\` \`wholesale_min_quantity\` int NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` CHANGE \`wholesale_price\` \`wholesale_price\` decimal(10,2) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` ADD CONSTRAINT \`FK_a968dc1f591174a862e947a099a\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` DROP COLUMN \`json_value\``);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` ADD \`json_value\` longtext COLLATE "utf8mb4_bin" NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`array_value\` \`array_value\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`date_value\` \`date_value\` datetime NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`boolean_value\` \`boolean_value\` tinyint NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`number_value\` \`number_value\` decimal(18,6) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_values\` CHANGE \`text_value\` \`text_value\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` DROP COLUMN \`options\``);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` ADD \`options\` longtext COLLATE "utf8mb4_bin" NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`material_property_definitions\` CHANGE \`description\` \`description\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`icon\` \`icon\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`expires_at\` \`expires_at\` datetime NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`related_entity_id\` \`related_entity_id\` varchar(255) NULL DEFAULT 'NULL'`);
@@ -377,16 +398,14 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`action_text\` \`action_text\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`action_url\` \`action_url\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`read_at\` \`read_at\` datetime NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`notifications\` CHANGE \`type\` \`type\` enum ('price_change', 'project_delay', 'material_request', 'task_assignment', 'document_upload', 'payment_due', 'inventory_low', 'calculation_complete', 'system_announcement', 'budget_approval') NOT NULL`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`expires_at\` \`expires_at\` datetime NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`reason\` \`reason\` text NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`supplier_id\` \`supplier_id\` varchar(255) NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`project_type\` \`project_type\` varchar(255) NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`category_id\` \`category_id\` varchar(255) NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`material_id\` \`material_id\` varchar(255) NULL DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_77a611a071acaa0cf60c3fcebc1\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_b1efb9ee932ba7548dbab94754f\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_7d269f828eae70d35bffc315669\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`order_items\` CHANGE \`notes\` \`notes\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`order_items\` CHANGE \`material_request_id\` \`material_request_id\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`order_items\` ADD CONSTRAINT \`FK_a21e9d18e98c6f9f489a75027d4\` FOREIGN KEY (\`material_request_id\`) REFERENCES \`material_requests\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`orders\` DROP COLUMN \`tracking_info\``);
+        await queryRunner.query(`ALTER TABLE \`orders\` ADD \`tracking_info\` longtext COLLATE "utf8mb4_bin" NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`actual_delivery_date\` \`actual_delivery_date\` date NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`estimated_delivery_date\` \`estimated_delivery_date\` date NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`orders\` CHANGE \`notes\` \`notes\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`user_agent\` \`user_agent\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`ip_address\` \`ip_address\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` CHANGE \`session_id\` \`session_id\` varchar(255) NULL DEFAULT 'NULL'`);
@@ -399,6 +418,15 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_e54cbc691fe8044c9f63eec86bb\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_7a2b54d9d51d59f9a5ac3903145\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_14047a1c98dc98ce5b95d897110\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`expires_at\` \`expires_at\` datetime NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`reason\` \`reason\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`supplier_id\` \`supplier_id\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`project_type\` \`project_type\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`category_id\` \`category_id\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` CHANGE \`material_id\` \`material_id\` varchar(255) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_77a611a071acaa0cf60c3fcebc1\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_b1efb9ee932ba7548dbab94754f\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_recommendations\` ADD CONSTRAINT \`FK_7d269f828eae70d35bffc315669\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`user_rating\` \`user_rating\` decimal(3,2) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`average_calculation_time_ms\` \`average_calculation_time_ms\` int NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`user_template_usage\` CHANGE \`average_completion_time_ms\` \`average_completion_time_ms\` int NULL DEFAULT 'NULL'`);
@@ -524,11 +552,9 @@ export class InitialSchema1747184109484 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`mobile_phone\` \`mobile_phone\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`phone\` \`phone\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` ADD CONSTRAINT \`FK_4f0f50d9922a0ed51c214f5556b\` FOREIGN KEY (\`admin_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`DROP TABLE \`accounting_transactions\``);
-        await queryRunner.query(`DROP TABLE \`material_property_values\``);
-        await queryRunner.query(`DROP TABLE \`material_property_definitions\``);
-        await queryRunner.query(`DROP TABLE \`order_items\``);
-        await queryRunner.query(`DROP TABLE \`orders\``);
+        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`recovery_codes\``);
+        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`two_factor_secret\``);
+        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`two_factor_enabled\``);
     }
 
 }

@@ -21,6 +21,9 @@ export const validateLoginRequest = (
 		password: Joi.string().required().messages({
 			"any.required": "La contraseña es obligatoria",
 		}),
+		totpToken: Joi.string().optional().messages({
+			"string.base": "El token de autenticación debe ser texto",
+		}),
 	});
 
 	const {error} = schema.validate(req.body, {abortEarly: false});

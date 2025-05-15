@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/materials:
+ * /materials:
  *   get:
  *     tags:
  *       - Materials
@@ -106,7 +106,7 @@
 
 /**
  * @swagger
- * /api/materials/{id}:
+ * /materials/{id}:
  *   get:
  *     tags:
  *       - Materials
@@ -143,7 +143,7 @@
 
 /**
  * @swagger
- * /api/materials:
+ * /materials:
  *   post:
  *     tags:
  *       - Materials
@@ -224,7 +224,7 @@
 
 /**
  * @swagger
- * /api/materials/{id}:
+ * /materials/{id}:
  *   put:
  *     tags:
  *       - Materials
@@ -304,7 +304,7 @@
 
 /**
  * @swagger
- * /api/materials/{id}:
+ * /materials/{id}:
  *   delete:
  *     tags:
  *       - Materials
@@ -349,7 +349,7 @@
 
 /**
  * @swagger
- * /api/materials/{id}/stock:
+ * /materials/{id}/stock:
  *   patch:
  *     tags:
  *       - Materials
@@ -412,7 +412,7 @@
 
 /**
  * @swagger
- * /api/materials/bulk-update-prices:
+ * /materials/bulk-update-prices:
  *   post:
  *     tags:
  *       - Materials
@@ -507,7 +507,7 @@
 
 /**
  * @swagger
- * /api/materials/{id}/price-history:
+ * /materials/{id}/price-history:
  *   get:
  *     tags:
  *       - Materials
@@ -569,7 +569,7 @@
 
 /**
  * @swagger
- * /api/materials/{materialId}/compare-prices:
+ * /materials/{materialId}/compare-prices:
  *   post:
  *     tags:
  *       - Materials

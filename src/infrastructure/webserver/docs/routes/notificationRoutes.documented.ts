@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/notifications:
+ * /notifications:
  *   get:
  *     tags:
  *       - Notifications
@@ -74,7 +74,7 @@
 
 /**
  * @swagger
- * /api/notifications/{notificationId}/read:
+ * /notifications/{notificationId}/read:
  *   patch:
  *     tags:
  *       - Notifications
@@ -117,7 +117,7 @@
 
 /**
  * @swagger
- * /api/notifications/mark-all-read:
+ * /notifications/mark-all-read:
  *   patch:
  *     tags:
  *       - Notifications
@@ -152,7 +152,7 @@
 
 /**
  * @swagger
- * /api/notifications/{notificationId}:
+ * /notifications/{notificationId}:
  *   delete:
  *     tags:
  *       - Notifications
@@ -195,7 +195,7 @@
 
 /**
  * @swagger
- * /api/notifications/delete-all:
+ * /notifications/delete-all:
  *   delete:
  *     tags:
  *       - Notifications
@@ -230,7 +230,7 @@
 
 /**
  * @swagger
- * /api/notifications/preferences:
+ * /notifications/preferences:
  *   get:
  *     tags:
  *       - Notifications
@@ -279,7 +279,7 @@
 
 /**
  * @swagger
- * /api/notifications/preferences:
+ * /notifications/preferences:
  *   patch:
  *     tags:
  *       - Notifications
@@ -335,7 +335,7 @@
 
 /**
  * @swagger
- * /api/notifications/devices:
+ * /notifications/devices:
  *   post:
  *     tags:
  *       - Notifications
@@ -382,7 +382,7 @@
 
 /**
  * @swagger
- * /api/notifications/devices/{deviceToken}:
+ * /notifications/devices/{deviceToken}:
  *   delete:
  *     tags:
  *       - Notifications

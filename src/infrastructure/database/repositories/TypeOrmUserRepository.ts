@@ -98,6 +98,10 @@ export class TypeOrmUserRepository implements UserRepository {
 			passwordResetToken: entity.passwordResetToken,
 			passwordResetExpires: entity.passwordResetExpires,
 			adminId: entity.adminId,
+			// Incluir campos de 2FA
+			twoFactorEnabled: entity.twoFactorEnabled,
+			twoFactorSecret: entity.twoFactorSecret,
+			recoveryCodes: entity.recoveryCodes,
 			createdAt: entity.createdAt,
 			updatedAt: entity.updatedAt,
 			deletedAt: entity.deletedAt,
