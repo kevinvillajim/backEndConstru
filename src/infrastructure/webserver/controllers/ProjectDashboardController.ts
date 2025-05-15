@@ -5,6 +5,7 @@ import {handleError} from "../utils/errorHandler";
 import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class ProjectDashboardController {
+	projectRepository: any;
 	constructor(
 		private getProjectDashboardDataUseCase: GetProjectDashboardDataUseCase
 	) {}
@@ -29,6 +30,18 @@ export class ProjectDashboardController {
 			}
 
 			const userId = req.user.id;
+
+			const hasProjectAccess = await this.projectRepository.checkUserAccess(
+				projectId,
+				userId
+			);
+			if (!hasProjectAccess) {
+				res.status(403).json({
+					success: false,
+					message: "No tienes permiso para acceder a este proyecto",
+				});
+				return;
+			}
 
 			// Ejecutar caso de uso
 			const dashboardData = await this.getProjectDashboardDataUseCase.execute(

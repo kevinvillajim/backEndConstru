@@ -136,8 +136,7 @@ C:.
 |           \---validators
 |                   authValidator.js
 |                   calculationValidator.js
-|                   templateValidator.js
-|                                    
+|                   templateValidator.js               
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -197,6 +196,10 @@ C:.
 |   |   |       
 |   |   +---common
 |   |   +---invoice
+|   |   |       SendInvoiceByEmailUseCase.ts
+|   |   |       SyncInvoiceWithSriUseCase.ts
+|   |   |       UpdateInvoicePaymentUseCase.ts
+|   |   |       
 |   |   +---material
 |   |   |       BulkUpdateMaterialPricesUseCase.ts
 |   |   |       CompareMaterialPricesUseCase.ts
@@ -244,6 +247,9 @@ C:.
 |   |   |   |       GeographicalZone.ts
 |   |   |   |       
 |   |   |   +---invoice
+|   |   |   |       Invoice.ts
+|   |   |   |       InvoiceItem.ts
+|   |   |   |       
 |   |   |   +---material
 |   |   |   |       Category.ts
 |   |   |   |       Material.ts
@@ -265,6 +271,7 @@ C:.
 |   |   |   +---subscription
 |   |   |   \---user
 |   |   |           User.ts
+|   |   |           UserInteraction.ts
 |   |   |           
 |   |   +---repositories
 |   |   |       AccountingTransactionRepository.ts
@@ -274,6 +281,7 @@ C:.
 |   |   |       CalculationTemplateRepository.ts
 |   |   |       CategoryRepository.ts
 |   |   |       GeographicalZoneRepository.ts
+|   |   |       InvoiceRepository.ts
 |   |   |       MaterialPropertyRepository.ts
 |   |   |       MaterialRepository.ts
 |   |   |       MaterialRequestRepository.ts
@@ -293,11 +301,15 @@ C:.
 |   |           AdvancedRecommendationService.ts
 |   |           AuthService.ts
 |   |           CalculationService.ts
+|   |           EmailService.ts
 |   |           NotificationService.ts
 |   |           ProjectMetricsService.ts
+|   |           PushNotificationService.ts
 |   |           RecommendationService.ts
+|   |           SriService.ts
 |   |           SupplierIntegrationService.ts
 |   |           TemplateValidationService.ts
+|   |           TwoFactorAuthService.ts
 |   |           UserPatternAnalysisService.ts
 |   |           
 |   +---infrastructure
@@ -344,7 +356,7 @@ C:.
 |   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1747074112577-InitialSchema.ts
+|   |   |   |       1747236684210-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
@@ -354,6 +366,7 @@ C:.
 |   |   |   |       TypeOrmCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmCategoryRepository.ts
 |   |   |   |       TypeOrmGeographicalZoneRepository.ts
+|   |   |   |       TypeOrmInvoiceRepository.ts
 |   |   |   |       TypeOrmMaterialPropertyRepository.ts
 |   |   |   |       TypeOrmMaterialRepository.ts
 |   |   |   |       TypeOrmMaterialRequestRepository.ts
@@ -403,11 +416,17 @@ C:.
 |   |   |   +---encryption
 |   |   |   \---jwt
 |   |   +---services
+|   |   |   |   EmailServiceImpl.ts
 |   |   |   |   NotificationServiceImpl.ts
 |   |   |   |   PdfGenerationService.ts
+|   |   |   |   PushNotificationServiceImpl.ts
 |   |   |   |   
 |   |   |   +---accounting
 |   |   |   |       AccountingServiceFactory.ts
+|   |   |   |       
+|   |   |   +---sri
+|   |   |   |       SriServiceFactory.ts
+|   |   |   |       SriTestAdapter.ts
 |   |   |   |       
 |   |   |   \---supplier
 |   |   |           ConcreteSupplierIntegrationService.ts
@@ -421,6 +440,7 @@ C:.
 |   |   |   |       CalculationController.ts
 |   |   |   |       CalculationTemplateController.ts
 |   |   |   |       EnhancedProjectDashboardController.ts
+|   |   |   |       InvoiceController.ts
 |   |   |   |       MaterialController.ts
 |   |   |   |       MaterialPropertyController.ts
 |   |   |   |       MaterialRequestController.ts
@@ -435,7 +455,32 @@ C:.
 |   |   |   |       SupplierIntegrationController.ts
 |   |   |   |       TaskController.ts
 |   |   |   |       TemplateImportExportController.ts
+|   |   |   |       TwoFactorAuthController.ts
 |   |   |   |       
+|   |   |   +---docs
+|   |   |   |   |   swagger.ts
+|   |   |   |   |   
+|   |   |   |   \---routes
+|   |   |   |           accountingRoutes.documented.ts
+|   |   |   |           advancedRecommendationRoutes.documented.ts
+|   |   |   |           authRoutes.documented.ts
+|   |   |   |           budgetRoutes.documented.ts
+|   |   |   |           calculationRoutes.documented.ts
+|   |   |   |           invoiceRoutes.documented.ts
+|   |   |   |           materialPropertyRoutes.documented.ts
+|   |   |   |           materialRequestRoutes.documented.ts
+|   |   |   |           materialRoutes.documented.ts
+|   |   |   |           notificationRoutes.documented.ts
+|   |   |   |           orderRoutes.documented.ts
+|   |   |   |           phaseRoutes.documented.ts
+|   |   |   |           progressReportRoutes.documented.ts
+|   |   |   |           projectDashboardRoutes.documented.ts
+|   |   |   |           projectMetricsRoutes.documented.ts
+|   |   |   |           projectScheduleRoutes.documented.ts
+|   |   |   |           supplierIntegrationRoutes.documented.ts
+|   |   |   |           taskRoutes.documented.ts
+|   |   |   |           templateImportExportRoutes.documented.ts
+|   |   |   |           
 |   |   |   +---middlewares
 |   |   |   |       authMiddleware.ts
 |   |   |   |       validationMiddleware.ts
@@ -447,6 +492,7 @@ C:.
 |   |   |   |       budgetRoutes.ts
 |   |   |   |       calculationRoutes.ts
 |   |   |   |       enhancedProjectDashboardRoutes.ts
+|   |   |   |       invoiceRoutes.ts
 |   |   |   |       materialPropertyRoutes.ts
 |   |   |   |       materialRequestRoutes.ts
 |   |   |   |       materialRoutes.ts
@@ -459,6 +505,7 @@ C:.
 |   |   |   |       projectScheduleRoutes.ts
 |   |   |   |       supplierIntegrationRoutes.ts
 |   |   |   |       templateImportExportRoutes.ts
+|   |   |   |       twoFactorAuthRoutes.ts
 |   |   |   |       
 |   |   |   +---utils
 |   |   |   |       errorHandler.ts

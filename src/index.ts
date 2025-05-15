@@ -49,24 +49,60 @@ async function bootstrap() {
 			legacyHeaders: false,
 		});
 
+		// Configuración CORS actualizada - más permisiva en desarrollo
 		const corsOptions = {
-			origin: process.env.CORS_ORIGIN || "http://localhost:4000",
+			origin:
+				process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : "*", // Permite cualquier origen en desarrollo
 			credentials: true,
-			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-			allowedHeaders: ["Content-Type", "Authorization"],
+			methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+			allowedHeaders: [
+				"Content-Type",
+				"Authorization",
+				"X-Requested-With",
+				"Accept",
+			],
+			exposedHeaders: ["Content-Disposition"],
+			preflightContinue: false,
+			optionsSuccessStatus: 204,
 		};
 
+		const authLimiter = rateLimit({
+			windowMs: 15 * 60 * 1000, // 15 minutos
+			max: 5, // 5 intentos fallidos
+			skipSuccessfulRequests: true,
+		});
+
 		app.use(cors(corsOptions));
-		app.use(helmet());
+		app.use((req, res, next) => {
+			// En desarrollo, ser permisivo con CSP
+			if (process.env.NODE_ENV !== "production") {
+				res.setHeader(
+					"Content-Security-Policy",
+					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+				);
+			}
+			next();
+		});
+
+		app.use(
+			helmet({
+				contentSecurityPolicy: false, // Desactivar el CSP de helmet para usar el nuestro
+			})
+		);
 		app.use(express.json());
 		app.use(express.urlencoded({extended: true}));
 		app.use(cookieParser());
 		app.use(limiter);
 
+		app.use("/api/auth/login", authLimiter);
+		app.use("/api/auth/2fa/validate", authLimiter);
+
 		// Basic route
 		app.get("/", (req, res) => {
 			res.send("ConstructorAPP API");
 		});
+
+		
 
 		// Setup Swagger documentation
 		setupSwagger(app);
@@ -105,8 +141,8 @@ async function bootstrap() {
 		const twoFactorAuthRoutes =
 			require("./infrastructure/webserver/routes/twoFactorAuthRoutes").default;
 		const invoiceRoutes =
-  			require("./infrastructure/webserver/routes/invoiceRoutes").default;
-		
+			require("./infrastructure/webserver/routes/invoiceRoutes").default;
+
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);

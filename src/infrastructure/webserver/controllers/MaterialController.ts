@@ -9,6 +9,7 @@ import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/d
 import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
 import { AppDataSource } from "@infrastructure/database/data-source";
 import {getNotificationService} from "../../config/service-factory";
+import { parse } from "path";
 
 export class MaterialController {
 	private compareMaterialPricesUseCase: any;
@@ -319,10 +320,19 @@ export class MaterialController {
 				return;
 			}
 
+			const parsedQuantity = parseInt(quantity as string, 10);
+			if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+				res.status(400).json({
+					success: false,
+					message: "La cantidad debe ser un número positivo",
+				});
+				return;
+			}
+
 			// Actualizar el stock
 			const success = await this.materialRepository.updateStock(
 				id,
-				parseInt(quantity as string, 10)
+				parsedQuantity
 			);
 
 			if (success) {

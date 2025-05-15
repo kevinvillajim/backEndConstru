@@ -5,11 +5,12 @@ import {AuthService} from "../../../domain/services/AuthService";
 import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {handleError} from "../utils/errorHandler";
 import {UserRole, SubscriptionPlan} from "../../../domain/models/user/User";
+import crypto from "crypto";
 
 // Authentication successful cookie settings
 const AUTH_COOKIE_SETTINGS = {
 	httpOnly: true,
-	secure: process.env.NODE_ENV === "production",
+	secure: process.env.INSECURE_COOKIES !== "true", // Seguro por defecto
 	sameSite: "strict" as const,
 	path: "/",
 };
@@ -226,10 +227,8 @@ export class AuthController {
 			const hashedPassword = await this.authService.hashPassword(password);
 
 			// Create verification token
-			const verificationToken =
-				Math.random().toString(36).substring(2, 15) +
-				Math.random().toString(36).substring(2, 15);
-
+			const verificationToken = crypto.randomBytes(32).toString("hex");
+			
 			// Create user
 			const newUser = await this.userRepository.create({
 				firstName,
@@ -481,9 +480,7 @@ export class AuthController {
 			}
 
 			// Generate reset token
-			const resetToken =
-				Math.random().toString(36).substring(2, 15) +
-				Math.random().toString(36).substring(2, 15);
+			const resetToken = crypto.randomBytes(32).toString("hex");
 
 			// Set expiration (1 hour)
 			const resetExpires = new Date();
@@ -495,9 +492,9 @@ export class AuthController {
 				passwordResetExpires: resetExpires,
 			});
 
-			// TODO: In a real application, send an email with the reset link
-			console.log(`Reset token for ${email}: ${resetToken}`);
-			console.log(`Reset URL would be: /api/auth/reset-password/${resetToken}`);
+			console.log(
+				`Password reset requested for user with email ${email.substring(0, 3)}...`
+			);
 
 			res.status(200).json({
 				success: true,
