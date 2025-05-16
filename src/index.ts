@@ -10,14 +10,9 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import http from "http";
 import {AppDataSource} from "./infrastructure/database/data-source";
-import { initializeServices } from "./infrastructure/config/service-factory";
-import { WebSocketService } from "./infrastructure/websocket/WebSocketService";
-import { setupSwagger } from "./infrastructure/webserver/docs/swagger";
-import {
-	corsMiddleware,
-	standardCorsMiddleware,
-} from "./infrastructure/webserver/middlewares/corsMiddleware";
-import {mirrorCorsMiddleware} from "./infrastructure/webserver/middlewares/mirrorCorsMiddleware";
+import {initializeServices} from "./infrastructure/config/service-factory";
+import {WebSocketService} from "./infrastructure/websocket/WebSocketService";
+import {setupSwagger} from "./infrastructure/webserver/docs/swagger";
 
 // Load environment variables
 dotenv.config();
@@ -54,19 +49,34 @@ async function bootstrap() {
 			legacyHeaders: false,
 		});
 
-		const parseOrigins = (originsString: string) => {
-			return originsString ? originsString.split(",") : [];
-		};
-
-		// Configuración CORS actualizada - más permisiva en desarrollo
+		// Configuración CORS unificada
 		const corsOptions = {
-			origin: [
-				"http://localhost:5173",
-				"http://127.0.0.1:5173",
-				"http://localhost:4000",
-				"http://127.0.0.1:4000",
-				"http://127.0.0.1",
-			],
+			origin: function (origin, callback) {
+				// Lista de orígenes permitidos
+				const allowedOrigins = [
+					"http://localhost:5173",
+					"http://127.0.0.1:5173",
+					"http://localhost:4000",
+					"http://127.0.0.1:4000",
+					"http://localhost",
+					"http://127.0.0.1",
+				];
+
+				// Permitir solicitudes sin origen (como herramientas de desarrollo)
+				if (!origin) return callback(null, true);
+
+				if (allowedOrigins.indexOf(origin) !== -1) {
+					callback(null, origin);
+				} else {
+					console.log(`Origen bloqueado por CORS: ${origin}`);
+					// En desarrollo, permitir todos los orígenes para facilitar pruebas
+					if (process.env.NODE_ENV !== "production") {
+						callback(null, origin);
+					} else {
+						callback(new Error("No permitido por CORS"), false);
+					}
+				}
+			},
 			credentials: true,
 			methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 			allowedHeaders: [
@@ -76,35 +86,20 @@ async function bootstrap() {
 				"Accept",
 			],
 			exposedHeaders: ["Content-Disposition"],
-			preflightContinue: false,
 			optionsSuccessStatus: 204,
 		};
 
-		app.use(mirrorCorsMiddleware);
-		
-		// Middleware adicional para debug en desarrollo
+		// Aplicar una única configuración CORS
+		app.use(cors(corsOptions));
+
+		// Middleware de registro para depuración
 		app.use((req, res, next) => {
 			if (process.env.NODE_ENV !== "production") {
-				res.setHeader(
-					"Content-Security-Policy",
-					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+				console.log(
+					`Solicitud: ${req.method} ${req.path} desde ${req.headers.origin || "origen desconocido"}`
 				);
 
-				// Log para debugging
-				console.log(
-					`CORS: ${req.method} ${req.path} from ${req.headers.origin || "unknown origin"}`
-				);
-			}
-			next();
-		});
-
-		// Opcional: agregar logs para depuración
-		app.use((req, res, next) => {
-			// Solo en desarrollo, establece CSP
-			if (process.env.NODE_ENV !== "production") {
-				console.log(
-					`Recibida solicitud: ${req.method} ${req.path} desde ${req.headers.origin || "origen desconocido"}`
-				);
+				// Configuración CSP que permite conexiones tanto a localhost como a 127.0.0.1
 				res.setHeader(
 					"Content-Security-Policy",
 					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
@@ -119,18 +114,6 @@ async function bootstrap() {
 			skipSuccessfulRequests: true,
 		});
 
-		app.use(cors(corsOptions));
-		app.use((req, res, next) => {
-			// En desarrollo, ser permisivo con CSP
-			if (process.env.NODE_ENV !== "production") {
-				res.setHeader(
-					"Content-Security-Policy",
-					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
-				);
-			}
-			next();
-		});
-
 		app.use(
 			helmet({
 				contentSecurityPolicy: false,
@@ -138,15 +121,6 @@ async function bootstrap() {
 				crossOriginOpenerPolicy: false, // Importante: permitir ventanas cross-origin
 			})
 		);
-
-		app.use((req, res, next) => {
-			if (process.env.NODE_ENV !== "production") {
-				console.log(
-					`Solicitud: ${req.method} ${req.path} desde ${req.headers.origin || "origen desconocido"}`
-				);
-			}
-			next();
-		});
 
 		app.use(express.urlencoded({extended: true}));
 		app.use(express.json());
@@ -216,7 +190,6 @@ async function bootstrap() {
 		app.use("/api/metrics", projectMetricsRoutes);
 		app.use("/api/orders", orderRoutes);
 		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
-		app.use("/api/auth", authRoutes);
 		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 		app.use("/api/invoices", invoiceRoutes);
 
