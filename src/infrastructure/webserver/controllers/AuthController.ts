@@ -228,7 +228,7 @@ export class AuthController {
 
 			// Create verification token
 			const verificationToken = crypto.randomBytes(32).toString("hex");
-			
+
 			// Create user
 			const newUser = await this.userRepository.create({
 				firstName,
@@ -582,9 +582,9 @@ export class AuthController {
 
 	async devVerifyEmail(req: Request, res: Response): Promise<void> {
 		try {
-			const { email } = req.params;
+			const {email} = req.params;
 			const user = await this.userRepository.findByEmail(email);
-    
+
 			if (!user) {
 				res.status(404).json({
 					success: false,
@@ -592,12 +592,12 @@ export class AuthController {
 				});
 				return;
 			}
-    
+
 			await this.userRepository.update(user.id, {
 				isVerified: true,
 				verificationToken: null,
 			});
-    
+
 			res.status(200).json({
 				success: true,
 				message: "Usuario verificado para desarrollo",
@@ -606,6 +606,59 @@ export class AuthController {
 			res.status(500).json({
 				success: false,
 				message: "Error al verificar usuario",
+			});
+		}
+	}
+
+	async verifyResetToken(req: Request, res: Response): Promise<void> {
+		try {
+			const {token} = req.params;
+
+			if (!token) {
+				res.status(400).json({
+					success: false,
+					message: "Token no proporcionado",
+				});
+				return;
+			}
+
+			// Buscar usuario por token de recuperación
+			const users = await this.userRepository.findByResetToken(token);
+
+			if (!users || users.length === 0) {
+				res.status(400).json({
+					success: false,
+					message: "Token inválido o expirado",
+				});
+				return;
+			}
+
+			const user = users[0];
+
+			// Verificar si el token ha expirado
+			if (
+				!user.passwordResetExpires ||
+				new Date() > user.passwordResetExpires
+			) {
+				res.status(400).json({
+					success: false,
+					message: "Token expirado",
+				});
+				return;
+			}
+
+			// Si llegamos aquí, el token es válido
+			res.status(200).json({
+				success: true,
+				message: "Token válido",
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error al verificar token:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: "Error al verificar token",
 			});
 		}
 	}

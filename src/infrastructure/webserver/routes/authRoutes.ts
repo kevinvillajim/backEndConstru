@@ -64,4 +64,9 @@ router.get("/profile", authenticate, (req, res) => {
 	return authController.getProfile(req, res);
 });
 
+router.get("/verify-reset-token/:token", (req, res) => {
+	const authController = getAuthController();
+	return authController.verifyResetToken(req, res);
+});
+
 export default router;
