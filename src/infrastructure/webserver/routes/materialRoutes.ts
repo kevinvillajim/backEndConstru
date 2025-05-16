@@ -52,7 +52,7 @@ router.get("/:id/price-history", (req, res) => {
 });
 
 router.get(
-	"/materials/:materialId/compare-prices",
+	"/:materialId/compare-prices",
 	authenticate,
 	(req, res) => {
 		const materialController = getMaterialController();

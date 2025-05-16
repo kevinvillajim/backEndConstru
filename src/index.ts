@@ -12,7 +12,12 @@ import http from "http";
 import {AppDataSource} from "./infrastructure/database/data-source";
 import { initializeServices } from "./infrastructure/config/service-factory";
 import { WebSocketService } from "./infrastructure/websocket/WebSocketService";
-import {setupSwagger} from "./infrastructure/webserver/docs/swagger";
+import { setupSwagger } from "./infrastructure/webserver/docs/swagger";
+import {
+	corsMiddleware,
+	standardCorsMiddleware,
+} from "./infrastructure/webserver/middlewares/corsMiddleware";
+import {mirrorCorsMiddleware} from "./infrastructure/webserver/middlewares/mirrorCorsMiddleware";
 
 // Load environment variables
 dotenv.config();
@@ -49,10 +54,19 @@ async function bootstrap() {
 			legacyHeaders: false,
 		});
 
+		const parseOrigins = (originsString: string) => {
+			return originsString ? originsString.split(",") : [];
+		};
+
 		// Configuración CORS actualizada - más permisiva en desarrollo
 		const corsOptions = {
-			origin:
-				process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : "*", // Permite cualquier origen en desarrollo
+			origin: [
+				"http://localhost:5173",
+				"http://127.0.0.1:5173",
+				"http://localhost:4000",
+				"http://127.0.0.1:4000",
+				"http://127.0.0.1",
+			],
 			credentials: true,
 			methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 			allowedHeaders: [
@@ -65,6 +79,39 @@ async function bootstrap() {
 			preflightContinue: false,
 			optionsSuccessStatus: 204,
 		};
+
+		app.use(mirrorCorsMiddleware);
+		
+		// Middleware adicional para debug en desarrollo
+		app.use((req, res, next) => {
+			if (process.env.NODE_ENV !== "production") {
+				res.setHeader(
+					"Content-Security-Policy",
+					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+				);
+
+				// Log para debugging
+				console.log(
+					`CORS: ${req.method} ${req.path} from ${req.headers.origin || "unknown origin"}`
+				);
+			}
+			next();
+		});
+
+		// Opcional: agregar logs para depuración
+		app.use((req, res, next) => {
+			// Solo en desarrollo, establece CSP
+			if (process.env.NODE_ENV !== "production") {
+				console.log(
+					`Recibida solicitud: ${req.method} ${req.path} desde ${req.headers.origin || "origen desconocido"}`
+				);
+				res.setHeader(
+					"Content-Security-Policy",
+					"default-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+				);
+			}
+			next();
+		});
 
 		const authLimiter = rateLimit({
 			windowMs: 15 * 60 * 1000, // 15 minutos
@@ -86,11 +133,23 @@ async function bootstrap() {
 
 		app.use(
 			helmet({
-				contentSecurityPolicy: false, // Desactivar el CSP de helmet para usar el nuestro
+				contentSecurityPolicy: false,
+				crossOriginResourcePolicy: false, // Importante: permitir recursos cross-origin
+				crossOriginOpenerPolicy: false, // Importante: permitir ventanas cross-origin
 			})
 		);
-		app.use(express.json());
+
+		app.use((req, res, next) => {
+			if (process.env.NODE_ENV !== "production") {
+				console.log(
+					`Solicitud: ${req.method} ${req.path} desde ${req.headers.origin || "origen desconocido"}`
+				);
+			}
+			next();
+		});
+
 		app.use(express.urlencoded({extended: true}));
+		app.use(express.json());
 		app.use(cookieParser());
 		app.use(limiter);
 
@@ -101,8 +160,6 @@ async function bootstrap() {
 		app.get("/", (req, res) => {
 			res.send("ConstructorAPP API");
 		});
-
-		
 
 		// Setup Swagger documentation
 		setupSwagger(app);
