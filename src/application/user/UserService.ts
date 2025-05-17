@@ -1,5 +1,5 @@
 // src/application/user/UserService.ts
-import {User, UserAddress} from "../../domain/models/user/User";
+import {ProfessionalType, User, UserAddress, UserGender} from "../../domain/models/user/User";
 import {UserRepository} from "../../domain/repositories/UserRepository";
 import {UpdateUserPersonalInfoDTO} from "../../domain/dtos/user/UpdateUserPersonalInfoDTO";
 import {UpdateUserProfessionalInfoDTO} from "../../domain/dtos/user/UpdateUserProfessionalInfoDTO";
@@ -21,33 +21,70 @@ export class UserService {
 		userId: string,
 		personalInfo: UpdateUserPersonalInfoDTO
 	): Promise<User | null> {
-		return await this.userRepository.update(userId, personalInfo);
+		const updatedInfo: Partial<User> = {
+			...personalInfo,
+			gender: personalInfo.gender as UserGender,
+		};
+		return await this.userRepository.update(userId, updatedInfo);
 	}
 
 	async updateProfessionalInfo(
 		userId: string,
 		professionalInfo: UpdateUserProfessionalInfoDTO
 	): Promise<User | null> {
-		return await this.userRepository.update(userId, professionalInfo);
+		const updatedInfo: Partial<User> = {
+			...professionalInfo,
+			professionalType: professionalInfo.professionalType as ProfessionalType,
+			company: professionalInfo.company
+				? {
+						name: professionalInfo.company.name ?? "",
+						taxId: professionalInfo.company.taxId ?? "",
+						address: professionalInfo.company.address ?? {
+							street: "",
+							number: "",
+							city: "",
+							province: "",
+							postalCode: "",
+							country: "",
+						},
+						phone: professionalInfo.company.phone ?? "",
+						email: professionalInfo.company.email ?? "",
+						website: professionalInfo.company.website,
+						position: professionalInfo.company.position,
+						employees: professionalInfo.company.employees,
+						yearFounded: professionalInfo.company.yearFounded,
+				  }
+				: undefined,
+		};
+		return await this.userRepository.update(userId, updatedInfo);
 	}
 
 	async updatePreferences(
 		userId: string,
 		preferences: UpdateUserPreferencesDTO
 	): Promise<User | null> {
-		// Get current user
 		const user = await this.userRepository.findById(userId);
 		if (!user) {
 			throw new Error("Usuario no encontrado");
 		}
 
-		// Update preferences object
+		// Ensure required properties are present
 		const updatedPreferences = {
-			...(user.preferences || {}),
-			...preferences,
+			notifications: user.preferences?.notifications || {
+				email: true,
+				push: true,
+				sms: true,
+			},
+			projectUpdates: user.preferences?.projectUpdates ?? true,
+			materialRecommendations:
+				user.preferences?.materialRecommendations ?? true,
+			pricingAlerts: user.preferences?.pricingAlerts ?? true,
+			weeklyReports: user.preferences?.weeklyReports ?? true,
+			languagePreference:
+				preferences.language || user.preferences?.languagePreference || "es",
+			...(preferences as any), // Cast to bypass strict checks
 		};
 
-		// Update user with new preferences
 		return await this.userRepository.update(userId, {
 			preferences: updatedPreferences,
 		});
@@ -73,6 +110,8 @@ export class UserService {
 
 		const newAddress: UserAddress = {
 			...address,
+			id: uuid(), // Generate a unique ID
+			number: address.number || "", // Ensure number is never undefined
 			isMain: address.isMain || false,
 		};
 
@@ -178,3 +217,7 @@ export class UserService {
 		});
 	}
 }
+function uuid(): string {
+	throw new Error("Function not implemented.");
+}
+

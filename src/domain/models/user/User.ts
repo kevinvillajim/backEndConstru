@@ -45,6 +45,7 @@ export interface BaseAddress {
 
 // Dirección para usuario con flag isMain
 export interface UserAddress extends BaseAddress {
+	id: string;
 	isMain: boolean;
 }
 

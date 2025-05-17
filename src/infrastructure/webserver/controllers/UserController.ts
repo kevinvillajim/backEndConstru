@@ -10,7 +10,13 @@ import {UserInteractionRepository} from "../../../domain/repositories/UserIntera
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import {v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
+import { File } from "multer";
+
+export interface MulterRequest extends Request {
+    file?: File;
+    files?: Express.Multer.File[];
+}
 
 export class UserController {
 	private userService: UserService;
@@ -45,7 +51,7 @@ export class UserController {
 				success: true,
 				data: userProfile,
 			});
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Error getting user profile:", error);
 			return res.status(500).json({
 				success: false,
@@ -82,7 +88,7 @@ export class UserController {
 				message: "Información personal actualizada correctamente",
 				data: updatedUser,
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error updating personal info:", error);
 			return res.status(500).json({
 				success: false,
@@ -119,7 +125,7 @@ export class UserController {
 				message: "Información profesional actualizada correctamente",
 				data: updatedUser,
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error updating professional info:", error);
 			return res.status(500).json({
 				success: false,
@@ -156,7 +162,7 @@ export class UserController {
 				message: "Preferencias actualizadas correctamente",
 				data: updatedPreferences,
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error updating preferences:", error);
 			return res.status(500).json({
 				success: false,
@@ -188,7 +194,7 @@ export class UserController {
 				success: true,
 				data: addresses,
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error getting addresses:", error);
 			return res.status(500).json({
 				success: false,
@@ -238,7 +244,7 @@ export class UserController {
 						: "Dirección agregada correctamente",
 				data: updatedAddress,
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error updating address:", error);
 			return res.status(500).json({
 				success: false,
@@ -278,7 +284,7 @@ export class UserController {
 				success: true,
 				message: "Dirección eliminada correctamente",
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error deleting address:", error);
 			return res.status(500).json({
 				success: false,
@@ -372,7 +378,7 @@ export class UserController {
 						profilePicture: profilePicturePath,
 					},
 				});
-			} catch (error) {
+			} catch (error:any) {
 				console.error("Error updating profile picture:", error);
 				return res.status(500).json({
 					success: false,
@@ -456,7 +462,7 @@ export class UserController {
 					similarUsers,
 				},
 			});
-		} catch (error) {
+		} catch (error:any) {
 			console.error("Error getting behavior pattern:", error);
 			return res.status(500).json({
 				success: false,
