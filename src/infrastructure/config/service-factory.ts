@@ -86,6 +86,9 @@ import {SyncInvoiceWithSriUseCase} from "../../application/invoice/SyncInvoiceWi
 import {SendInvoiceByEmailUseCase} from "../../application/invoice/SendInvoiceByEmailUseCase";
 import {UpdateInvoicePaymentUseCase} from "../../application/invoice/UpdateInvoicePaymentUseCase";
 import {InvoiceController} from "../webserver/controllers/InvoiceController";
+import {UserController} from "../webserver/controllers/UserController";
+import {UserService} from "../../application/user/UserService";
+import {get} from "http";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -156,6 +159,7 @@ let orderController: OrderController;
 let userInteractionRepository: TypeOrmUserInteractionRepository;
 let userPatternAnalysisService: UserPatternAnalysisService;
 let advancedRecommendationService: AdvancedRecommendationService;
+let userService: UserService;
 let advancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase;
 let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
@@ -166,6 +170,7 @@ let syncInvoiceWithSriUseCase: SyncInvoiceWithSriUseCase;
 let sendInvoiceByEmailUseCase: SendInvoiceByEmailUseCase;
 let updateInvoicePaymentUseCase: UpdateInvoicePaymentUseCase;
 let invoiceController: InvoiceController;
+let userController: UserController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -192,6 +197,8 @@ export function initializeServices() {
 		orderItemRepository = new TypeOrmOrderItemRepository();
 		userInteractionRepository = new TypeOrmUserInteractionRepository();
 		invoiceRepository = new TypeOrmInvoiceRepository();
+		userRepository = new TypeOrmUserRepository();
+		userInteractionRepository = new TypeOrmUserInteractionRepository();
 
 		// Initialize services
 		authService = new AuthService();
@@ -219,6 +226,8 @@ export function initializeServices() {
 			process.env.PUSH_APP_ID || "constru-app"
 		);
 		twoFactorAuthService = new TwoFactorAuthService();
+		userService = new UserService(userRepository);
+		userPatternAnalysisService = new UserPatternAnalysisService();
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -497,6 +506,12 @@ export function initializeServices() {
 			sendInvoiceByEmailUseCase,
 			updateInvoicePaymentUseCase,
 			pdfGenerationService
+		);
+
+		userController = new UserController(
+			userService,
+			userPatternAnalysisService,
+			userInteractionRepository
 		);
 
 		console.log("Services initialized successfully");
@@ -795,4 +810,13 @@ export function getInvoiceController() {
 		);
 	}
 	return invoiceController;
+}
+
+export function getUserController() {
+	if (!userController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return userController;
 }
