@@ -136,7 +136,7 @@ C:.
 |           \---validators
 |                   authValidator.js
 |                   calculationValidator.js
-|                   templateValidator.js               
+|                   templateValidator.js                   
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -226,11 +226,18 @@ C:.
 |   |   |       
 |   |   +---subscription
 |   |   \---user
+|   |           UserRecommendationService.ts
+|   |           UserService.ts
+|   |           
 |   +---domain
 |   |   +---dtos
 |   |   |   \---user
 |   |   |           LoginUserDTO.ts
 |   |   |           RegisterUserDTO.ts
+|   |   |           UpdateUserAddressDTO.ts
+|   |   |           UpdateUserPersonalInfoDTO.ts
+|   |   |           UpdateUserPreferencesDTO.ts
+|   |   |           UpdateUserProfessionalInfoDTO.ts
 |   |   |           
 |   |   +---events
 |   |   +---exception
@@ -271,7 +278,9 @@ C:.
 |   |   |   +---subscription
 |   |   |   \---user
 |   |   |           User.ts
+|   |   |           UserBehaviorPattern.ts
 |   |   |           UserInteraction.ts
+|   |   |           UserRecommendation.ts
 |   |   |           
 |   |   +---repositories
 |   |   |       AccountingTransactionRepository.ts
@@ -294,6 +303,7 @@ C:.
 |   |   |       RefreshTokenRepository.ts
 |   |   |       TaskRepository.ts
 |   |   |       UserInteractionRepository.ts
+|   |   |       UserRecommendationRepository.ts
 |   |   |       UserRepository.ts
 |   |   |       
 |   |   \---services
@@ -350,6 +360,7 @@ C:.
 |   |   |   |       ProjectTeamMemberEntity.ts
 |   |   |   |       RefreshTokenEntity.ts
 |   |   |   |       TaskEntity.ts
+|   |   |   |       UserAddressEntity.ts
 |   |   |   |       UserEntity.ts
 |   |   |   |       UserInteractionEntity.ts
 |   |   |   |       UserRecommendationEntity.ts
@@ -456,6 +467,7 @@ C:.
 |   |   |   |       TaskController.ts
 |   |   |   |       TemplateImportExportController.ts
 |   |   |   |       TwoFactorAuthController.ts
+|   |   |   |       UserController.ts
 |   |   |   |       
 |   |   |   +---docs
 |   |   |   |   |   swagger.ts
@@ -483,6 +495,10 @@ C:.
 |   |   |   |           
 |   |   |   +---middlewares
 |   |   |   |       authMiddleware.ts
+|   |   |   |       corsMiddleware.ts
+|   |   |   |       mirrorCorsMiddleware.ts
+|   |   |   |       permissiveCorsMiddleware.ts
+|   |   |   |       securityHeadersMiddleware.ts
 |   |   |   |       validationMiddleware.ts
 |   |   |   |       
 |   |   |   +---routes
@@ -506,6 +522,7 @@ C:.
 |   |   |   |       supplierIntegrationRoutes.ts
 |   |   |   |       templateImportExportRoutes.ts
 |   |   |   |       twoFactorAuthRoutes.ts
+|   |   |   |       userRoutes.ts
 |   |   |   |       
 |   |   |   +---utils
 |   |   |   |       errorHandler.ts

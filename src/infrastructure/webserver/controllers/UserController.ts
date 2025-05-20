@@ -1,5 +1,5 @@
 // src/infrastructure/webserver/controllers/UserController.ts
-import {Request, Response} from "express";
+import {Response} from "express";
 import {UpdateUserPersonalInfoDTO} from "../../../domain/dtos/user/UpdateUserPersonalInfoDTO";
 import {UpdateUserProfessionalInfoDTO} from "../../../domain/dtos/user/UpdateUserProfessionalInfoDTO";
 import {UpdateUserPreferencesDTO} from "../../../domain/dtos/user/UpdateUserPreferencesDTO";
@@ -10,10 +10,10 @@ import {UserInteractionRepository} from "../../../domain/repositories/UserIntera
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
 import {RequestWithUser} from "../middlewares/authMiddleware";
 
-export interface MulterRequest extends Request {
+export interface MulterRequest extends RequestWithUser {
 	file?: Express.Multer.File;
 	files?: Express.Multer.File[];
 }
@@ -34,7 +34,7 @@ export class UserController {
 	}
 
 	// Get user profile
-	async getProfile(req: Request, res: Response) {
+	async getProfile(req: RequestWithUser, res: Response) {
 		try {
 			// User ID should be set in auth middleware
 			const userId = req.user?.id;
@@ -67,7 +67,7 @@ export class UserController {
 	}
 
 	// Update personal information
-	async updatePersonalInfo(req: Request, res: Response) {
+	async updatePersonalInfo(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -104,7 +104,7 @@ export class UserController {
 	}
 
 	// Update professional information
-	async updateProfessionalInfo(req: Request, res: Response) {
+	async updateProfessionalInfo(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -141,7 +141,7 @@ export class UserController {
 	}
 
 	// Update user preferences
-	async updatePreferences(req: Request, res: Response) {
+	async updatePreferences(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -178,7 +178,7 @@ export class UserController {
 	}
 
 	// Get user addresses
-	async getAddresses(req: Request, res: Response) {
+	async getAddresses(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -210,7 +210,7 @@ export class UserController {
 	}
 
 	// Add/update address
-	async updateAddress(req: Request, res: Response) {
+	async updateAddress(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -260,7 +260,7 @@ export class UserController {
 	}
 
 	// Delete address
-	async deleteAddress(req: Request, res: Response) {
+	async deleteAddress(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {
@@ -308,8 +308,11 @@ export class UserController {
 		const upload = multer({
 			storage: multer.diskStorage({
 				destination: (req, file, cb) => {
-					const uploadPath = path.join(__dirname, "../../../../uploads/profile-pictures");
-					fs.mkdirSync(uploadPath, { recursive: true });
+					const uploadPath = path.join(
+						__dirname,
+						"../../../../uploads/profile-pictures"
+					);
+					fs.mkdirSync(uploadPath, {recursive: true});
 					cb(null, uploadPath);
 				},
 				filename: (req, file, cb) => {
@@ -317,7 +320,7 @@ export class UserController {
 					cb(null, uniqueName);
 				},
 			}),
-			limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+			limits: {fileSize: 5 * 1024 * 1024}, // 5MB limit
 		});
 		const uploadSingle = upload.single("profilePicture");
 
@@ -382,7 +385,7 @@ export class UserController {
 	}
 
 	// Get behavior pattern (for recommendations)
-	async getBehaviorPattern(req: Request, res: Response) {
+	async getBehaviorPattern(req: RequestWithUser, res: Response) {
 		try {
 			const userId = req.user?.id;
 			if (!userId) {

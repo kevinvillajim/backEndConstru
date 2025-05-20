@@ -1,10 +1,16 @@
 // src/application/user/UserService.ts
-import {ProfessionalType, User, UserAddress, UserGender} from "../../domain/models/user/User";
+import {
+	ProfessionalType,
+	User,
+	UserAddress,
+	UserGender,
+} from "../../domain/models/user/User";
 import {UserRepository} from "../../domain/repositories/UserRepository";
 import {UpdateUserPersonalInfoDTO} from "../../domain/dtos/user/UpdateUserPersonalInfoDTO";
 import {UpdateUserProfessionalInfoDTO} from "../../domain/dtos/user/UpdateUserProfessionalInfoDTO";
 import {UpdateUserPreferencesDTO} from "../../domain/dtos/user/UpdateUserPreferencesDTO";
-import { UpdateUserAddressDTO } from "../../domain/dtos/user/UpdateUserAddressDTO";
+import {UpdateUserAddressDTO} from "../../domain/dtos/user/UpdateUserAddressDTO";
+import crypto from "crypto";
 
 export class UserService {
 	private userRepository: UserRepository;
@@ -53,7 +59,7 @@ export class UserService {
 						position: professionalInfo.company.position,
 						employees: professionalInfo.company.employees,
 						yearFounded: professionalInfo.company.yearFounded,
-				  }
+					}
 				: undefined,
 		};
 		return await this.userRepository.update(userId, updatedInfo);
@@ -110,7 +116,7 @@ export class UserService {
 
 		const newAddress: UserAddress = {
 			...address,
-			id: uuid(), // Generate a unique ID
+			id: crypto.randomUUID(), // Generate a unique ID
 			number: address.number || "", // Ensure number is never undefined
 			isMain: address.isMain || false,
 		};
@@ -217,7 +223,3 @@ export class UserService {
 		});
 	}
 }
-function uuid(): string {
-	return crypto.randomUUID();
-}
-

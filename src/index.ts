@@ -173,7 +173,9 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/twoFactorAuthRoutes").default;
 		const invoiceRoutes =
 			require("./infrastructure/webserver/routes/invoiceRoutes").default;
-
+		const userRoutes =
+		require("./infrastructure/webserver/routes/userRoutes").default;
+		
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
@@ -192,6 +194,7 @@ async function bootstrap() {
 		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
 		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 		app.use("/api/invoices", invoiceRoutes);
+		app.use("/api/users", userRoutes);
 
 		// Global error handler
 		app.use(
