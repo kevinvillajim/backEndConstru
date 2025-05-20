@@ -6,4 +6,5 @@ export interface UpdateUserPersonalInfoDTO {
 	dateOfBirth?: Date;
 	nationalId?: string;
 	gender?: string;
+	
 }

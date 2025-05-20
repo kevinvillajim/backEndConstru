@@ -202,7 +202,7 @@ export class UserPatternAnalysisService {
 	 */
 	async findSimilarUsers(
 		userId: string,
-		allPatterns: UserBehaviorPattern[]
+		allPatterns: UserBehaviorPattern[] = []
 	): Promise<Array<{userId: string; similarityScore: number}>> {
 		// Implementación que encuentra usuarios con patrones similares
 		// Para usarse en filtrado colaborativo

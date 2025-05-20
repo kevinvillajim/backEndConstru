@@ -4,7 +4,7 @@ import {UserRepository} from "../../domain/repositories/UserRepository";
 import {UpdateUserPersonalInfoDTO} from "../../domain/dtos/user/UpdateUserPersonalInfoDTO";
 import {UpdateUserProfessionalInfoDTO} from "../../domain/dtos/user/UpdateUserProfessionalInfoDTO";
 import {UpdateUserPreferencesDTO} from "../../domain/dtos/user/UpdateUserPreferencesDTO";
-import {UpdateUserAddressDTO} from "../../domain/dtos/user/UpdateUserAddressDTO";
+import { UpdateUserAddressDTO } from "../../domain/dtos/user/UpdateUserAddressDTO";
 
 export class UserService {
 	private userRepository: UserRepository;
@@ -218,6 +218,6 @@ export class UserService {
 	}
 }
 function uuid(): string {
-	throw new Error("Function not implemented.");
+	return crypto.randomUUID();
 }
 

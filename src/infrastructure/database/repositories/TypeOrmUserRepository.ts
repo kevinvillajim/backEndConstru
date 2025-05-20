@@ -3,7 +3,8 @@ import {Repository} from "typeorm";
 import {User} from "@domain/models/user/User";
 import {UserRepository} from "@domain/repositories/UserRepository";
 import {UserEntity} from "../entities/UserEntity";
-import {AppDataSource} from "../data-source";
+import { AppDataSource } from "../data-source";
+import crypto from "crypto";
 
 export class TypeOrmUserRepository implements UserRepository {
 	private repository: Repository<UserEntity>;
@@ -85,7 +86,19 @@ export class TypeOrmUserRepository implements UserRepository {
 			subscriptionPlan: entity.subscriptionPlan,
 			subscriptionExpiresAt: entity.subscriptionExpiresAt,
 			company: entity.company,
-			addresses: entity.addresses,
+			addresses: entity.addresses
+				? entity.addresses.map((addr) => ({
+						id: addr.id || crypto.randomUUID(), // Asegúrate de tener crypto importado
+						street: addr.street,
+						number: addr.number,
+						city: addr.city,
+						province: addr.province,
+						postalCode: addr.postalCode,
+						country: addr.country,
+						reference: addr.reference,
+						isMain: addr.isMain,
+					}))
+				: undefined,
 			preferences: entity.preferences,
 			stats: entity.stats,
 			interests: entity.interests,

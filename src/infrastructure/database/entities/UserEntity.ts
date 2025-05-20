@@ -15,6 +15,7 @@ import {
 	UserGender,
 	ProfessionalType,
 } from "@domain/models/user/User";
+import { UserAddressEntity } from "./UserAddressEntity";
 
 @Entity("users")
 export class UserEntity {
@@ -121,18 +122,10 @@ export class UserEntity {
 		yearFounded?: number;
 	};
 
-	@Column({type: "json", nullable: true, comment: "Direcciones del usuario"})
-	addresses: {
-		street: string;
-		number: string;
-		city: string;
-		province: string;
-		postalCode: string;
-		country: string;
-		reference?: string;
-		isMain: boolean;
-	}[];
+	@OneToMany(() => UserAddressEntity, (address) => address.user)
+	addresses: UserAddressEntity[];
 
+	
 	@Column({type: "json", nullable: true, comment: "Preferencias del usuario"})
 	preferences: {
 		notifications: {

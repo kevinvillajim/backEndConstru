@@ -11,11 +11,11 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { File } from "multer";
+import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export interface MulterRequest extends Request {
-    file?: File;
-    files?: Express.Multer.File[];
+	file?: Express.Multer.File;
+	files?: Express.Multer.File[];
 }
 
 export class UserController {
@@ -88,7 +88,7 @@ export class UserController {
 				message: "Información personal actualizada correctamente",
 				data: updatedUser,
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error updating personal info:", error);
 			return res.status(500).json({
 				success: false,
@@ -125,7 +125,7 @@ export class UserController {
 				message: "Información profesional actualizada correctamente",
 				data: updatedUser,
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error updating professional info:", error);
 			return res.status(500).json({
 				success: false,
@@ -162,7 +162,7 @@ export class UserController {
 				message: "Preferencias actualizadas correctamente",
 				data: updatedPreferences,
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error updating preferences:", error);
 			return res.status(500).json({
 				success: false,
@@ -194,7 +194,7 @@ export class UserController {
 				success: true,
 				data: addresses,
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error getting addresses:", error);
 			return res.status(500).json({
 				success: false,
@@ -244,7 +244,7 @@ export class UserController {
 						: "Dirección agregada correctamente",
 				data: updatedAddress,
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error updating address:", error);
 			return res.status(500).json({
 				success: false,
@@ -284,7 +284,7 @@ export class UserController {
 				success: true,
 				message: "Dirección eliminada correctamente",
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error deleting address:", error);
 			return res.status(500).json({
 				success: false,
@@ -300,48 +300,36 @@ export class UserController {
 	}
 
 	// Upload profile picture
-	async uploadProfilePicture(req: Request, res: Response) {
-		// Create multer storage configuration
-		const storage = multer.diskStorage({
-			destination: function (req, file, cb) {
-				const uploadDir = path.join(
-					__dirname,
-					"../../../../uploads/profile-pictures"
-				);
-
-				// Ensure directory exists
-				if (!fs.existsSync(uploadDir)) {
-					fs.mkdirSync(uploadDir, {recursive: true});
-				}
-
-				cb(null, uploadDir);
-			},
-			filename: function (req, file, cb) {
-				// Generate unique filename
-				const uniqueSuffix = uuidv4();
-				const fileExtension = path.extname(file.originalname);
-				cb(null, `profile-${req.user.id}-${uniqueSuffix}${fileExtension}`);
-			},
-		});
-
-		// File filter for images
-		const fileFilter = (req, file, cb) => {
-			if (file.mimetype.startsWith("image/")) {
-				cb(null, true);
-			} else {
-				cb(new Error("Solo se permiten imágenes"), false);
-			}
-		};
-
+	async uploadProfilePicture(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		// Configurar el middleware para una única ejecución
 		const upload = multer({
-			storage,
-			fileFilter,
-			limits: {fileSize: 5 * 1024 * 1024}, // 5MB limit
-		}).single("profilePicture");
+			storage: multer.diskStorage({
+				destination: (req, file, cb) => {
+					const uploadPath = path.join(__dirname, "../../../../uploads/profile-pictures");
+					fs.mkdirSync(uploadPath, { recursive: true });
+					cb(null, uploadPath);
+				},
+				filename: (req, file, cb) => {
+					const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+					cb(null, uniqueName);
+				},
+			}),
+			limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+		});
+		const uploadSingle = upload.single("profilePicture");
 
-		// Handle the upload
-		upload(req, res, async (err) => {
-			if (err) {
+		uploadSingle(req, res, async (err) => {
+			if (err instanceof multer.MulterError) {
+				// Error de Multer durante la subida
+				return res.status(400).json({
+					success: false,
+					message: `Error de Multer: ${err.message}`,
+				});
+			} else if (err) {
+				// Otro tipo de error
 				return res.status(400).json({
 					success: false,
 					message: err.message || "Error al subir imagen",
@@ -349,8 +337,7 @@ export class UserController {
 			}
 
 			try {
-				const userId = req.user?.id;
-				if (!userId) {
+				if (!req.user?.id) {
 					return res.status(401).json({
 						success: false,
 						message: "Usuario no autenticado",
@@ -364,10 +351,10 @@ export class UserController {
 					});
 				}
 
-				// Update user profile with new image path
+				// Actualizar perfil con nueva imagen
 				const profilePicturePath = `/uploads/profile-pictures/${req.file.filename}`;
 				const updatedUser = await this.userService.updateProfilePicture(
-					userId,
+					req.user.id,
 					profilePicturePath
 				);
 
@@ -378,8 +365,8 @@ export class UserController {
 						profilePicture: profilePicturePath,
 					},
 				});
-			} catch (error:any) {
-				console.error("Error updating profile picture:", error);
+			} catch (error: any) {
+				console.error("Error al actualizar imagen de perfil:", error);
 				return res.status(500).json({
 					success: false,
 					message: "Error al actualizar imagen de perfil",
@@ -462,7 +449,7 @@ export class UserController {
 					similarUsers,
 				},
 			});
-		} catch (error:any) {
+		} catch (error: any) {
 			console.error("Error getting behavior pattern:", error);
 			return res.status(500).json({
 				success: false,

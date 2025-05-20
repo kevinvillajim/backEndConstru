@@ -8,6 +8,8 @@ import {AuthService} from "../../../domain/services/AuthService";
 // Define a request with user
 export interface RequestWithUser extends Request {
 	user?: User;
+	file?: Express.Multer.File;
+	files?: Express.Multer.File[];
 }
 
 // Get services directly to avoid dependency issues
