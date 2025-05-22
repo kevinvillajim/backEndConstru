@@ -1,4 +1,4 @@
-// src/infrastructure/config/service-factory.ts
+// src/infrastructure/config/service-factory.ts - VERSIÓN COMPLETA CORREGIDA
 import {DatabaseService} from "../database/database.service";
 import {TypeOrmUserRepository} from "../database/repositories/TypeOrmUserRepository";
 import {AuthService} from "../../domain/services/AuthService";
@@ -47,10 +47,10 @@ import {MaterialController} from "../webserver/controllers/MaterialController";
 import {ExportCalculationTemplateUseCase} from "../../application/calculation/ExportCalculationTemplateUseCase";
 import {ImportCalculationTemplateUseCase} from "../../application/calculation/ImportCalculationTemplateUseCase";
 import {TemplateImportExportController} from "../webserver/controllers/TemplateImportExportController";
-import {SupplierIntegrationController} from "@infrastructure/webserver/controllers/SupplierIntegrationController";
-import {ManageMaterialPropertiesUseCase} from "@application/material/ManageMaterialPropertiesUseCase";
-import {TypeOrmMaterialPropertyRepository} from "@infrastructure/database/repositories/TypeOrmMaterialPropertyRepository";
-import {MaterialPropertyController} from "@infrastructure/webserver/controllers/MaterialPropertyController";
+import {SupplierIntegrationController} from "../webserver/controllers/SupplierIntegrationController";
+import {ManageMaterialPropertiesUseCase} from "../../application/material/ManageMaterialPropertiesUseCase";
+import {TypeOrmMaterialPropertyRepository} from "../database/repositories/TypeOrmMaterialPropertyRepository";
+import {MaterialPropertyController} from "../webserver/controllers/MaterialPropertyController";
 import {TypeOrmCategoryRepository} from "../database/repositories/TypeOrmCategoryRepository";
 import {ProjectMetricsService} from "../../domain/services/ProjectMetricsService";
 import {GetProjectDashboardDataUseCase} from "../../application/project/GetProjectDashboardDataUseCase";
@@ -59,8 +59,8 @@ import {ProjectDashboardController} from "../webserver/controllers/ProjectDashbo
 import {ProjectMetricsController} from "../webserver/controllers/ProjectMetricsController";
 import {PdfGenerationService} from "../../infrastructure/services/PdfGenerationService";
 import {TypeOrmAccountingTransactionRepository} from "../database/repositories/TypeOrmAccountingTransactionRepository";
-import {SyncBudgetWithAccountingUseCase} from "@application/accounting/SyncBudgetWithAccountingUseCase";
-import {AccountingController} from "@infrastructure/webserver/controllers/AccountingController";
+import {SyncBudgetWithAccountingUseCase} from "../../application/accounting/SyncBudgetWithAccountingUseCase";
+import {AccountingController} from "../webserver/controllers/AccountingController";
 import {EnhancedProjectDashboardUseCase} from "../../application/project/EnhancedProjectDashboardUseCase";
 import {EnhancedProjectDashboardController} from "../webserver/controllers/EnhancedProjectDashboardController";
 import {PredictProjectDelaysUseCase} from "../../application/project/PredictProjectDelaysUseCase";
@@ -70,10 +70,10 @@ import {TypeOrmOrderItemRepository} from "../database/repositories/TypeOrmOrderI
 import {CompareMaterialPricesUseCase} from "../../application/material/CompareMaterialPricesUseCase";
 import {CreateOrderFromMaterialRequestsUseCase} from "../../application/order/CreateOrderFromMaterialRequestsUseCase";
 import {OrderController} from "../webserver/controllers/OrderController";
-import {GetAdvancedRecommendationsUseCase} from "@application/recommendation/GetAdvancedRecommendationsUseCase";
-import {AdvancedRecommendationService} from "@domain/services/AdvancedRecommendationService";
-import {UserPatternAnalysisService} from "@domain/services/UserPatternAnalysisService";
-import {TypeOrmUserInteractionRepository} from "@infrastructure/database/repositories/TypeOrmUserInteractionRepository";
+import {GetAdvancedRecommendationsUseCase} from "../../application/recommendation/GetAdvancedRecommendationsUseCase";
+import {AdvancedRecommendationService} from "../../domain/services/AdvancedRecommendationService";
+import {UserPatternAnalysisService} from "../../domain/services/UserPatternAnalysisService";
+import {TypeOrmUserInteractionRepository} from "../database/repositories/TypeOrmUserInteractionRepository";
 import {EmailService} from "../../domain/services/EmailService";
 import {EmailServiceImpl} from "../services/EmailServiceImpl";
 import {PushNotificationService} from "../../domain/services/PushNotificationService";
@@ -88,7 +88,6 @@ import {UpdateInvoicePaymentUseCase} from "../../application/invoice/UpdateInvoi
 import {InvoiceController} from "../webserver/controllers/InvoiceController";
 import {UserController} from "../webserver/controllers/UserController";
 import {UserService} from "../../application/user/UserService";
-import {get} from "http";
 
 // Global service instances
 let userRepository: TypeOrmUserRepository;
@@ -172,6 +171,12 @@ let updateInvoicePaymentUseCase: UpdateInvoicePaymentUseCase;
 let invoiceController: InvoiceController;
 let userController: UserController;
 
+// Additional repositories and services for complete initialization
+let categoryRepository: TypeOrmCategoryRepository;
+let materialPropertyRepository: TypeOrmMaterialPropertyRepository;
+let supplierIntegrationController: SupplierIntegrationController;
+let materialPropertyController: MaterialPropertyController;
+
 export function initializeServices() {
 	console.log("Initializing services directly...");
 
@@ -197,25 +202,22 @@ export function initializeServices() {
 		orderItemRepository = new TypeOrmOrderItemRepository();
 		userInteractionRepository = new TypeOrmUserInteractionRepository();
 		invoiceRepository = new TypeOrmInvoiceRepository();
-		userRepository = new TypeOrmUserRepository();
-		userInteractionRepository = new TypeOrmUserInteractionRepository();
+		categoryRepository = new TypeOrmCategoryRepository();
+		materialPropertyRepository = new TypeOrmMaterialPropertyRepository();
 
-		// Initialize services
+		// Initialize services - Order matters due to dependencies
 		authService = new AuthService();
 		calculationService = new CalculationService();
 		templateValidationService = new TemplateValidationService();
 		recommendationService = new RecommendationService();
-		notificationService = new NotificationServiceImpl(
-			notificationRepository,
-			userRepository,
-			projectRepository,
-			emailService,
-			pushNotificationService
-		);
 		projectMetricsService = new ProjectMetricsService();
 		pdfGenerationService = new PdfGenerationService();
 		userPatternAnalysisService = new UserPatternAnalysisService();
 		advancedRecommendationService = new AdvancedRecommendationService();
+		twoFactorAuthService = new TwoFactorAuthService();
+		userService = new UserService(userRepository);
+
+		// Initialize email services first (needed for notification service)
 		emailService = new EmailServiceImpl(
 			process.env.EMAIL_API_KEY || "mock-key",
 			process.env.EMAIL_FROM_ADDRESS || "noreply@constru-app.com"
@@ -225,9 +227,15 @@ export function initializeServices() {
 			process.env.PUSH_API_KEY || "mock-key",
 			process.env.PUSH_APP_ID || "constru-app"
 		);
-		twoFactorAuthService = new TwoFactorAuthService();
-		userService = new UserService(userRepository);
-		userPatternAnalysisService = new UserPatternAnalysisService();
+
+		// Initialize notification service (depends on email and push services)
+		notificationService = new NotificationServiceImpl(
+			notificationRepository,
+			userRepository,
+			projectRepository,
+			emailService,
+			pushNotificationService
+		);
 
 		// Initialize use cases
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
@@ -514,6 +522,22 @@ export function initializeServices() {
 			userInteractionRepository
 		);
 
+		// Initialize specialty controllers
+		const manageMaterialPropertiesUseCase = new ManageMaterialPropertiesUseCase(
+			materialRepository,
+			materialPropertyRepository
+		);
+
+		materialPropertyController = new MaterialPropertyController(
+			manageMaterialPropertiesUseCase
+		);
+
+		supplierIntegrationController = new SupplierIntegrationController(
+			materialRepository,
+			categoryRepository,
+			notificationService
+		);
+
 		console.log("Services initialized successfully");
 	} catch (error) {
 		console.error("Failed to initialize services:", error);
@@ -631,23 +655,21 @@ export function getTemplateImportExportController() {
 }
 
 export function getSupplierIntegrationController(): SupplierIntegrationController {
-	return new SupplierIntegrationController(
-		materialRepository,
-		new TypeOrmCategoryRepository(),
-		notificationService
-	);
+	if (!supplierIntegrationController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return supplierIntegrationController;
 }
 
 export function getMaterialPropertyController(): MaterialPropertyController {
-	const materialPropertyRepository = new TypeOrmMaterialPropertyRepository();
-	const materialRepository = new TypeOrmMaterialRepository();
-
-	const useCase = new ManageMaterialPropertiesUseCase(
-		materialRepository,
-		materialPropertyRepository
-	);
-
-	return new MaterialPropertyController(useCase);
+	if (!materialPropertyController) {
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	}
+	return materialPropertyController;
 }
 
 export function getNotificationService() {

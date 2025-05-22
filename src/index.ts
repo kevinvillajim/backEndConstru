@@ -174,7 +174,13 @@ async function bootstrap() {
 		const invoiceRoutes =
 			require("./infrastructure/webserver/routes/invoiceRoutes").default;
 		const userRoutes =
-		require("./infrastructure/webserver/routes/userRoutes").default;
+			require("./infrastructure/webserver/routes/userRoutes").default;
+		const accountingRoutes =
+			require("./infrastructure/webserver/routes/accountingRoutes").default;
+		const enhancedProjectDashboardRoutes =
+			require("./infrastructure/webserver/routes/enhancedProjectDashboardRoutes").default;
+		const projectPredictionRoutes =
+			require("./infrastructure/webserver/routes/projectPredictionRoutes").default;
 		
 		// Configure routes
 		app.use("/api/auth", authRoutes);

@@ -5,11 +5,11 @@ import {AppDataSource} from "../../database/data-source";
 import {UserEntity} from "../../../infrastructure/database/entities/UserEntity";
 import {AuthService} from "../../../domain/services/AuthService";
 
-// Define a request with user
+// Define a request with user - FIX: Compatible con Express Request
 export interface RequestWithUser extends Request {
 	user?: User;
 	file?: Express.Multer.File;
-	files?: Express.Multer.File[];
+	files?: Express.Multer.File[] | {[fieldname: string]: Express.Multer.File[]};
 }
 
 // Get services directly to avoid dependency issues

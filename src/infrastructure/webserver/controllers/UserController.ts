@@ -1,4 +1,4 @@
-// src/infrastructure/webserver/controllers/UserController.ts
+// src/infrastructure/webserver/controllers/UserController.ts - CORREGIDO
 import {Response} from "express";
 import {UpdateUserPersonalInfoDTO} from "../../../domain/dtos/user/UpdateUserPersonalInfoDTO";
 import {UpdateUserProfessionalInfoDTO} from "../../../domain/dtos/user/UpdateUserProfessionalInfoDTO";
@@ -12,11 +12,6 @@ import path from "path";
 import fs from "fs";
 import {v4 as uuidv4} from "uuid";
 import {RequestWithUser} from "../middlewares/authMiddleware";
-
-export interface MulterRequest extends RequestWithUser {
-	file?: Express.Multer.File;
-	files?: Express.Multer.File[];
-}
 
 export class UserController {
 	private userService: UserService;
