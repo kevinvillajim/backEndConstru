@@ -8,6 +8,7 @@ import {
 	OneToMany,
 	ManyToOne,
 	JoinColumn,
+	Index,
 } from "typeorm";
 import {
 	UserRole,
@@ -18,6 +19,8 @@ import {
 import { UserAddressEntity } from "./UserAddressEntity";
 
 @Entity("users")
+@Index("IDX_users_subscription_plan", ["subscriptionPlan"])
+	
 export class UserEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
@@ -125,7 +128,6 @@ export class UserEntity {
 	@OneToMany(() => UserAddressEntity, (address) => address.user)
 	addresses: UserAddressEntity[];
 
-	
 	@Column({type: "json", nullable: true, comment: "Preferencias del usuario"})
 	preferences: {
 		notifications: {
@@ -206,6 +208,9 @@ export class UserEntity {
 
 	@Column({type: "simple-array", name: "recovery_codes", nullable: true})
 	recoveryCodes: string[];
+
+	@Column({nullable: true})
+	location: string;
 
 	@CreateDateColumn({name: "created_at"})
 	createdAt: Date;

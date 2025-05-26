@@ -11,6 +11,7 @@ import { handleError } from "../utils/errorHandler";
 import {RequestWithUser} from "../middlewares/authMiddleware";
 
 export class CalculationTemplateController {
+	[x: string]: any;
 	constructor(
 		private createCalculationTemplateUseCase: CreateCalculationTemplateUseCase,
 		private calculationService: CalculationService,

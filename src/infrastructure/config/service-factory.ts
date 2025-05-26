@@ -1,187 +1,242 @@
-// src/infrastructure/config/service-factory.ts - VERSIÓN COMPLETA CORREGIDA
-import {DatabaseService} from "../database/database.service";
+// src/infrastructure/config/service-factory.ts - VERSIÓN LIMPIA Y REORGANIZADA
+
+// ============= REPOSITORIOS =============
 import {TypeOrmUserRepository} from "../database/repositories/TypeOrmUserRepository";
-import {AuthService} from "../../domain/services/AuthService";
-import {AuthController} from "../webserver/controllers/AuthController";
-import {CalculationService} from "../../domain/services/CalculationService";
 import {TypeOrmCalculationTemplateRepository} from "../database/repositories/TypeOrmCalculationTemplateRepository";
 import {TypeOrmCalculationParameterRepository} from "../database/repositories/TypeOrmCalculationParameterRepository";
-import {TemplateValidationService} from "../../domain/services/TemplateValidationService";
-import {CreateCalculationTemplateUseCase} from "../../application/calculation/CreateCalculationTemplateUseCase";
-import {CalculationTemplateController} from "../webserver/controllers/CalculationTemplateController";
 import {TypeOrmCalculationResultRepository} from "../database/repositories/TypeOrmCalculationResultRepository";
-import {ExecuteCalculationUseCase} from "../../application/calculation/ExecuteCalculationUseCase";
 import {TypeOrmGeographicalZoneRepository} from "../database/repositories/TypeOrmGeographicalZoneRepository";
-import {RecommendationService} from "../../domain/services/RecommendationService";
-import {GetTemplateRecommendationsUseCase} from "../../application/calculation/GetTemplateRecommendationsUseCase";
-import {SaveCalculationResultUseCase} from "../../application/calculation/SaveCalculationResultUseCase";
-import {CalculationController} from "../webserver/controllers/CalculationController";
 import {TypeOrmMaterialRepository} from "../database/repositories/TypeOrmMaterialRepository";
 import {TypeOrmProjectBudgetRepository} from "../database/repositories/TypeOrmProjectBudgetRepository";
 import {TypeOrmBudgetItemRepository} from "../database/repositories/TypeOrmBudgetItemRepository";
-import {GenerateBudgetFromCalculationUseCase} from "../../application/calculation/GenerateBudgetFromCalculationUseCase";
-import {BudgetController} from "../webserver/controllers/BudgetController";
 import {TypeOrmProjectRepository} from "../database/repositories/TypeOrmProjectRepository";
 import {TypeOrmPhaseRepository} from "../database/repositories/TypeOrmPhaseRepository";
 import {TypeOrmTaskRepository} from "../database/repositories/TypeOrmTaskRepository";
+import {TypeOrmNotificationRepository} from "../database/repositories/TypeOrmNotificationRepository";
+import {TypeOrmMaterialRequestRepository} from "../database/repositories/TypeOrmMaterialRequestRepository";
+import {TypeOrmAccountingTransactionRepository} from "../database/repositories/TypeOrmAccountingTransactionRepository";
+import {TypeOrmOrderRepository} from "../database/repositories/TypeOrmOrderRepository";
+import {TypeOrmOrderItemRepository} from "../database/repositories/TypeOrmOrderItemRepository";
+import {TypeOrmUserInteractionRepository} from "../database/repositories/TypeOrmUserInteractionRepository";
+import {TypeOrmInvoiceRepository} from "../database/repositories/TypeOrmInvoiceRepository";
+import {TypeOrmCategoryRepository} from "../database/repositories/TypeOrmCategoryRepository";
+import {TypeOrmMaterialPropertyRepository} from "../database/repositories/TypeOrmMaterialPropertyRepository";
+import {TypeOrmUserFavoriteRepository} from "../database/repositories/TypeOrmUserFavoriteRepository";
+import {TypeOrmTemplateRatingRepository} from "../database/repositories/TypeOrmTemplateRatingRepository";
+import {TypeOrmTemplateSuggestionRepository} from "../database/repositories/TypeOrmTemplateSuggestionRepository";
+import {TypeOrmCalculationComparisonRepository} from "../database/repositories/TypeOrmCalculationComparisonRepository";
+import {TypeOrmTrendingCalculationRepository} from "../database/repositories/TypeOrmTrendingCalculationRepository";
+
+// ============= SERVICIOS DE DOMINIO =============
+import {AuthService} from "../../domain/services/AuthService";
+import {CalculationService} from "../../domain/services/CalculationService";
+import {TemplateValidationService} from "../../domain/services/TemplateValidationService";
+import {RecommendationService} from "../../domain/services/RecommendationService";
+import {ProjectMetricsService} from "../../domain/services/ProjectMetricsService";
+import {UserPatternAnalysisService} from "../../domain/services/UserPatternAnalysisService";
+import {AdvancedRecommendationService} from "../../domain/services/AdvancedRecommendationService";
+import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
+
+// ============= SERVICIOS DE INFRAESTRUCTURA =============
+import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
+import {EmailServiceImpl} from "../services/EmailServiceImpl";
+import {PushNotificationServiceImpl} from "../services/PushNotificationServiceImpl";
+import {PdfGenerationService} from "../services/PdfGenerationService";
+
+// ============= CASOS DE USO =============
+import {CreateCalculationTemplateUseCase} from "../../application/calculation/CreateCalculationTemplateUseCase";
+import {ExecuteCalculationUseCase} from "../../application/calculation/ExecuteCalculationUseCase";
+import {SaveCalculationResultUseCase} from "../../application/calculation/SaveCalculationResultUseCase";
+import {GetTemplateRecommendationsUseCase} from "../../application/calculation/GetTemplateRecommendationsUseCase";
+import {ExportCalculationTemplateUseCase} from "../../application/calculation/ExportCalculationTemplateUseCase";
+import {ImportCalculationTemplateUseCase} from "../../application/calculation/ImportCalculationTemplateUseCase";
+import {GenerateBudgetFromCalculationUseCase} from "../../application/calculation/GenerateBudgetFromCalculationUseCase";
+import {FavoriteTemplateUseCase} from "../../application/calculation/FavoriteTemplateUseCase";
+import {RateTemplateUseCase} from "../../application/calculation/RateTemplateUseCase";
+import {CreateSuggestionUseCase} from "../../application/calculation/CreateSuggestionUseCase";
+import {GetSuggestionsUseCase} from "../../application/calculation/GetSuggestionsUseCase";
+import {UpdateSuggestionStatusUseCase} from "../../application/calculation/UpdateSuggestionStatusUseCase";
+import {CompareCalculationsUseCase} from "../../application/calculation/CompareCalculationsUseCase";
+import {GetTrendingTemplatesUseCase} from "../../application/calculation/GetTrendingTemplatesUseCase";
+import {GetUserFavoritesUseCase} from "../../application/calculation/GetUserFavoritesUseCase";
+import {GetSavedComparisonsUseCase} from "../../application/calculation/GetSavedComparisonsUseCase";
+
+// ============= OTROS CASOS DE USO =============
 import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
-import {ProjectScheduleController} from "../webserver/controllers/ProjectScheduleController";
 import {GetProjectBudgetsUseCase} from "../../application/budget/GetProjectBudgetsUseCase";
 import {CreateBudgetVersionUseCase} from "../../application/budget/CreateBudgetVersionUseCase";
 import {UpdateTaskProgressUseCase} from "../../application/project/UpdateTaskProgressUseCase";
 import {AssignTaskUseCase} from "../../application/project/AssignTaskUseCase";
-import {TaskController} from "../webserver/controllers/TaskController";
-import {PhaseController} from "../webserver/controllers/PhaseController";
-import {TypeOrmNotificationRepository} from "../database/repositories/TypeOrmNotificationRepository";
-import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
-import {NotificationController} from "../webserver/controllers/NotificationController";
 import {CompareBudgetVersionsUseCase} from "../../application/budget/CompareBudgetVersionsUseCase";
 import {AddLaborAndIndirectCostsUseCase} from "../../application/budget/AddLaborAndIndirectCostsUseCase";
 import {GenerateProgressReportUseCase} from "../../application/project/GenerateProgressReportUseCase";
 import {CreateMaterialRequestUseCase} from "../../application/project/CreateMaterialRequestUseCase";
 import {ApproveMaterialRequestUseCase} from "../../application/project/ApproveMaterialRequestUseCase";
-import {ProgressReportController} from "../webserver/controllers/ProgressReportController";
-import {MaterialRequestController} from "../webserver/controllers/MaterialRequestController";
-import {TypeOrmMaterialRequestRepository} from "../database/repositories/TypeOrmMaterialRequestRepository";
-import {MaterialController} from "../webserver/controllers/MaterialController";
-import {ExportCalculationTemplateUseCase} from "../../application/calculation/ExportCalculationTemplateUseCase";
-import {ImportCalculationTemplateUseCase} from "../../application/calculation/ImportCalculationTemplateUseCase";
-import {TemplateImportExportController} from "../webserver/controllers/TemplateImportExportController";
-import {SupplierIntegrationController} from "../webserver/controllers/SupplierIntegrationController";
-import {ManageMaterialPropertiesUseCase} from "../../application/material/ManageMaterialPropertiesUseCase";
-import {TypeOrmMaterialPropertyRepository} from "../database/repositories/TypeOrmMaterialPropertyRepository";
-import {MaterialPropertyController} from "../webserver/controllers/MaterialPropertyController";
-import {TypeOrmCategoryRepository} from "../database/repositories/TypeOrmCategoryRepository";
-import {ProjectMetricsService} from "../../domain/services/ProjectMetricsService";
 import {GetProjectDashboardDataUseCase} from "../../application/project/GetProjectDashboardDataUseCase";
 import {GetProjectMetricsUseCase} from "../../application/project/GetProjectMetricsUseCase";
-import {ProjectDashboardController} from "../webserver/controllers/ProjectDashboardController";
-import {ProjectMetricsController} from "../webserver/controllers/ProjectMetricsController";
-import {PdfGenerationService} from "../../infrastructure/services/PdfGenerationService";
-import {TypeOrmAccountingTransactionRepository} from "../database/repositories/TypeOrmAccountingTransactionRepository";
 import {SyncBudgetWithAccountingUseCase} from "../../application/accounting/SyncBudgetWithAccountingUseCase";
-import {AccountingController} from "../webserver/controllers/AccountingController";
 import {EnhancedProjectDashboardUseCase} from "../../application/project/EnhancedProjectDashboardUseCase";
-import {EnhancedProjectDashboardController} from "../webserver/controllers/EnhancedProjectDashboardController";
 import {PredictProjectDelaysUseCase} from "../../application/project/PredictProjectDelaysUseCase";
-import {ProjectPredictionController} from "../webserver/controllers/ProjectPredictionController";
-import {TypeOrmOrderRepository} from "../database/repositories/TypeOrmOrderRepository";
-import {TypeOrmOrderItemRepository} from "../database/repositories/TypeOrmOrderItemRepository";
 import {CompareMaterialPricesUseCase} from "../../application/material/CompareMaterialPricesUseCase";
 import {CreateOrderFromMaterialRequestsUseCase} from "../../application/order/CreateOrderFromMaterialRequestsUseCase";
-import {OrderController} from "../webserver/controllers/OrderController";
 import {GetAdvancedRecommendationsUseCase} from "../../application/recommendation/GetAdvancedRecommendationsUseCase";
-import {AdvancedRecommendationService} from "../../domain/services/AdvancedRecommendationService";
-import {UserPatternAnalysisService} from "../../domain/services/UserPatternAnalysisService";
-import {TypeOrmUserInteractionRepository} from "../database/repositories/TypeOrmUserInteractionRepository";
-import {EmailService} from "../../domain/services/EmailService";
-import {EmailServiceImpl} from "../services/EmailServiceImpl";
-import {PushNotificationService} from "../../domain/services/PushNotificationService";
-import {PushNotificationServiceImpl} from "../services/PushNotificationServiceImpl";
-import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
-import {TwoFactorAuthController} from "../webserver/controllers/TwoFactorAuthController";
-import {InvoiceRepository} from "../../domain/repositories/InvoiceRepository";
-import {TypeOrmInvoiceRepository} from "../database/repositories/TypeOrmInvoiceRepository";
+import {ManageMaterialPropertiesUseCase} from "../../application/material/ManageMaterialPropertiesUseCase";
 import {SyncInvoiceWithSriUseCase} from "../../application/invoice/SyncInvoiceWithSriUseCase";
 import {SendInvoiceByEmailUseCase} from "../../application/invoice/SendInvoiceByEmailUseCase";
 import {UpdateInvoicePaymentUseCase} from "../../application/invoice/UpdateInvoicePaymentUseCase";
-import {InvoiceController} from "../webserver/controllers/InvoiceController";
-import {UserController} from "../webserver/controllers/UserController";
+
+// ============= SERVICIOS DE APLICACIÓN =============
 import {UserService} from "../../application/user/UserService";
 
-// Global service instances
+// ============= CONTROLADORES EXISTENTES =============
+import {AuthController} from "../webserver/controllers/AuthController";
+import {CalculationController} from "../webserver/controllers/CalculationController";
+import {CalculationTemplateController} from "../webserver/controllers/CalculationTemplateController";
+import {BudgetController} from "../webserver/controllers/BudgetController";
+import {ProjectScheduleController} from "../webserver/controllers/ProjectScheduleController";
+import {TaskController} from "../webserver/controllers/TaskController";
+import {PhaseController} from "../webserver/controllers/PhaseController";
+import {NotificationController} from "../webserver/controllers/NotificationController";
+import {ProgressReportController} from "../webserver/controllers/ProgressReportController";
+import {MaterialRequestController} from "../webserver/controllers/MaterialRequestController";
+import {MaterialController} from "../webserver/controllers/MaterialController";
+import {TemplateImportExportController} from "../webserver/controllers/TemplateImportExportController";
+import {SupplierIntegrationController} from "../webserver/controllers/SupplierIntegrationController";
+import {MaterialPropertyController} from "../webserver/controllers/MaterialPropertyController";
+import {ProjectDashboardController} from "../webserver/controllers/ProjectDashboardController";
+import {ProjectMetricsController} from "../webserver/controllers/ProjectMetricsController";
+import {AccountingController} from "../webserver/controllers/AccountingController";
+import {EnhancedProjectDashboardController} from "../webserver/controllers/EnhancedProjectDashboardController";
+import {ProjectPredictionController} from "../webserver/controllers/ProjectPredictionController";
+import {OrderController} from "../webserver/controllers/OrderController";
+import {TwoFactorAuthController} from "../webserver/controllers/TwoFactorAuthController";
+import {InvoiceController} from "../webserver/controllers/InvoiceController";
+import {UserController} from "../webserver/controllers/UserController";
+import {TemplateFavoriteController} from "../webserver/controllers/TemplateFavoriteController";
+import {TemplateRatingController} from "../webserver/controllers/TemplateRatingController";
+import {TemplateSuggestionController} from "../webserver/controllers/TemplateSuggestionController";
+import {CalculationComparisonController} from "../webserver/controllers/CalculationComparisonController";
+import {TrendingController} from "../webserver/controllers/TrendingController";
+
+// ============= VARIABLES GLOBALES DE REPOSITORIOS =============
 let userRepository: TypeOrmUserRepository;
-let authService: AuthService;
-let authController: AuthController;
-let calculationService: CalculationService;
 let calculationTemplateRepository: TypeOrmCalculationTemplateRepository;
 let calculationParameterRepository: TypeOrmCalculationParameterRepository;
-let templateValidationService: TemplateValidationService;
-let createCalculationTemplateUseCase: CreateCalculationTemplateUseCase;
-let calculationTemplateController: CalculationTemplateController;
 let calculationResultRepository: TypeOrmCalculationResultRepository;
-let executeCalculationUseCase: ExecuteCalculationUseCase;
 let geographicalZoneRepository: TypeOrmGeographicalZoneRepository;
-let recommendationService: RecommendationService;
-let getTemplateRecommendationsUseCase: GetTemplateRecommendationsUseCase;
-let saveCalculationResultUseCase: SaveCalculationResultUseCase;
-let calculationController: CalculationController;
 let materialRepository: TypeOrmMaterialRepository;
 let projectBudgetRepository: TypeOrmProjectBudgetRepository;
 let budgetItemRepository: TypeOrmBudgetItemRepository;
-let generateBudgetFromCalculationUseCase: GenerateBudgetFromCalculationUseCase;
-let budgetController: BudgetController;
 let projectRepository: TypeOrmProjectRepository;
 let phaseRepository: TypeOrmPhaseRepository;
 let taskRepository: TypeOrmTaskRepository;
+let notificationRepository: TypeOrmNotificationRepository;
+let materialRequestRepository: TypeOrmMaterialRequestRepository;
+let accountingTransactionRepository: TypeOrmAccountingTransactionRepository;
+let orderRepository: TypeOrmOrderRepository;
+let orderItemRepository: TypeOrmOrderItemRepository;
+let userInteractionRepository: TypeOrmUserInteractionRepository;
+let invoiceRepository: TypeOrmInvoiceRepository;
+let categoryRepository: TypeOrmCategoryRepository;
+let materialPropertyRepository: TypeOrmMaterialPropertyRepository;
+let userFavoriteRepository: TypeOrmUserFavoriteRepository;
+let templateRatingRepository: TypeOrmTemplateRatingRepository;
+let templateSuggestionRepository: TypeOrmTemplateSuggestionRepository;
+let calculationComparisonRepository: TypeOrmCalculationComparisonRepository;
+let trendingCalculationRepository: TypeOrmTrendingCalculationRepository;
+
+// ============= VARIABLES GLOBALES DE SERVICIOS =============
+let authService: AuthService;
+let calculationService: CalculationService;
+let templateValidationService: TemplateValidationService;
+let recommendationService: RecommendationService;
+let projectMetricsService: ProjectMetricsService;
+let userPatternAnalysisService: UserPatternAnalysisService;
+let advancedRecommendationService: AdvancedRecommendationService;
+let twoFactorAuthService: TwoFactorAuthService;
+let userService: UserService;
+let notificationService: NotificationServiceImpl;
+let emailService: EmailServiceImpl;
+let pushNotificationService: PushNotificationServiceImpl;
+let pdfGenerationService: PdfGenerationService;
+
+// ============= VARIABLES GLOBALES DE CASOS DE USO =============
+let executeCalculationUseCase: ExecuteCalculationUseCase;
+let createCalculationTemplateUseCase: CreateCalculationTemplateUseCase;
+let getTemplateRecommendationsUseCase: GetTemplateRecommendationsUseCase;
+let saveCalculationResultUseCase: SaveCalculationResultUseCase;
+let exportCalculationTemplateUseCase: ExportCalculationTemplateUseCase;
+let importCalculationTemplateUseCase: ImportCalculationTemplateUseCase;
+let generateBudgetFromCalculationUseCase: GenerateBudgetFromCalculationUseCase;
+let favoriteTemplateUseCase: FavoriteTemplateUseCase;
+let rateTemplateUseCase: RateTemplateUseCase;
+let createSuggestionUseCase: CreateSuggestionUseCase;
+let getSuggestionsUseCase: GetSuggestionsUseCase;
+let updateSuggestionStatusUseCase: UpdateSuggestionStatusUseCase;
+let compareCalculationsUseCase: CompareCalculationsUseCase;
+let getTrendingTemplatesUseCase: GetTrendingTemplatesUseCase;
+let getUserFavoritesUseCase: GetUserFavoritesUseCase;
+let getSavedComparisonsUseCase: GetSavedComparisonsUseCase;
+
+// ============= OTROS CASOS DE USO =============
 let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
-let projectScheduleController: ProjectScheduleController;
 let getProjectBudgetsUseCase: GetProjectBudgetsUseCase;
 let createBudgetVersionUseCase: CreateBudgetVersionUseCase;
 let updateTaskProgressUseCase: UpdateTaskProgressUseCase;
 let assignTaskUseCase: AssignTaskUseCase;
-let taskController: TaskController;
-let phaseController: PhaseController;
-let notificationRepository: TypeOrmNotificationRepository;
-let notificationService: NotificationServiceImpl;
-let notificationController: NotificationController;
 let compareBudgetVersionsUseCase: CompareBudgetVersionsUseCase;
 let addLaborAndIndirectCostsUseCase: AddLaborAndIndirectCostsUseCase;
 let generateProgressReportUseCase: GenerateProgressReportUseCase;
 let createMaterialRequestUseCase: CreateMaterialRequestUseCase;
 let approveMaterialRequestUseCase: ApproveMaterialRequestUseCase;
-let materialRequestRepository: TypeOrmMaterialRequestRepository;
-let progressReportController: ProgressReportController;
-let materialRequestController: MaterialRequestController;
-let materialController: MaterialController;
-let exportCalculationTemplateUseCase: ExportCalculationTemplateUseCase;
-let importCalculationTemplateUseCase: ImportCalculationTemplateUseCase;
-let templateImportExportController: TemplateImportExportController;
-let projectMetricsService: ProjectMetricsService;
 let getProjectDashboardDataUseCase: GetProjectDashboardDataUseCase;
 let getProjectMetricsUseCase: GetProjectMetricsUseCase;
-let projectDashboardController: ProjectDashboardController;
-let projectMetricsController: ProjectMetricsController;
-let pdfGenerationService: PdfGenerationService;
-let accountingTransactionRepository: TypeOrmAccountingTransactionRepository;
 let syncBudgetWithAccountingUseCase: SyncBudgetWithAccountingUseCase;
-let accountingController: AccountingController;
 let enhancedProjectDashboardUseCase: EnhancedProjectDashboardUseCase;
-let enhancedProjectDashboardController: EnhancedProjectDashboardController;
 let predictProjectDelaysUseCase: PredictProjectDelaysUseCase;
-let projectPredictionController: ProjectPredictionController;
-let orderRepository: TypeOrmOrderRepository;
-let orderItemRepository: TypeOrmOrderItemRepository;
 let compareMaterialPricesUseCase: CompareMaterialPricesUseCase;
 let createOrderFromMaterialRequestsUseCase: CreateOrderFromMaterialRequestsUseCase;
-let orderController: OrderController;
-let userInteractionRepository: TypeOrmUserInteractionRepository;
-let userPatternAnalysisService: UserPatternAnalysisService;
-let advancedRecommendationService: AdvancedRecommendationService;
-let userService: UserService;
 let advancedRecommendationsUseCase: GetAdvancedRecommendationsUseCase;
-let emailService: EmailServiceImpl;
-let pushNotificationService: PushNotificationServiceImpl;
-let twoFactorAuthService: TwoFactorAuthService;
-let twoFactorAuthController: TwoFactorAuthController;
-let invoiceRepository: TypeOrmInvoiceRepository;
+let manageMaterialPropertiesUseCase: ManageMaterialPropertiesUseCase;
 let syncInvoiceWithSriUseCase: SyncInvoiceWithSriUseCase;
 let sendInvoiceByEmailUseCase: SendInvoiceByEmailUseCase;
 let updateInvoicePaymentUseCase: UpdateInvoicePaymentUseCase;
-let invoiceController: InvoiceController;
-let userController: UserController;
 
-// Additional repositories and services for complete initialization
-let categoryRepository: TypeOrmCategoryRepository;
-let materialPropertyRepository: TypeOrmMaterialPropertyRepository;
+// ============= VARIABLES GLOBALES DE CONTROLADORES =============
+let authController: AuthController;
+let calculationController: CalculationController;
+let calculationTemplateController: CalculationTemplateController;
+let budgetController: BudgetController;
+let projectScheduleController: ProjectScheduleController;
+let taskController: TaskController;
+let phaseController: PhaseController;
+let notificationController: NotificationController;
+let progressReportController: ProgressReportController;
+let materialRequestController: MaterialRequestController;
+let materialController: MaterialController;
+let templateImportExportController: TemplateImportExportController;
 let supplierIntegrationController: SupplierIntegrationController;
 let materialPropertyController: MaterialPropertyController;
+let projectDashboardController: ProjectDashboardController;
+let projectMetricsController: ProjectMetricsController;
+let accountingController: AccountingController;
+let enhancedProjectDashboardController: EnhancedProjectDashboardController;
+let projectPredictionController: ProjectPredictionController;
+let orderController: OrderController;
+let twoFactorAuthController: TwoFactorAuthController;
+let invoiceController: InvoiceController;
+let userController: UserController;
+let templateFavoriteController: TemplateFavoriteController;
+let templateRatingController: TemplateRatingController;
+let templateSuggestionController: TemplateSuggestionController;
+let calculationComparisonController: CalculationComparisonController;
+let trendingController: TrendingController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
 
 	try {
-		// Initialize repositories first
+		// ============= INICIALIZAR REPOSITORIOS =============
 		userRepository = new TypeOrmUserRepository();
 		calculationTemplateRepository = new TypeOrmCalculationTemplateRepository();
 		calculationParameterRepository =
@@ -204,8 +259,14 @@ export function initializeServices() {
 		invoiceRepository = new TypeOrmInvoiceRepository();
 		categoryRepository = new TypeOrmCategoryRepository();
 		materialPropertyRepository = new TypeOrmMaterialPropertyRepository();
+		userFavoriteRepository = new TypeOrmUserFavoriteRepository();
+		templateRatingRepository = new TypeOrmTemplateRatingRepository();
+		templateSuggestionRepository = new TypeOrmTemplateSuggestionRepository();
+		calculationComparisonRepository =
+			new TypeOrmCalculationComparisonRepository();
+		trendingCalculationRepository = new TypeOrmTrendingCalculationRepository();
 
-		// Initialize services - Order matters due to dependencies
+		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
 		calculationService = new CalculationService();
 		templateValidationService = new TemplateValidationService();
@@ -217,7 +278,7 @@ export function initializeServices() {
 		twoFactorAuthService = new TwoFactorAuthService();
 		userService = new UserService(userRepository);
 
-		// Initialize email services first (needed for notification service)
+		// Servicios de infraestructura
 		emailService = new EmailServiceImpl(
 			process.env.EMAIL_API_KEY || "mock-key",
 			process.env.EMAIL_FROM_ADDRESS || "noreply@constru-app.com"
@@ -228,7 +289,6 @@ export function initializeServices() {
 			process.env.PUSH_APP_ID || "constru-app"
 		);
 
-		// Initialize notification service (depends on email and push services)
 		notificationService = new NotificationServiceImpl(
 			notificationRepository,
 			userRepository,
@@ -237,7 +297,7 @@ export function initializeServices() {
 			pushNotificationService
 		);
 
-		// Initialize use cases
+		// ============= INICIALIZAR CASOS DE USO PRINCIPALES =============
 		executeCalculationUseCase = new ExecuteCalculationUseCase(
 			calculationTemplateRepository,
 			calculationResultRepository,
@@ -261,69 +321,6 @@ export function initializeServices() {
 			calculationResultRepository
 		);
 
-		generateBudgetFromCalculationUseCase =
-			new GenerateBudgetFromCalculationUseCase(
-				calculationResultRepository,
-				materialRepository,
-				projectBudgetRepository,
-				budgetItemRepository
-			);
-
-		generateProjectScheduleUseCase = new GenerateProjectScheduleUseCase(
-			projectRepository,
-			phaseRepository,
-			taskRepository,
-			projectBudgetRepository
-		);
-
-		getProjectBudgetsUseCase = new GetProjectBudgetsUseCase(
-			projectBudgetRepository
-		);
-
-		createBudgetVersionUseCase = new CreateBudgetVersionUseCase(
-			projectBudgetRepository,
-			budgetItemRepository
-		);
-
-		updateTaskProgressUseCase = new UpdateTaskProgressUseCase(
-			taskRepository,
-			phaseRepository,
-			projectRepository
-		);
-
-		assignTaskUseCase = new AssignTaskUseCase(taskRepository, userRepository);
-
-		compareBudgetVersionsUseCase = new CompareBudgetVersionsUseCase(
-			projectBudgetRepository,
-			budgetItemRepository
-		);
-
-		addLaborAndIndirectCostsUseCase = new AddLaborAndIndirectCostsUseCase(
-			projectBudgetRepository,
-			budgetItemRepository
-		);
-
-		generateProgressReportUseCase = new GenerateProgressReportUseCase(
-			projectRepository,
-			phaseRepository,
-			taskRepository,
-			notificationService
-		);
-
-		createMaterialRequestUseCase = new CreateMaterialRequestUseCase(
-			taskRepository,
-			materialRepository,
-			materialRequestRepository,
-			notificationService
-		);
-
-		approveMaterialRequestUseCase = new ApproveMaterialRequestUseCase(
-			materialRequestRepository,
-			materialRepository,
-			userRepository,
-			notificationService
-		);
-
 		exportCalculationTemplateUseCase = new ExportCalculationTemplateUseCase(
 			calculationTemplateRepository,
 			calculationParameterRepository,
@@ -336,13 +333,109 @@ export function initializeServices() {
 			templateValidationService
 		);
 
-		getProjectDashboardDataUseCase = new GetProjectDashboardDataUseCase(
+		generateBudgetFromCalculationUseCase =
+			new GenerateBudgetFromCalculationUseCase(
+				calculationResultRepository,
+				materialRepository,
+				projectBudgetRepository,
+				budgetItemRepository
+			);
+
+		favoriteTemplateUseCase = new FavoriteTemplateUseCase(
+			userFavoriteRepository,
+			calculationTemplateRepository
+		);
+
+		rateTemplateUseCase = new RateTemplateUseCase(
+			templateRatingRepository,
+			calculationTemplateRepository
+		);
+
+		createSuggestionUseCase = new CreateSuggestionUseCase(
+			templateSuggestionRepository,
+			calculationTemplateRepository
+		);
+
+		getSuggestionsUseCase = new GetSuggestionsUseCase(
+			templateSuggestionRepository
+		);
+
+		updateSuggestionStatusUseCase = new UpdateSuggestionStatusUseCase(
+			templateSuggestionRepository
+		);
+
+		compareCalculationsUseCase = new CompareCalculationsUseCase(
+			calculationResultRepository,
+			calculationComparisonRepository
+		);
+
+		getTrendingTemplatesUseCase = new GetTrendingTemplatesUseCase(
+			trendingCalculationRepository,
+			calculationTemplateRepository
+		);
+
+		getUserFavoritesUseCase = new GetUserFavoritesUseCase(
+			userFavoriteRepository,
+			calculationTemplateRepository
+		);
+
+		getSavedComparisonsUseCase = new GetSavedComparisonsUseCase(
+			calculationComparisonRepository
+		);
+
+		// ============= INICIALIZAR OTROS CASOS DE USO =============
+		generateProjectScheduleUseCase = new GenerateProjectScheduleUseCase(
 			projectRepository,
 			phaseRepository,
 			taskRepository,
 			projectBudgetRepository
 		);
 
+		getProjectBudgetsUseCase = new GetProjectBudgetsUseCase(
+			projectBudgetRepository
+		);
+		createBudgetVersionUseCase = new CreateBudgetVersionUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+		updateTaskProgressUseCase = new UpdateTaskProgressUseCase(
+			taskRepository,
+			phaseRepository,
+			projectRepository
+		);
+		assignTaskUseCase = new AssignTaskUseCase(taskRepository, userRepository);
+		compareBudgetVersionsUseCase = new CompareBudgetVersionsUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+		addLaborAndIndirectCostsUseCase = new AddLaborAndIndirectCostsUseCase(
+			projectBudgetRepository,
+			budgetItemRepository
+		);
+		generateProgressReportUseCase = new GenerateProgressReportUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			notificationService
+		);
+		createMaterialRequestUseCase = new CreateMaterialRequestUseCase(
+			taskRepository,
+			materialRepository,
+			materialRequestRepository,
+			notificationService
+		);
+		approveMaterialRequestUseCase = new ApproveMaterialRequestUseCase(
+			materialRequestRepository,
+			materialRepository,
+			userRepository,
+			notificationService
+		);
+		getProjectDashboardDataUseCase = new GetProjectDashboardDataUseCase(
+			projectRepository,
+			phaseRepository,
+			taskRepository,
+			projectBudgetRepository
+		);
 		getProjectMetricsUseCase = new GetProjectMetricsUseCase(
 			projectRepository,
 			phaseRepository,
@@ -350,14 +443,12 @@ export function initializeServices() {
 			projectBudgetRepository,
 			projectMetricsService
 		);
-
 		syncBudgetWithAccountingUseCase = new SyncBudgetWithAccountingUseCase(
 			projectBudgetRepository,
 			accountingTransactionRepository,
 			userRepository,
 			notificationService
 		);
-
 		enhancedProjectDashboardUseCase = new EnhancedProjectDashboardUseCase(
 			projectRepository,
 			phaseRepository,
@@ -365,7 +456,6 @@ export function initializeServices() {
 			projectBudgetRepository,
 			projectMetricsService
 		);
-
 		predictProjectDelaysUseCase = new PredictProjectDelaysUseCase(
 			projectRepository,
 			phaseRepository,
@@ -373,12 +463,10 @@ export function initializeServices() {
 			projectMetricsService,
 			notificationService
 		);
-
 		compareMaterialPricesUseCase = new CompareMaterialPricesUseCase(
 			materialRepository,
 			userRepository
 		);
-
 		createOrderFromMaterialRequestsUseCase =
 			new CreateOrderFromMaterialRequestsUseCase(
 				orderRepository,
@@ -388,7 +476,6 @@ export function initializeServices() {
 				projectRepository,
 				notificationService
 			);
-
 		advancedRecommendationsUseCase = new GetAdvancedRecommendationsUseCase(
 			userRepository,
 			calculationTemplateRepository,
@@ -396,13 +483,15 @@ export function initializeServices() {
 			userPatternAnalysisService,
 			advancedRecommendationService
 		);
-
+		manageMaterialPropertiesUseCase = new ManageMaterialPropertiesUseCase(
+			materialRepository,
+			materialPropertyRepository
+		);
 		syncInvoiceWithSriUseCase = new SyncInvoiceWithSriUseCase(
 			invoiceRepository,
 			userRepository,
 			notificationService
 		);
-
 		sendInvoiceByEmailUseCase = new SendInvoiceByEmailUseCase(
 			invoiceRepository,
 			userRepository,
@@ -410,7 +499,6 @@ export function initializeServices() {
 			pdfGenerationService,
 			notificationService
 		);
-
 		updateInvoicePaymentUseCase = new UpdateInvoicePaymentUseCase(
 			invoiceRepository,
 			userRepository,
@@ -418,19 +506,39 @@ export function initializeServices() {
 			notificationService
 		);
 
-		// Initialize controllers
+		// ============= INICIALIZAR CONTROLADORES PRINCIPALES =============
 		authController = new AuthController(authService, userRepository);
-		calculationTemplateController = new CalculationTemplateController(
-			createCalculationTemplateUseCase,
-			calculationService,
-			calculationTemplateRepository
-		);
 		calculationController = new CalculationController(
 			executeCalculationUseCase,
 			getTemplateRecommendationsUseCase,
 			saveCalculationResultUseCase
 		);
+		calculationTemplateController = new CalculationTemplateController(
+			createCalculationTemplateUseCase,
+			calculationService,
+			calculationTemplateRepository
+		);
 
+		templateFavoriteController = new TemplateFavoriteController(
+			favoriteTemplateUseCase,
+			getUserFavoritesUseCase
+		);
+		templateRatingController = new TemplateRatingController(
+			rateTemplateUseCase
+		);
+		templateSuggestionController = new TemplateSuggestionController(
+			createSuggestionUseCase,
+			getSuggestionsUseCase,
+			updateSuggestionStatusUseCase
+		);
+		calculationComparisonController = new CalculationComparisonController(
+			compareCalculationsUseCase,
+			getSavedComparisonsUseCase,
+			calculationComparisonRepository
+		);
+		trendingController = new TrendingController(getTrendingTemplatesUseCase);
+
+		// ============= INICIALIZAR OTROS CONTROLADORES =============
 		budgetController = new BudgetController(
 			generateBudgetFromCalculationUseCase,
 			getProjectBudgetsUseCase,
@@ -440,74 +548,58 @@ export function initializeServices() {
 			addLaborAndIndirectCostsUseCase,
 			pdfGenerationService
 		);
-
 		projectScheduleController = new ProjectScheduleController(
 			generateProjectScheduleUseCase
 		);
-
 		taskController = new TaskController(
 			updateTaskProgressUseCase,
 			assignTaskUseCase,
 			taskRepository
 		);
-
 		phaseController = new PhaseController(phaseRepository, taskRepository);
-
 		notificationController = new NotificationController(notificationService);
-
 		progressReportController = new ProgressReportController(
 			generateProgressReportUseCase
 		);
-
 		materialRequestController = new MaterialRequestController(
 			createMaterialRequestUseCase,
 			approveMaterialRequestUseCase,
 			materialRequestRepository
 		);
-
 		templateImportExportController = new TemplateImportExportController(
 			exportCalculationTemplateUseCase,
 			importCalculationTemplateUseCase
 		);
-
 		materialController = new MaterialController(
 			materialRepository,
 			compareMaterialPricesUseCase
 		);
-
 		projectDashboardController = new ProjectDashboardController(
 			getProjectDashboardDataUseCase
 		);
-
 		projectMetricsController = new ProjectMetricsController(
 			getProjectMetricsUseCase
 		);
-
 		accountingController = new AccountingController(
 			syncBudgetWithAccountingUseCase,
 			accountingTransactionRepository
 		);
-
 		enhancedProjectDashboardController = new EnhancedProjectDashboardController(
 			enhancedProjectDashboardUseCase
 		);
-
 		projectPredictionController = new ProjectPredictionController(
 			predictProjectDelaysUseCase
 		);
-
 		orderController = new OrderController(
 			createOrderFromMaterialRequestsUseCase,
 			orderRepository,
 			orderItemRepository
 		);
-
 		twoFactorAuthController = new TwoFactorAuthController(
 			twoFactorAuthService,
 			userRepository,
 			authService
 		);
-
 		invoiceController = new InvoiceController(
 			invoiceRepository,
 			syncInvoiceWithSriUseCase,
@@ -515,23 +607,14 @@ export function initializeServices() {
 			updateInvoicePaymentUseCase,
 			pdfGenerationService
 		);
-
 		userController = new UserController(
 			userService,
 			userPatternAnalysisService,
 			userInteractionRepository
 		);
-
-		// Initialize specialty controllers
-		const manageMaterialPropertiesUseCase = new ManageMaterialPropertiesUseCase(
-			materialRepository,
-			materialPropertyRepository
-		);
-
 		materialPropertyController = new MaterialPropertyController(
 			manageMaterialPropertiesUseCase
 		);
-
 		supplierIntegrationController = new SupplierIntegrationController(
 			materialRepository,
 			categoryRepository,
@@ -545,300 +628,310 @@ export function initializeServices() {
 	}
 }
 
-// Factory methods to get services
+// ============= GETTERS PARA CONTROLADORES PRINCIPALES =============
 export function getAuthController() {
-	if (!authController) {
+	if (!authController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return authController;
 }
 
 export function getCalculationController() {
-	if (!calculationController) {
+	if (!calculationController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return calculationController;
 }
 
 export function getCalculationTemplateController() {
-	if (!calculationTemplateController) {
+	if (!calculationTemplateController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return calculationTemplateController;
 }
 
-export function getBudgetController() {
-	if (!budgetController) {
+export function getTemplateFavoriteController() {
+	if (!templateFavoriteController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
+	return templateFavoriteController;
+}
+
+export function getTemplateRatingController() {
+	if (!templateRatingController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return templateRatingController;
+}
+
+export function getTemplateSuggestionController() {
+	if (!templateSuggestionController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return templateSuggestionController;
+}
+
+export function getCalculationComparisonController() {
+	if (!calculationComparisonController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return calculationComparisonController;
+}
+
+export function getTrendingController() {
+	if (!trendingController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return trendingController;
+}
+
+// ============= GETTERS PARA OTROS CONTROLADORES =============
+export function getBudgetController() {
+	if (!budgetController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
 	return budgetController;
 }
 
 export function getProjectScheduleController() {
-	if (!projectScheduleController) {
+	if (!projectScheduleController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return projectScheduleController;
 }
 
 export function getTaskController() {
-	if (!taskController) {
+	if (!taskController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return taskController;
 }
 
 export function getPhaseController() {
-	if (!phaseController) {
+	if (!phaseController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return phaseController;
 }
 
 export function getNotificationController() {
-	if (!notificationController) {
+	if (!notificationController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return notificationController;
 }
 
 export function getProgressReportController() {
-	if (!progressReportController) {
+	if (!progressReportController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return progressReportController;
 }
 
 export function getMaterialRequestController() {
-	if (!materialRequestController) {
+	if (!materialRequestController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return materialRequestController;
 }
 
 export function getMaterialController() {
-	if (!materialController) {
+	if (!materialController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return materialController;
 }
 
 export function getTemplateImportExportController() {
-	if (!templateImportExportController) {
+	if (!templateImportExportController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return templateImportExportController;
 }
 
-export function getSupplierIntegrationController(): SupplierIntegrationController {
-	if (!supplierIntegrationController) {
+export function getSupplierIntegrationController() {
+	if (!supplierIntegrationController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return supplierIntegrationController;
 }
 
-export function getMaterialPropertyController(): MaterialPropertyController {
-	if (!materialPropertyController) {
+export function getMaterialPropertyController() {
+	if (!materialPropertyController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return materialPropertyController;
 }
 
-export function getNotificationService() {
-	if (!notificationService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return notificationService;
-}
-
 export function getProjectDashboardController() {
-	if (!projectDashboardController) {
+	if (!projectDashboardController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return projectDashboardController;
 }
 
 export function getProjectMetricsController() {
-	if (!projectMetricsController) {
+	if (!projectMetricsController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return projectMetricsController;
 }
 
-export function getPdfGenerationService() {
-	if (!pdfGenerationService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return pdfGenerationService;
-}
-
-export function getAccountingTransactionRepository() {
-	if (!accountingTransactionRepository) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return accountingTransactionRepository;
-}
-
 export function getAccountingController() {
-	if (!accountingController) {
+	if (!accountingController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return accountingController;
 }
 
 export function getEnhancedProjectDashboardController() {
-	if (!enhancedProjectDashboardController) {
+	if (!enhancedProjectDashboardController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return enhancedProjectDashboardController;
 }
 
 export function getProjectPredictionController() {
-	if (!projectPredictionController) {
+	if (!projectPredictionController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return projectPredictionController;
 }
 
 export function getOrderController() {
-	if (!orderController) {
+	if (!orderController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return orderController;
 }
 
-export function getUserPatternAnalysisService() {
-	if (!userPatternAnalysisService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return userPatternAnalysisService;
-}
-
-export function getAdvancedRecommendationService() {
-	if (!advancedRecommendationService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return advancedRecommendationService;
-}
-
-export function getUserInteractionRepository() {
-	if (!userInteractionRepository) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return userInteractionRepository;
-}
-
-export function getAdvancedRecommendationsUseCase() {
-	if (!advancedRecommendationsUseCase) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return advancedRecommendationsUseCase;
-}
-
-export function getEmailService() {
-	if (!emailService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return emailService;
-}
-
-export function getPushNotificationService() {
-	if (!pushNotificationService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return pushNotificationService;
-}
-
 export function getTwoFactorAuthController() {
-	if (!twoFactorAuthController) {
+	if (!twoFactorAuthController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return twoFactorAuthController;
 }
 
-export function getTwoFactorAuthService() {
-	if (!twoFactorAuthService) {
-		throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		);
-	}
-	return twoFactorAuthService;
-}
-
 export function getInvoiceController() {
-	if (!invoiceController) {
+	if (!invoiceController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return invoiceController;
 }
 
 export function getUserController() {
-	if (!userController) {
+	if (!userController)
 		throw new Error(
 			"Services not initialized. Call initializeServices() first."
 		);
-	}
 	return userController;
+}
+
+// ============= GETTERS PARA SERVICIOS =============
+export function getNotificationService() {
+	if (!notificationService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return notificationService;
+}
+
+export function getPdfGenerationService() {
+	if (!pdfGenerationService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return pdfGenerationService;
+}
+
+export function getUserPatternAnalysisService() {
+	if (!userPatternAnalysisService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return userPatternAnalysisService;
+}
+
+export function getAdvancedRecommendationService() {
+	if (!advancedRecommendationService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return advancedRecommendationService;
+}
+
+export function getEmailService() {
+	if (!emailService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return emailService;
+}
+
+export function getPushNotificationService() {
+	if (!pushNotificationService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return pushNotificationService;
+}
+
+export function getTwoFactorAuthService() {
+	if (!twoFactorAuthService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return twoFactorAuthService;
+}
+
+// ============= GETTERS PARA REPOSITORIOS =============
+export function getAccountingTransactionRepository() {
+	if (!accountingTransactionRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return accountingTransactionRepository;
+}
+
+export function getUserInteractionRepository() {
+	if (!userInteractionRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return userInteractionRepository;
+}
+
+export function getAdvancedRecommendationsUseCase() {
+	if (!advancedRecommendationsUseCase)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return advancedRecommendationsUseCase;
 }

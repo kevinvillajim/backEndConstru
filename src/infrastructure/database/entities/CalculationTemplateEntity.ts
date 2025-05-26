@@ -7,6 +7,7 @@ import {
 	OneToMany,
 	ManyToOne,
 	JoinColumn,
+	Index,
 } from "typeorm";
 import {CalculationParameterEntity} from "./CalculationParameterEntity";
 import {UserEntity} from "./UserEntity";
@@ -50,6 +51,17 @@ export enum TemplateSource {
 }
 
 @Entity("calculation_templates")
+@Index("IDX_calculation_templates_type_verified_active", [
+	"type",
+	"isVerified",
+	"isActive",
+])
+@Index("IDX_calculation_templates_usage_rating", [
+	"usageCount",
+	"averageRating",
+])
+@Index("IDX_calculation_templates_difficulty", ["difficulty"])
+@Index("IDX_calculation_templates_target_profession", ["targetProfession"])
 export class CalculationTemplateEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
@@ -148,6 +160,15 @@ export class CalculationTemplateEntity {
 		default: "private",
 	})
 	shareLevel: string; // Nivel de compartición
+
+	@Column({nullable: true, default: "intermediate"})
+	difficulty: string; // 'basic' | 'intermediate' | 'advanced'
+
+	@Column({name: "estimated_time", nullable: true, default: 5})
+	estimatedTime: number; // en minutos
+
+	@Column({name: "compliance_level", nullable: true, default: "basic"})
+	complianceLevel: string; // 'basic' | 'partial' | 'full'
 
 	@OneToMany(
 		() => CalculationParameterEntity,

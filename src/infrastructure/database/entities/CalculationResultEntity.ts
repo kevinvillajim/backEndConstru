@@ -6,12 +6,17 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	Index,
 } from "typeorm";
 import {ProjectEntity} from "./ProjectEntity";
 import {UserEntity} from "./UserEntity";
 import {CalculationTemplateEntity} from "./CalculationTemplateEntity";
 
 @Entity("calculation_results")
+@Index("IDX_calculation_results_user_created", ["userId", "createdAt"])
+@Index("IDX_calculation_results_saved", ["isSaved"])
+@Index("IDX_calculation_results_template", ["calculationTemplateId"])
+
 export class CalculationResultEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;

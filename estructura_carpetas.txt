@@ -136,7 +136,21 @@ C:.
 |           \---validators
 |                   authValidator.js
 |                   calculationValidator.js
-|                   templateValidator.js                   
+|                   templateValidator.js
+|                   
++---frontGuide
+|       component-AppRoutes.txt
+|       component-notification-front.txt
+|       component-project-dashboard.txt
+|       component-ProjectDashboardPage.txt
+|       component-ProjectDelayPrediction.txt
+|       component-ProjectNavigation.txt
+|       component-ProjectPredictionPage.txt
+|       component-server.txt
+|       component-template-import-export.txt
+|       component-WebSocketService.txt
+|       websocket-client.txt
+|                       
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
