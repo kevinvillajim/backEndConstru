@@ -1,12 +1,20 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class InitialSchema1747236684210 implements MigrationInterface {
-    name = 'InitialSchema1747236684210'
+export class InitialSchema1748298338069 implements MigrationInterface {
+    name = 'InitialSchema1748298338069'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE \`users\` ADD \`two_factor_enabled\` tinyint NOT NULL DEFAULT 0`);
-        await queryRunner.query(`ALTER TABLE \`users\` ADD \`two_factor_secret\` varchar(255) NULL`);
-        await queryRunner.query(`ALTER TABLE \`users\` ADD \`recovery_codes\` text NULL`);
+        await queryRunner.query(`CREATE TABLE \`user_addresses\` (\`id\` varchar(36) NOT NULL, \`user_id\` varchar(255) NOT NULL, \`street\` varchar(255) NOT NULL, \`number\` varchar(255) NOT NULL, \`city\` varchar(255) NOT NULL, \`province\` varchar(255) NOT NULL, \`postalCode\` varchar(255) NOT NULL, \`country\` varchar(255) NOT NULL, \`reference\` varchar(255) NULL, \`is_main\` tinyint NOT NULL DEFAULT 0, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`user_favorites\` (\`user_id\` varchar(255) NOT NULL, \`template_id\` varchar(255) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), INDEX \`IDX_user_favorites_template\` (\`template_id\`), INDEX \`IDX_user_favorites_user\` (\`user_id\`), PRIMARY KEY (\`user_id\`, \`template_id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`trending_calculations\` (\`id\` varchar(36) NOT NULL, \`template_id\` varchar(255) NOT NULL, \`period\` enum ('daily', 'weekly', 'monthly') NOT NULL DEFAULT 'weekly', \`usage_count\` int NOT NULL DEFAULT '0', \`trend_score\` decimal(10,4) NOT NULL DEFAULT '0.0000', \`rank_position\` int NULL, \`period_start\` datetime NOT NULL, \`period_end\` datetime NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), INDEX \`IDX_trending_calculations_template\` (\`template_id\`), INDEX \`IDX_trending_calculations_period_rank\` (\`period\`, \`rank_position\`), INDEX \`IDX_trending_calculations_period\` (\`period\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`template_suggestions\` (\`id\` varchar(36) NOT NULL, \`template_id\` varchar(255) NOT NULL, \`user_id\` varchar(255) NOT NULL, \`suggestion_type\` enum ('improvement', 'correction', 'addition', 'other') NOT NULL DEFAULT 'improvement', \`title\` varchar(255) NOT NULL, \`description\` text NOT NULL, \`current_value\` text NULL, \`proposed_value\` text NULL, \`justification\` text NULL, \`priority\` enum ('low', 'medium', 'high') NOT NULL DEFAULT 'medium', \`affects_accuracy\` tinyint NOT NULL DEFAULT 0, \`affects_compliance\` tinyint NOT NULL DEFAULT 0, \`references\` json NULL, \`contact_for_followup\` tinyint NOT NULL DEFAULT 0, \`status\` enum ('pending', 'approved', 'rejected', 'implemented') NOT NULL DEFAULT 'pending', \`reviewed_by\` varchar(255) NULL, \`reviewed_at\` datetime NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), INDEX \`IDX_template_suggestions_status\` (\`status\`), INDEX \`IDX_template_suggestions_user\` (\`user_id\`), INDEX \`IDX_template_suggestions_template\` (\`template_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`template_ratings\` (\`id\` varchar(36) NOT NULL, \`template_id\` varchar(255) NOT NULL, \`user_id\` varchar(255) NOT NULL, \`rating\` int NOT NULL, \`comment\` text NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), INDEX \`IDX_template_ratings_user\` (\`user_id\`), INDEX \`IDX_template_ratings_template\` (\`template_id\`), UNIQUE INDEX \`UQ_template_ratings_user_template\` (\`template_id\`, \`user_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`calculation_comparisons\` (\`id\` varchar(36) NOT NULL, \`user_id\` varchar(255) NOT NULL, \`name\` varchar(255) NOT NULL, \`description\` text NULL, \`calculation_ids\` json NOT NULL, \`comparison_data\` json NULL, \`is_saved\` tinyint NOT NULL DEFAULT 0, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), INDEX \`IDX_calculation_comparisons_saved\` (\`is_saved\`), INDEX \`IDX_calculation_comparisons_user\` (\`user_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`addresses\``);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`location\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD \`difficulty\` varchar(255) NULL DEFAULT 'intermediate'`);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD \`estimated_time\` int NULL DEFAULT '5'`);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD \`compliance_level\` varchar(255) NULL DEFAULT 'basic'`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP FOREIGN KEY \`FK_4f0f50d9922a0ed51c214f5556b\``);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`phone\` \`phone\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`mobile_phone\` \`mobile_phone\` varchar(255) NULL`);
@@ -23,8 +31,6 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`subscription_expires_at\` \`subscription_expires_at\` datetime NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`company\``);
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`company\` json NULL COMMENT 'Información de la empresa del usuario'`);
-        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`addresses\``);
-        await queryRunner.query(`ALTER TABLE \`users\` ADD \`addresses\` json NULL COMMENT 'Direcciones del usuario'`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`preferences\``);
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`preferences\` json NULL COMMENT 'Preferencias del usuario'`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`stats\``);
@@ -38,6 +44,8 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`password_reset_token\` \`password_reset_token\` varchar(255) NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`password_reset_expires\` \`password_reset_expires\` datetime NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`admin_id\` \`admin_id\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`two_factor_secret\` \`two_factor_secret\` varchar(255) NULL`);
+        await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`recovery_codes\` \`recovery_codes\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`deleted_at\` \`deleted_at\` datetime(6) NULL`);
         await queryRunner.query(`ALTER TABLE \`calculation_parameters\` CHANGE \`default_value\` \`default_value\` text NULL`);
         await queryRunner.query(`ALTER TABLE \`calculation_parameters\` CHANGE \`min_value\` \`min_value\` float NULL`);
@@ -248,6 +256,15 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` DROP COLUMN \`metadata\``);
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` ADD \`metadata\` json NULL`);
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`error_message\` \`error_message\` text NULL`);
+        await queryRunner.query(`CREATE INDEX \`IDX_users_subscription_plan\` ON \`users\` (\`subscription_plan\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_templates_target_profession\` ON \`calculation_templates\` (\`targetProfession\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_templates_difficulty\` ON \`calculation_templates\` (\`difficulty\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_templates_usage_rating\` ON \`calculation_templates\` (\`usage_count\`, \`average_rating\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_templates_type_verified_active\` ON \`calculation_templates\` (\`type\`, \`is_verified\`, \`is_active\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_results_template\` ON \`calculation_results\` (\`calculation_template_id\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_results_saved\` ON \`calculation_results\` (\`is_saved\`)`);
+        await queryRunner.query(`CREATE INDEX \`IDX_calculation_results_user_created\` ON \`calculation_results\` (\`user_id\`, \`created_at\`)`);
+        await queryRunner.query(`ALTER TABLE \`user_addresses\` ADD CONSTRAINT \`FK_7a5100ce0548ef27a6f1533a5ce\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`users\` ADD CONSTRAINT \`FK_4f0f50d9922a0ed51c214f5556b\` FOREIGN KEY (\`admin_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD CONSTRAINT \`FK_8dafddecd6032a3c7f93152c546\` FOREIGN KEY (\`parent_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` ADD CONSTRAINT \`FK_c00f2503acc369fff5d14531c3d\` FOREIGN KEY (\`created_by\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -266,6 +283,14 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_14047a1c98dc98ce5b95d897110\` FOREIGN KEY (\`material_id\`) REFERENCES \`materials\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_7a2b54d9d51d59f9a5ac3903145\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` ADD CONSTRAINT \`FK_e54cbc691fe8044c9f63eec86bb\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_favorites\` ADD CONSTRAINT \`FK_5238ce0a21cc77dc16c8efe3d36\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`user_favorites\` ADD CONSTRAINT \`FK_b30a528c31efe7508656585c1ce\` FOREIGN KEY (\`template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`trending_calculations\` ADD CONSTRAINT \`FK_ca2c34e583ae2a7e757d9ac084f\` FOREIGN KEY (\`template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` ADD CONSTRAINT \`FK_ec2c251a7e37cc626cf2b5ffe38\` FOREIGN KEY (\`template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` ADD CONSTRAINT \`FK_b6fafbd480309e2a5678f746743\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` ADD CONSTRAINT \`FK_dbe2c5d0c3b4f2b1668a1c0a6fb\` FOREIGN KEY (\`reviewed_by\`) REFERENCES \`users\`(\`id\`) ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`template_ratings\` ADD CONSTRAINT \`FK_f5e5f67a4e62826f090d4515f06\` FOREIGN KEY (\`template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`template_ratings\` ADD CONSTRAINT \`FK_bc61037fbc88cdc34bed7cd7280\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`order_items\` ADD CONSTRAINT \`FK_a21e9d18e98c6f9f489a75027d4\` FOREIGN KEY (\`material_request_id\`) REFERENCES \`material_requests\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` ADD CONSTRAINT \`FK_a968dc1f591174a862e947a099a\` FOREIGN KEY (\`supplier_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`invoices\` ADD CONSTRAINT \`FK_9ba18dbe4ea525518c4b32df4b6\` FOREIGN KEY (\`project_id\`) REFERENCES \`projects\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -278,9 +303,11 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_feedback\` ADD CONSTRAINT \`FK_51b6edc66f271d96867617f04a9\` FOREIGN KEY (\`applied_to_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` ADD CONSTRAINT \`FK_043809e28ff744481f88690fcc4\` FOREIGN KEY (\`improved_template_id\`) REFERENCES \`calculation_templates\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` ADD CONSTRAINT \`FK_16b423eef8496fd15c5a550e726\` FOREIGN KEY (\`reviewed_by\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`calculation_comparisons\` ADD CONSTRAINT \`FK_27b64d2a83fcf6036cb0b6a9834\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE \`calculation_comparisons\` DROP FOREIGN KEY \`FK_27b64d2a83fcf6036cb0b6a9834\``);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` DROP FOREIGN KEY \`FK_16b423eef8496fd15c5a550e726\``);
         await queryRunner.query(`ALTER TABLE \`calculation_improvements\` DROP FOREIGN KEY \`FK_043809e28ff744481f88690fcc4\``);
         await queryRunner.query(`ALTER TABLE \`calculation_feedback\` DROP FOREIGN KEY \`FK_51b6edc66f271d96867617f04a9\``);
@@ -293,6 +320,14 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`invoices\` DROP FOREIGN KEY \`FK_9ba18dbe4ea525518c4b32df4b6\``);
         await queryRunner.query(`ALTER TABLE \`material_price_history\` DROP FOREIGN KEY \`FK_a968dc1f591174a862e947a099a\``);
         await queryRunner.query(`ALTER TABLE \`order_items\` DROP FOREIGN KEY \`FK_a21e9d18e98c6f9f489a75027d4\``);
+        await queryRunner.query(`ALTER TABLE \`template_ratings\` DROP FOREIGN KEY \`FK_bc61037fbc88cdc34bed7cd7280\``);
+        await queryRunner.query(`ALTER TABLE \`template_ratings\` DROP FOREIGN KEY \`FK_f5e5f67a4e62826f090d4515f06\``);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` DROP FOREIGN KEY \`FK_dbe2c5d0c3b4f2b1668a1c0a6fb\``);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` DROP FOREIGN KEY \`FK_b6fafbd480309e2a5678f746743\``);
+        await queryRunner.query(`ALTER TABLE \`template_suggestions\` DROP FOREIGN KEY \`FK_ec2c251a7e37cc626cf2b5ffe38\``);
+        await queryRunner.query(`ALTER TABLE \`trending_calculations\` DROP FOREIGN KEY \`FK_ca2c34e583ae2a7e757d9ac084f\``);
+        await queryRunner.query(`ALTER TABLE \`user_favorites\` DROP FOREIGN KEY \`FK_b30a528c31efe7508656585c1ce\``);
+        await queryRunner.query(`ALTER TABLE \`user_favorites\` DROP FOREIGN KEY \`FK_5238ce0a21cc77dc16c8efe3d36\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_e54cbc691fe8044c9f63eec86bb\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_7a2b54d9d51d59f9a5ac3903145\``);
         await queryRunner.query(`ALTER TABLE \`user_interactions\` DROP FOREIGN KEY \`FK_14047a1c98dc98ce5b95d897110\``);
@@ -311,6 +346,15 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP FOREIGN KEY \`FK_c00f2503acc369fff5d14531c3d\``);
         await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP FOREIGN KEY \`FK_8dafddecd6032a3c7f93152c546\``);
         await queryRunner.query(`ALTER TABLE \`users\` DROP FOREIGN KEY \`FK_4f0f50d9922a0ed51c214f5556b\``);
+        await queryRunner.query(`ALTER TABLE \`user_addresses\` DROP FOREIGN KEY \`FK_7a5100ce0548ef27a6f1533a5ce\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_results_user_created\` ON \`calculation_results\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_results_saved\` ON \`calculation_results\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_results_template\` ON \`calculation_results\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_templates_type_verified_active\` ON \`calculation_templates\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_templates_usage_rating\` ON \`calculation_templates\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_templates_difficulty\` ON \`calculation_templates\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_templates_target_profession\` ON \`calculation_templates\``);
+        await queryRunner.query(`DROP INDEX \`IDX_users_subscription_plan\` ON \`users\``);
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` CHANGE \`error_message\` \`error_message\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` DROP COLUMN \`metadata\``);
         await queryRunner.query(`ALTER TABLE \`accounting_transactions\` ADD \`metadata\` longtext COLLATE "utf8mb4_bin" NULL DEFAULT 'NULL'`);
@@ -521,6 +565,8 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`calculation_parameters\` CHANGE \`min_value\` \`min_value\` float(12) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`calculation_parameters\` CHANGE \`default_value\` \`default_value\` text NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`deleted_at\` \`deleted_at\` datetime(6) NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`recovery_codes\` \`recovery_codes\` text NULL DEFAULT 'NULL'`);
+        await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`two_factor_secret\` \`two_factor_secret\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`admin_id\` \`admin_id\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`password_reset_expires\` \`password_reset_expires\` datetime NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`password_reset_token\` \`password_reset_token\` varchar(255) NULL DEFAULT 'NULL'`);
@@ -534,8 +580,6 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`stats\` longtext COLLATE "utf8mb4_bin" NULL COMMENT 'Estadísticas del usuario' DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`preferences\``);
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`preferences\` longtext COLLATE "utf8mb4_bin" NULL COMMENT 'Preferencias del usuario' DEFAULT 'NULL'`);
-        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`addresses\``);
-        await queryRunner.query(`ALTER TABLE \`users\` ADD \`addresses\` longtext COLLATE "utf8mb4_bin" NULL COMMENT 'Direcciones del usuario' DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`company\``);
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`company\` longtext COLLATE "utf8mb4_bin" NULL COMMENT 'Información de la empresa del usuario' DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`subscription_expires_at\` \`subscription_expires_at\` datetime NULL DEFAULT 'NULL'`);
@@ -552,9 +596,30 @@ export class InitialSchema1747236684210 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`mobile_phone\` \`mobile_phone\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` CHANGE \`phone\` \`phone\` varchar(255) NULL DEFAULT 'NULL'`);
         await queryRunner.query(`ALTER TABLE \`users\` ADD CONSTRAINT \`FK_4f0f50d9922a0ed51c214f5556b\` FOREIGN KEY (\`admin_id\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`recovery_codes\``);
-        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`two_factor_secret\``);
-        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`two_factor_enabled\``);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP COLUMN \`compliance_level\``);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP COLUMN \`estimated_time\``);
+        await queryRunner.query(`ALTER TABLE \`calculation_templates\` DROP COLUMN \`difficulty\``);
+        await queryRunner.query(`ALTER TABLE \`users\` DROP COLUMN \`location\``);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`addresses\` longtext COLLATE "utf8mb4_bin" NULL COMMENT 'Direcciones del usuario' DEFAULT 'NULL'`);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_comparisons_user\` ON \`calculation_comparisons\``);
+        await queryRunner.query(`DROP INDEX \`IDX_calculation_comparisons_saved\` ON \`calculation_comparisons\``);
+        await queryRunner.query(`DROP TABLE \`calculation_comparisons\``);
+        await queryRunner.query(`DROP INDEX \`UQ_template_ratings_user_template\` ON \`template_ratings\``);
+        await queryRunner.query(`DROP INDEX \`IDX_template_ratings_template\` ON \`template_ratings\``);
+        await queryRunner.query(`DROP INDEX \`IDX_template_ratings_user\` ON \`template_ratings\``);
+        await queryRunner.query(`DROP TABLE \`template_ratings\``);
+        await queryRunner.query(`DROP INDEX \`IDX_template_suggestions_template\` ON \`template_suggestions\``);
+        await queryRunner.query(`DROP INDEX \`IDX_template_suggestions_user\` ON \`template_suggestions\``);
+        await queryRunner.query(`DROP INDEX \`IDX_template_suggestions_status\` ON \`template_suggestions\``);
+        await queryRunner.query(`DROP TABLE \`template_suggestions\``);
+        await queryRunner.query(`DROP INDEX \`IDX_trending_calculations_period\` ON \`trending_calculations\``);
+        await queryRunner.query(`DROP INDEX \`IDX_trending_calculations_period_rank\` ON \`trending_calculations\``);
+        await queryRunner.query(`DROP INDEX \`IDX_trending_calculations_template\` ON \`trending_calculations\``);
+        await queryRunner.query(`DROP TABLE \`trending_calculations\``);
+        await queryRunner.query(`DROP INDEX \`IDX_user_favorites_user\` ON \`user_favorites\``);
+        await queryRunner.query(`DROP INDEX \`IDX_user_favorites_template\` ON \`user_favorites\``);
+        await queryRunner.query(`DROP TABLE \`user_favorites\``);
+        await queryRunner.query(`DROP TABLE \`user_addresses\``);
     }
 
 }

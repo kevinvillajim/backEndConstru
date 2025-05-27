@@ -9,6 +9,10 @@ import {
 } from "../../../domain/models/calculation/CalculationTemplate";
 import { handleError } from "../utils/errorHandler";
 import {RequestWithUser} from "../middlewares/authMiddleware";
+import {
+	parseTemplateFilters,
+	validateTemplateFilters,
+} from "../utils/queryUtils";
 
 export class CalculationTemplateController {
 	[x: string]: any;
@@ -105,81 +109,39 @@ export class CalculationTemplateController {
 	 */
 	async getTemplates(req: Request, res: Response): Promise<void> {
 		try {
-			const {
-				types,
-				targetProfessions,
-				isActive,
-				isVerified,
-				isFeatured,
-				shareLevel,
-				createdBy,
-				tags,
-				searchTerm,
-				page = 1,
-				limit = 10,
-				sortBy,
-				sortOrder,
-			} = req.query;
+			const filters = parseTemplateFilters(req.query);
 
-			// Convertir y validar filtros
-			const filters: any = {};
-
-			if (types) {
-				const typeArray = Array.isArray(types) ? types : [types];
-				filters.types = typeArray.filter((type) =>
-					Object.values(CalculationType).includes(type as CalculationType)
-				);
-			}
-
-			if (targetProfessions) {
-				const professionArray = Array.isArray(targetProfessions)
-					? targetProfessions
-					: [targetProfessions];
-				filters.targetProfessions = professionArray.filter((profession) =>
-					Object.values(ProfessionType).includes(profession as ProfessionType)
-				);
-			}
-
-			if (isActive !== undefined) {
-				filters.isActive = isActive === "true";
-			}
-
-			if (isVerified !== undefined) {
-				filters.isVerified = isVerified === "true";
-			}
-
-			if (isFeatured !== undefined) {
-				filters.isFeatured = isFeatured === "true";
-			}
-
-			if (shareLevel) {
-				filters.shareLevel = shareLevel;
-			}
-
-			if (createdBy) {
-				filters.createdBy = createdBy;
-			}
-
-			if (tags) {
-				filters.tags = Array.isArray(tags) ? tags : [tags];
-			}
-
-			if (searchTerm) {
-				filters.searchTerm = searchTerm;
+			// Validar filtros
+			const validationErrors = validateTemplateFilters(filters);
+			if (validationErrors.length > 0) {
+				res.status(400).json({
+					success: false,
+					message: "Parámetros de consulta inválidos",
+					errors: validationErrors,
+				});
+				return;
 			}
 
 			// Convertir y validar paginación
 			const pagination = {
-				page: parseInt(page as string, 10),
-				limit: parseInt(limit as string, 10),
-				sortBy: sortBy as string,
-				sortOrder: ((sortOrder as string) || "ASC").toUpperCase() as
-					| "ASC"
-					| "DESC",
+				page: filters.page || 1,
+				limit: filters.limit || 10,
+				sortBy: filters.sortBy,
+				sortOrder: filters.sortOrder || "ASC",
 			};
 
+			// Crear un objeto de filtros para findAll que excluya los de paginación
+			const repositoryFilters: any = {...filters};
+			delete repositoryFilters.page;
+			delete repositoryFilters.limit;
+			delete repositoryFilters.sortBy;
+			delete repositoryFilters.sortOrder;
+
 			const {templates, total} =
-				await this.calculationTemplateRepository.findAll(filters, pagination);
+				await this.calculationTemplateRepository.findAll(
+					repositoryFilters,
+					pagination
+				);
 
 			res.status(200).json({
 				success: true,

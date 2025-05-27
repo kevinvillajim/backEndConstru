@@ -150,7 +150,7 @@ C:.
 |       component-template-import-export.txt
 |       component-WebSocketService.txt
 |       websocket-client.txt
-|                       
+|
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -200,13 +200,22 @@ C:.
 |   |   |       GetProjectBudgetsUseCase.ts
 |   |   |       
 |   |   +---calculation
+|   |   |       CompareCalculationsUseCase.ts
 |   |   |       CreateCalculationTemplateUseCase.ts
+|   |   |       CreateSuggestionUseCase.ts
 |   |   |       ExecuteCalculationUseCase.ts
 |   |   |       ExportCalculationTemplateUseCase.ts
+|   |   |       FavoriteTemplateUseCase.ts
 |   |   |       GenerateBudgetFromCalculationUseCase.ts
+|   |   |       GetSavedComparisonsUseCase.ts
+|   |   |       GetSuggestionsUseCase.ts
 |   |   |       GetTemplateRecommendationsUseCase.ts
+|   |   |       GetTrendingTemplatesUseCase.ts
+|   |   |       GetUserFavoritesUseCase.ts
 |   |   |       ImportCalculationTemplateUseCase.ts
+|   |   |       RateTemplateUseCase.ts
 |   |   |       SaveCalculationResultUseCase.ts
+|   |   |       UpdateSuggestionStatusUseCase.ts
 |   |   |       
 |   |   +---common
 |   |   +---invoice
@@ -299,6 +308,7 @@ C:.
 |   |   +---repositories
 |   |   |       AccountingTransactionRepository.ts
 |   |   |       BudgetItemRepository.ts
+|   |   |       CalculationComparisonRepository.ts
 |   |   |       CalculationParameterRepository.ts
 |   |   |       CalculationResultRepository.ts
 |   |   |       CalculationTemplateRepository.ts
@@ -316,6 +326,10 @@ C:.
 |   |   |       ProjectRepository.ts
 |   |   |       RefreshTokenRepository.ts
 |   |   |       TaskRepository.ts
+|   |   |       TemplateRatingRepository.ts
+|   |   |       TemplateSuggestionRepository.ts
+|   |   |       TrendingCalculationRepository.ts
+|   |   |       UserFavoriteRepository.ts
 |   |   |       UserInteractionRepository.ts
 |   |   |       UserRecommendationRepository.ts
 |   |   |       UserRepository.ts
@@ -348,6 +362,7 @@ C:.
 |   |   |   +---entities
 |   |   |   |       AccountingTransactionEntity.ts
 |   |   |   |       BudgetItemEntity.ts
+|   |   |   |       CalculationComparisonEntity.ts
 |   |   |   |       CalculationFeedbackEntity.ts
 |   |   |   |       CalculationGuideEntity.ts
 |   |   |   |       CalculationImprovementEntity.ts
@@ -374,18 +389,23 @@ C:.
 |   |   |   |       ProjectTeamMemberEntity.ts
 |   |   |   |       RefreshTokenEntity.ts
 |   |   |   |       TaskEntity.ts
+|   |   |   |       TemplateRatingEntity.ts
+|   |   |   |       TemplateSuggestionEntity.ts
+|   |   |   |       TrendingCalculationEntity.ts
 |   |   |   |       UserAddressEntity.ts
 |   |   |   |       UserEntity.ts
+|   |   |   |       UserFavoriteEntity.ts
 |   |   |   |       UserInteractionEntity.ts
 |   |   |   |       UserRecommendationEntity.ts
 |   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1747236684210-InitialSchema.ts
+|   |   |   |       1748298338069-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
 |   |   |   |       TypeOrmBudgetItemRepository.ts
+|   |   |   |       TypeOrmCalculationComparisonRepository.ts
 |   |   |   |       TypeOrmCalculationParameterRepository.ts
 |   |   |   |       TypeOrmCalculationResultRepository.ts
 |   |   |   |       TypeOrmCalculationTemplateRepository.ts
@@ -403,6 +423,10 @@ C:.
 |   |   |   |       TypeOrmProjectRepository.ts
 |   |   |   |       TypeOrmRefreshTokenRepository.ts
 |   |   |   |       TypeOrmTaskRepository.ts
+|   |   |   |       TypeOrmTemplateRatingRepository.ts
+|   |   |   |       TypeOrmTemplateSuggestionRepository.ts
+|   |   |   |       TypeOrmTrendingCalculationRepository.ts
+|   |   |   |       TypeOrmUserFavoriteRepository.ts
 |   |   |   |       TypeOrmUserInteractionRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       
@@ -462,6 +486,7 @@ C:.
 |   |   |   |       AdvancedRecommendationController.ts
 |   |   |   |       AuthController.ts
 |   |   |   |       BudgetController.ts
+|   |   |   |       CalculationComparisonController.ts
 |   |   |   |       CalculationController.ts
 |   |   |   |       CalculationTemplateController.ts
 |   |   |   |       EnhancedProjectDashboardController.ts
@@ -479,7 +504,11 @@ C:.
 |   |   |   |       ProjectScheduleController.ts
 |   |   |   |       SupplierIntegrationController.ts
 |   |   |   |       TaskController.ts
+|   |   |   |       TemplateFavoriteController.ts
 |   |   |   |       TemplateImportExportController.ts
+|   |   |   |       TemplateRatingController.ts
+|   |   |   |       TemplateSuggestionController.ts
+|   |   |   |       TrendingController.ts
 |   |   |   |       TwoFactorAuthController.ts
 |   |   |   |       UserController.ts
 |   |   |   |       
@@ -548,6 +577,7 @@ C:.
 |   |   |           materialRequestValidator.ts
 |   |   |           materialValidator.ts
 |   |   |           projectScheduleValidator.ts
+|   |   |           suggestionValidator.ts
 |   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts
 |   |   |           
