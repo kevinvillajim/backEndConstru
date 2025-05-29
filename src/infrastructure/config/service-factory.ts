@@ -1,4 +1,4 @@
-// src/infrastructure/config/service-factory.ts - VERSIÓN LIMPIA Y REORGANIZADA
+// src/infrastructure/config/service-factory.ts - VERSIÓN ACTUALIZADA CON USER TEMPLATES
 
 // ============= REPOSITORIOS =============
 import {TypeOrmUserRepository} from "../database/repositories/TypeOrmUserRepository";
@@ -26,6 +26,8 @@ import {TypeOrmTemplateRatingRepository} from "../database/repositories/TypeOrmT
 import {TypeOrmTemplateSuggestionRepository} from "../database/repositories/TypeOrmTemplateSuggestionRepository";
 import {TypeOrmCalculationComparisonRepository} from "../database/repositories/TypeOrmCalculationComparisonRepository";
 import {TypeOrmTrendingCalculationRepository} from "../database/repositories/TypeOrmTrendingCalculationRepository";
+// *** NUEVO: Repositorio para plantillas personales de usuarios ***
+import {TypeOrmUserCalculationTemplateRepository} from "../database/repositories/TypeOrmUserCalculationTemplateRepository";
 
 // ============= SERVICIOS DE DOMINIO =============
 import {AuthService} from "../../domain/services/AuthService";
@@ -60,6 +62,19 @@ import {CompareCalculationsUseCase} from "../../application/calculation/CompareC
 import {GetTrendingTemplatesUseCase} from "../../application/calculation/GetTrendingTemplatesUseCase";
 import {GetUserFavoritesUseCase} from "../../application/calculation/GetUserFavoritesUseCase";
 import {GetSavedComparisonsUseCase} from "../../application/calculation/GetSavedComparisonsUseCase";
+
+// *** NUEVOS: Use Cases para plantillas personales de usuarios ***
+import {CreateUserTemplateUseCase} from "../../application/user-templates/CreateUserTemplateUseCase";
+import {GetUserTemplatesUseCase} from "../../application/user-templates/GetUserTemplatesUseCase";
+import {GetUserTemplateByIdUseCase} from "../../application/user-templates/GetUserTemplateByIdUseCase";
+import {UpdateUserTemplateUseCase} from "../../application/user-templates/UpdateUserTemplateUseCase";
+import {DeleteUserTemplateUseCase} from "../../application/user-templates/DeleteUserTemplateUseCase";
+import {DuplicateOfficialTemplateUseCase} from "../../application/user-templates/DuplicateOfficialTemplateUseCase";
+import {CreateTemplateFromResultUseCase} from "../../application/user-templates/CreateTemplateFromResultUseCase";
+import {ShareUserTemplateUseCase} from "../../application/user-templates/ShareUserTemplateUseCase";
+import {ChangeTemplateStatusUseCase} from "../../application/user-templates/ChangeTemplateStatusUseCase";
+import {GetPublicUserTemplatesUseCase} from "../../application/user-templates/GetPublicUserTemplatesUseCase";
+import {GetUserTemplateStatsUseCase} from "../../application/user-templates/GetUserTemplateStatsUseCase";
 
 // ============= OTROS CASOS DE USO =============
 import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
@@ -117,6 +132,8 @@ import {TemplateRatingController} from "../webserver/controllers/TemplateRatingC
 import {TemplateSuggestionController} from "../webserver/controllers/TemplateSuggestionController";
 import {CalculationComparisonController} from "../webserver/controllers/CalculationComparisonController";
 import {TrendingController} from "../webserver/controllers/TrendingController";
+// *** NUEVO: Controlador para plantillas personales de usuarios ***
+import {UserCalculationTemplateController} from "../webserver/controllers/UserCalculationTemplateController";
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
 let userRepository: TypeOrmUserRepository;
@@ -144,6 +161,8 @@ let templateRatingRepository: TypeOrmTemplateRatingRepository;
 let templateSuggestionRepository: TypeOrmTemplateSuggestionRepository;
 let calculationComparisonRepository: TypeOrmCalculationComparisonRepository;
 let trendingCalculationRepository: TypeOrmTrendingCalculationRepository;
+// *** NUEVO: Variable global para repositorio de plantillas personales ***
+let userCalculationTemplateRepository: TypeOrmUserCalculationTemplateRepository;
 
 // ============= VARIABLES GLOBALES DE SERVICIOS =============
 let authService: AuthService;
@@ -177,6 +196,19 @@ let compareCalculationsUseCase: CompareCalculationsUseCase;
 let getTrendingTemplatesUseCase: GetTrendingTemplatesUseCase;
 let getUserFavoritesUseCase: GetUserFavoritesUseCase;
 let getSavedComparisonsUseCase: GetSavedComparisonsUseCase;
+
+// *** NUEVOS: Variables globales para casos de uso de plantillas personales ***
+let createUserTemplateUseCase: CreateUserTemplateUseCase;
+let getUserTemplatesUseCase: GetUserTemplatesUseCase;
+let getUserTemplateByIdUseCase: GetUserTemplateByIdUseCase;
+let updateUserTemplateUseCase: UpdateUserTemplateUseCase;
+let deleteUserTemplateUseCase: DeleteUserTemplateUseCase;
+let duplicateOfficialTemplateUseCase: DuplicateOfficialTemplateUseCase;
+let createTemplateFromResultUseCase: CreateTemplateFromResultUseCase;
+let shareUserTemplateUseCase: ShareUserTemplateUseCase;
+let changeTemplateStatusUseCase: ChangeTemplateStatusUseCase;
+let getPublicUserTemplatesUseCase: GetPublicUserTemplatesUseCase;
+let getUserTemplateStatsUseCase: GetUserTemplateStatsUseCase;
 
 // ============= OTROS CASOS DE USO =============
 let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
@@ -231,6 +263,8 @@ let templateRatingController: TemplateRatingController;
 let templateSuggestionController: TemplateSuggestionController;
 let calculationComparisonController: CalculationComparisonController;
 let trendingController: TrendingController;
+// *** NUEVO: Variable global para controlador de plantillas personales ***
+let userCalculationTemplateController: UserCalculationTemplateController;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -265,6 +299,9 @@ export function initializeServices() {
 		calculationComparisonRepository =
 			new TypeOrmCalculationComparisonRepository();
 		trendingCalculationRepository = new TypeOrmTrendingCalculationRepository();
+		// *** NUEVO: Inicializar repositorio de plantillas personales ***
+		userCalculationTemplateRepository =
+			new TypeOrmUserCalculationTemplateRepository();
 
 		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
@@ -381,6 +418,54 @@ export function initializeServices() {
 
 		getSavedComparisonsUseCase = new GetSavedComparisonsUseCase(
 			calculationComparisonRepository
+		);
+
+		// *** NUEVOS: Inicializar casos de uso de plantillas personales ***
+		createUserTemplateUseCase = new CreateUserTemplateUseCase(
+			userCalculationTemplateRepository
+		);
+
+		getUserTemplatesUseCase = new GetUserTemplatesUseCase(
+			userCalculationTemplateRepository
+		);
+
+		getUserTemplateByIdUseCase = new GetUserTemplateByIdUseCase(
+			userCalculationTemplateRepository
+		);
+
+		updateUserTemplateUseCase = new UpdateUserTemplateUseCase(
+			userCalculationTemplateRepository
+		);
+
+		deleteUserTemplateUseCase = new DeleteUserTemplateUseCase(
+			userCalculationTemplateRepository
+		);
+
+		duplicateOfficialTemplateUseCase = new DuplicateOfficialTemplateUseCase(
+			userCalculationTemplateRepository,
+			calculationTemplateRepository
+		);
+
+		createTemplateFromResultUseCase = new CreateTemplateFromResultUseCase(
+			userCalculationTemplateRepository,
+			calculationResultRepository
+		);
+
+		shareUserTemplateUseCase = new ShareUserTemplateUseCase(
+			userCalculationTemplateRepository,
+			userRepository
+		);
+
+		changeTemplateStatusUseCase = new ChangeTemplateStatusUseCase(
+			userCalculationTemplateRepository
+		);
+
+		getPublicUserTemplatesUseCase = new GetPublicUserTemplatesUseCase(
+			userCalculationTemplateRepository
+		);
+
+		getUserTemplateStatsUseCase = new GetUserTemplateStatsUseCase(
+			userCalculationTemplateRepository
 		);
 
 		// ============= INICIALIZAR OTROS CASOS DE USO =============
@@ -538,6 +623,21 @@ export function initializeServices() {
 		);
 		trendingController = new TrendingController(getTrendingTemplatesUseCase);
 
+		// *** NUEVO: Inicializar controlador de plantillas personales ***
+		userCalculationTemplateController = new UserCalculationTemplateController(
+			createUserTemplateUseCase,
+			getUserTemplatesUseCase,
+			getUserTemplateByIdUseCase,
+			updateUserTemplateUseCase,
+			deleteUserTemplateUseCase,
+			duplicateOfficialTemplateUseCase,
+			createTemplateFromResultUseCase,
+			shareUserTemplateUseCase,
+			changeTemplateStatusUseCase,
+			getPublicUserTemplatesUseCase,
+			getUserTemplateStatsUseCase
+		);
+
 		// ============= INICIALIZAR OTROS CONTROLADORES =============
 		budgetController = new BudgetController(
 			generateBudgetFromCalculationUseCase,
@@ -691,6 +791,15 @@ export function getTrendingController() {
 			"Services not initialized. Call initializeServices() first."
 		);
 	return trendingController;
+}
+
+// *** NUEVO: Getter para controlador de plantillas personales ***
+export function getUserTemplateController() {
+	if (!userCalculationTemplateController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return userCalculationTemplateController;
 }
 
 // ============= GETTERS PARA OTROS CONTROLADORES =============

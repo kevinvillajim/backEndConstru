@@ -181,8 +181,10 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/enhancedProjectDashboardRoutes").default;
 		const projectPredictionRoutes =
 			require("./infrastructure/webserver/routes/projectPredictionRoutes").default;
-		const userTemplateRoutes = require("./infrastructure/webserver/routes/userTemplateRoutes")
-		
+		// *** NUEVO: Importar rutas de plantillas personales ***
+		const userTemplateRoutes =
+			require("./infrastructure/webserver/routes/userTemplateRoutes").default;
+
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/calculations", calculationRoutes);
@@ -202,6 +204,11 @@ async function bootstrap() {
 		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 		app.use("/api/invoices", invoiceRoutes);
 		app.use("/api/users", userRoutes);
+		app.use("/api/accounting", accountingRoutes);
+		app.use("/api/dashboards/enhanced", enhancedProjectDashboardRoutes);
+		app.use("/api/predictions", projectPredictionRoutes);
+		// *** NUEVO: Configurar rutas de plantillas personales ***
+		app.use("/api/user-templates", userTemplateRoutes);
 
 		// Global error handler
 		app.use(
@@ -228,6 +235,7 @@ async function bootstrap() {
 			console.log(
 				`API Documentation available at http://localhost:${PORT}/api-docs`
 			);
+			console.log("✅ User Templates system active at /api/user-templates");
 		});
 
 		return app;

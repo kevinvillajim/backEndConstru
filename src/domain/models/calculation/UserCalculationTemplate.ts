@@ -28,9 +28,12 @@ export interface UserTemplateParameter {
 	unit?: string;
 	minValue?: number;
 	maxValue?: number;
+	regexPattern?: string;
 	allowedValues?: string[];
 	defaultValue?: any;
+	placeholder?: string;
 	helpText?: string;
+	typicalRange?: string;
 	dependsOnParameters?: string[];
 	formula?: string;
 }
@@ -65,6 +68,11 @@ export type UserCalculationTemplate = {
 		name: string;
 		email: string;
 	};
+	contributors?: Array<{
+		id: string;
+		name: string;
+		contributionType: string;
+	}>;
 	usageCount: number;
 	totalRatings: number;
 	averageRating: number;
@@ -96,11 +104,81 @@ export type CreateUserCalculationTemplateDTO = {
 	applicationCases?: string[];
 	limitations?: string[];
 	sharedWith?: string[];
+	contributors?: Array<{
+		id: string;
+		name: string;
+		contributionType: string;
+	}>;
 	userId: string;
 };
 
-export type UpdateUserCalculationTemplateDTO = Partial
-	Omit<CreateUserCalculationTemplateDTO, "userId" | "sourceType">;
+// FIX: Especificar el tipo base para Partial y corregir Omit
+export type UpdateUserCalculationTemplateDTO = Partial<
+	Omit<CreateUserCalculationTemplateDTO, "userId" | "sourceType">
+>;
+
+export type DuplicateTemplateDTO = {
+	originalTemplateId: string;
+	customName?: string;
+	customDescription?: string;
+	userId: string;
+};
+
+export type CreateFromResultDTO = {
+	sourceCalculationResultId: string;
+	name: string;
+	description?: string;
+	category: string;
+	targetProfessions: string[];
+	userId: string;
+};
+
+export type ShareTemplateDTO = {
+	templateId: string;
+	userIds: string[];
+	message?: string;
+};
+
+export interface UserTemplateFilters {
+	status?: UserTemplateStatus[];
+	categories?: string[];
+	targetProfessions?: string[];
+	difficulty?: UserTemplateDifficulty[];
+	isPublic?: boolean;
+	tags?: string[];
+	searchTerm?: string;
+	sourceType?: UserTemplateSourceType[];
+	isFavorite?: boolean;
+}
+
+export interface UserTemplateStats {
+	total: number;
+	active: number;
+	draft: number;
+	archived: number;
+	favorites: number;
+	public: number;
+	private: number;
+	byCategory: Record<string, number>;
+	byDifficulty: Record<UserTemplateDifficulty, number>;
+	bySourceType: Record<UserTemplateSourceType, number>;
+	recentActivity: {
+		createdThisWeek: number;
+		updatedThisWeek: number;
+		usedThisWeek: number;
+	};
+}
+
+export interface UserTemplateListResponse {
+	templates: UserCalculationTemplate[];
+	pagination: {
+		total: number;
+		page: number;
+		limit: number;
+		pages: number;
+	};
+	stats: UserTemplateStats;
+}
 
 export type TemplateFormData = {
 	name: string;
