@@ -149,8 +149,7 @@ C:.
 |       component-server.txt
 |       component-template-import-export.txt
 |       component-WebSocketService.txt
-|       websocket-client.txt
-|
+|       websocket-client.txt                     
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -248,9 +247,22 @@ C:.
 |   |   |       GetAdvancedRecommendationsUseCase.ts
 |   |   |       
 |   |   +---subscription
-|   |   \---user
-|   |           UserRecommendationService.ts
-|   |           UserService.ts
+|   |   +---user
+|   |   |       UserRecommendationService.ts
+|   |   |       UserService.ts
+|   |   |       
+|   |   \---user-templates
+|   |           ChangeTemplateStatusUseCase.ts
+|   |           CreateTemplateFromResultUseCase.ts
+|   |           CreateUserTemplateUseCase.ts
+|   |           DeleteUserTemplateUseCase.ts
+|   |           DuplicateOfficialTemplateUseCase.ts
+|   |           GetPublicUserTemplatesUseCase.ts
+|   |           GetUserTemplateByIdUseCase.ts
+|   |           GetUserTemplateStatsUseCase.ts
+|   |           GetUserTemplatesUseCase.ts
+|   |           ShareUserTemplateUseCase.ts
+|   |           UpdateUserTemplateUseCase.ts
 |   |           
 |   +---domain
 |   |   +---dtos
@@ -275,6 +287,7 @@ C:.
 |   |   |   |       CalculationResult.ts
 |   |   |   |       CalculationTemplate.ts
 |   |   |   |       GeographicalZone.ts
+|   |   |   |       UserCalculationTemplate.ts
 |   |   |   |       
 |   |   |   +---invoice
 |   |   |   |       Invoice.ts
@@ -329,6 +342,7 @@ C:.
 |   |   |       TemplateRatingRepository.ts
 |   |   |       TemplateSuggestionRepository.ts
 |   |   |       TrendingCalculationRepository.ts
+|   |   |       UserCalculationTemplateRepository.ts
 |   |   |       UserFavoriteRepository.ts
 |   |   |       UserInteractionRepository.ts
 |   |   |       UserRecommendationRepository.ts
@@ -393,6 +407,7 @@ C:.
 |   |   |   |       TemplateSuggestionEntity.ts
 |   |   |   |       TrendingCalculationEntity.ts
 |   |   |   |       UserAddressEntity.ts
+|   |   |   |       UserCalculationTemplateEntity.ts
 |   |   |   |       UserEntity.ts
 |   |   |   |       UserFavoriteEntity.ts
 |   |   |   |       UserInteractionEntity.ts
@@ -426,6 +441,7 @@ C:.
 |   |   |   |       TypeOrmTemplateRatingRepository.ts
 |   |   |   |       TypeOrmTemplateSuggestionRepository.ts
 |   |   |   |       TypeOrmTrendingCalculationRepository.ts
+|   |   |   |       TypeOrmUserCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmUserFavoriteRepository.ts
 |   |   |   |       TypeOrmUserInteractionRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
@@ -510,6 +526,7 @@ C:.
 |   |   |   |       TemplateSuggestionController.ts
 |   |   |   |       TrendingController.ts
 |   |   |   |       TwoFactorAuthController.ts
+|   |   |   |       UserCalculationTemplateController.ts
 |   |   |   |       UserController.ts
 |   |   |   |       
 |   |   |   +---docs
@@ -535,6 +552,7 @@ C:.
 |   |   |   |           supplierIntegrationRoutes.documented.ts
 |   |   |   |           taskRoutes.documented.ts
 |   |   |   |           templateImportExportRoutes.documented.ts
+|   |   |   |           userTemplateRoutes.documented.ts
 |   |   |   |           
 |   |   |   +---middlewares
 |   |   |   |       authMiddleware.ts
@@ -566,9 +584,11 @@ C:.
 |   |   |   |       templateImportExportRoutes.ts
 |   |   |   |       twoFactorAuthRoutes.ts
 |   |   |   |       userRoutes.ts
+|   |   |   |       userTemplateRoutes.ts
 |   |   |   |       
 |   |   |   +---utils
 |   |   |   |       errorHandler.ts
+|   |   |   |       queryUtils.ts
 |   |   |   |       
 |   |   |   \---validators
 |   |   |           authValidator.ts
@@ -580,6 +600,7 @@ C:.
 |   |   |           suggestionValidator.ts
 |   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts
+|   |   |           userTemplateValidator.ts
 |   |   |           
 |   |   \---websocket
 |   |           WebSocketService.ts
