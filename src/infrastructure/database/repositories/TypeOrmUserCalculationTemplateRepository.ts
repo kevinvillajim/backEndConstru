@@ -242,7 +242,7 @@ export class TypeOrmUserCalculationTemplateRepository
 			targetProfessions: [officialTemplate.targetProfession],
 			difficulty: UserTemplateDifficulty.INTERMEDIATE, // Default
 			necReference: officialTemplate.necReference,
-			tags: officialTemplate.tags || [],
+			tags: officialTemplate.tags || [], // CORREGIDO: Agregar tags
 			parameters:
 				officialTemplate.parameters?.map((p) => ({
 					name: p.name,
@@ -299,6 +299,7 @@ export class TypeOrmUserCalculationTemplateRepository
 			category: resultData.category,
 			targetProfessions: resultData.targetProfessions,
 			difficulty: UserTemplateDifficulty.BASIC,
+			tags: [], // CORREGIDO: Agregar tags vacío por defecto
 			parameters:
 				originalTemplate.parameters?.map((p) => ({
 					name: p.name,
@@ -702,9 +703,10 @@ export class TypeOrmUserCalculationTemplateRepository
 			entity.user ||
 			(await this.userRepository.findOne({where: {id: entity.userId}}));
 
+		// CORREGIDO: Crear nombre completo del usuario
 		const author = {
 			id: user?.id || entity.userId,
-			name: user?.name || "Usuario",
+			name: user ? `${user.firstName} ${user.lastName}`.trim() : "Usuario",
 			email: user?.email || "",
 		};
 
