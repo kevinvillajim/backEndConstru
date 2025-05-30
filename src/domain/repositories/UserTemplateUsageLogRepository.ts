@@ -12,7 +12,7 @@ export interface UserTemplateUsageLogRepository {
 	create(logData: CreateUsageLogDTO): Promise<string>;
 
 	/**
-	 * Encuentra logs por plantilla en un período específico
+	 * Encuentra logs por plantilla
 	 */
 	findByTemplate(
 		templateId: string,
@@ -27,7 +27,7 @@ export interface UserTemplateUsageLogRepository {
 	findByUser(userId: string, startDate?: Date, endDate?: Date): Promise<any[]>;
 
 	/**
-	 * Obtiene analytics de uso de una plantilla
+	 * Obtiene analytics de uso
 	 */
 	getUsageAnalytics(
 		templateId: string,
@@ -38,7 +38,7 @@ export interface UserTemplateUsageLogRepository {
 	): Promise<UsageAnalytics>;
 
 	/**
-	 * Obtiene estadísticas de uso de una plantilla
+	 * Obtiene estadísticas de una plantilla
 	 */
 	getTemplateStats(
 		templateId: string,
@@ -46,7 +46,7 @@ export interface UserTemplateUsageLogRepository {
 	): Promise<TemplateUsageStats>;
 
 	/**
-	 * Obtiene las plantillas más usadas
+	 * Obtiene plantillas más usadas
 	 */
 	getMostUsedTemplates(
 		templateType?: "personal" | "verified",

@@ -297,7 +297,7 @@ export class TypeOrmUserTemplateUsageLogRepository
 
 	private calculateTrends(
 		periodData: Array<{date: string; count: number; uniqueUsers: number}>
-	) {
+	): { growth: number; trend: "stable" | "growing" | "declining" } {
 		if (periodData.length < 2) return {growth: 0, trend: "stable"};
 
 		const recent = periodData.slice(-3);
@@ -312,7 +312,7 @@ export class TypeOrmUserTemplateUsageLogRepository
 
 		return {
 			growth,
-			trend: growth > 10 ? "growing" : growth < -10 ? "declining" : "stable",
+			trend: growth > 10 ? "growing" : growth < -10 ? "declining" : "stable" as "stable" | "growing" | "declining",
 		};
 	}
 

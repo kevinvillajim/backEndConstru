@@ -158,9 +158,9 @@ export class TypeOrmAuthorCreditRepository implements AuthorCreditRepository {
 		isVisible: boolean,
 		visibility?: "public" | "restricted" | "private"
 	): Promise<AuthorCreditEntity | null> {
-		const updateData: Partial<AuthorCreditEntity> = {isVisible};
+		const updateData: UpdateAuthorCreditDTO = {isVisible};
 		if (visibility) {
-			updateData.visibility = visibility as CreditVisibility;
+			updateData.visibility = visibility;
 		}
 
 		return this.update(id, updateData);
@@ -185,7 +185,7 @@ export class TypeOrmAuthorCreditRepository implements AuthorCreditRepository {
 		badge?: string,
 		recognitionLevel?: "bronze" | "silver" | "gold" | "platinum"
 	): Promise<AuthorCreditEntity | null> {
-		const updateData: Partial<AuthorCreditEntity> = {pointsAwarded: points};
+		const updateData: UpdateAuthorCreditDTO = {pointsAwarded: points};
 		if (badge) updateData.badgeEarned = badge;
 		if (recognitionLevel) updateData.recognitionLevel = recognitionLevel;
 

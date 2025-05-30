@@ -8,7 +8,8 @@ import {
 	CreatePromotionRequestDTO,
 	PromotionRequestData,
 } from "../../domain/models/tracking/PromotionRequest";
-import {UserRole} from "../../domain/models/user/User";
+import { UserRole } from "../../domain/models/user/User";
+import {PromotionRequestStatus} from "../../domain/models/tracking/PromotionRequest";
 
 export interface CreatePromotionRequestInput {
 	personalTemplateId: string;
@@ -69,7 +70,10 @@ export class CreatePromotionRequestUseCase {
 		// 4. Verificar que no exista ya una solicitud de promoción para esta plantilla
 		const existingRequests = await this.promotionRequestRepository.findAll({
 			personalTemplateId: input.personalTemplateId,
-			status: ["pending", "under_review"],
+			status: [
+				PromotionRequestStatus.PENDING,
+				PromotionRequestStatus.UNDER_REVIEW,
+			], // ✅ Correcto
 		});
 
 		if (existingRequests.length > 0) {

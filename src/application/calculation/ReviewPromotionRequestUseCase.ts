@@ -175,7 +175,7 @@ export class ReviewPromotionRequestUseCase {
 					{
 						title,
 						message,
-						type: action === "approve" ? "success" : "info",
+						type: action === "approve" ? "notification" : "notification", // ✅ Usar tipo válido
 						category: "template_promotion",
 						data: {
 							promotionRequestId: promotionRequest.id,
@@ -193,7 +193,7 @@ export class ReviewPromotionRequestUseCase {
 					{
 						title: `Solicitud de promoción ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "en revisión"}`,
 						message: `La solicitud de promoción para "${promotionRequest.personalTemplate?.name}" ha sido ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "marcada para revisión"}.`,
-						type: action === "approve" ? "success" : "info",
+						type: action === "approve" ? "notification" : "notification", // ✅ Usar tipo válido
 						category: "admin_action",
 					}
 				);

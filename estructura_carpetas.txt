@@ -14,142 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|   
-+---dist
-|   |   bootstrap.js
-|   |   check-container.js
-|   |   index.js
-|   |   
-|   +---application
-|   |   \---calculation
-|   |           CreateCalculationTemplateUseCase.js
-|   |           ExecuteCalculationUseCase.js
-|   |           GetTemplateRecommendationsUseCase.js
-|   |           SaveCalculationResultUseCase.js
-|   |           
-|   +---domain
-|   |   +---dtos
-|   |   |   \---user
-|   |   |           LoginUserDTO.js
-|   |   |           RegisterUserDTO.js
-|   |   |           
-|   |   +---exception
-|   |   |       AuthenticationError.js
-|   |   |       
-|   |   +---models
-|   |   |   +---auth
-|   |   |   |       RefreshToken.js
-|   |   |   |       
-|   |   |   +---calculation
-|   |   |   |       CalculationParameter.js
-|   |   |   |       CalculationResult.js
-|   |   |   |       CalculationTemplate.js
-|   |   |   |       GeographicalZone.js
-|   |   |   |       
-|   |   |   \---user
-|   |   |           User.js
-|   |   |           
-|   |   +---repositories
-|   |   |       CalculationParameterRepository.js
-|   |   |       CalculationResultRepository.js
-|   |   |       CalculationTemplateRepository.js
-|   |   |       GeographicalZoneRepository.js
-|   |   |       RefreshTokenRepository.js
-|   |   |       UserRepository.js
-|   |   |       
-|   |   \---services
-|   |           AuthService.js
-|   |           CalculationService.js
-|   |           RecommendationService.js
-|   |           TemplateValidationService.js
-|   |           
-|   \---infrastructure
-|       +---config
-|       |       container.js
-|       |       service-factory.js
-|       |       
-|       +---database
-|       |   |   data-source.js
-|       |   |   database.service.js
-|       |   |   
-|       |   +---entities
-|       |   |       BudgetItemEntity.js
-|       |   |       CalculationFeedbackEntity.js
-|       |   |       CalculationGuideEntity.js
-|       |   |       CalculationImprovementEntity.js
-|       |   |       CalculationParameterEntity.js
-|       |   |       CalculationRecommendationEntity.js
-|       |   |       CalculationResultEntity.js
-|       |   |       CalculationTemplateEntity.js
-|       |   |       CategoryEntity.js
-|       |   |       GeographicalZoneEntity.js
-|       |   |       InvoiceEntity.js
-|       |   |       InvoiceItemEntity.js
-|       |   |       MaterialEntity.js
-|       |   |       MaterialPriceHistoryEntity.js
-|       |   |       MaterialRequestEntity.js
-|       |   |       NotificationEntity.js
-|       |   |       PhaseEntity.js
-|       |   |       ProjectBudgetEntity.js
-|       |   |       ProjectDocumentEntity.js
-|       |   |       ProjectEntity.js
-|       |   |       ProjectTeamMemberEntity.js
-|       |   |       RefreshTokenEntity.js
-|       |   |       TaskEntity.js
-|       |   |       UserEntity.js
-|       |   |       UserInteractionEntity.js
-|       |   |       UserRecommendationEntity.js
-|       |   |       UserTemplateUsageEntity.js
-|       |   |       
-|       |   +---migrations
-|       |   |       1746648653972-InitialSchema.js
-|       |   |       1746715381056-InitialSchema.js
-|       |   |       
-|       |   +---repositories
-|       |   |       TypeOrmCalculationParameterRepository.js
-|       |   |       TypeOrmCalculationResultRepository.js
-|       |   |       TypeOrmCalculationTemplateRepository.js
-|       |   |       TypeOrmGeographicalZoneRepository.js
-|       |   |       TypeOrmRefreshTokenRepository.js
-|       |   |       TypeOrmUserRepository.js
-|       |   |       
-|       |   \---seeds
-|       |           calculation-templates.js
-|       |           
-|       \---webserver
-|           +---controllers
-|           |       AuthController.js
-|           |       CalculationController.js
-|           |       CalculationTemplateController.js
-|           |       
-|           +---middlewares
-|           |       authMiddleware.js
-|           |       validationMiddleware.js
-|           |       
-|           +---routes
-|           |       authRoutes.js
-|           |       calculationRoutes.js
-|           |       
-|           +---utils
-|           |       errorHandler.js
-|           |       
-|           \---validators
-|                   authValidator.js
-|                   calculationValidator.js
-|                   templateValidator.js
-|                   
-+---frontGuide
-|       component-AppRoutes.txt
-|       component-notification-front.txt
-|       component-project-dashboard.txt
-|       component-ProjectDashboardPage.txt
-|       component-ProjectDelayPrediction.txt
-|       component-ProjectNavigation.txt
-|       component-ProjectPredictionPage.txt
-|       component-server.txt
-|       component-template-import-export.txt
-|       component-WebSocketService.txt
-|       websocket-client.txt                     
+|                        
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -199,8 +64,10 @@ C:.
 |   |   |       GetProjectBudgetsUseCase.ts
 |   |   |       
 |   |   +---calculation
+|   |   |       CalculateTemplateRankingsUseCase.ts
 |   |   |       CompareCalculationsUseCase.ts
 |   |   |       CreateCalculationTemplateUseCase.ts
+|   |   |       CreatePromotionRequestUseCase.ts
 |   |   |       CreateSuggestionUseCase.ts
 |   |   |       ExecuteCalculationUseCase.ts
 |   |   |       ExportCalculationTemplateUseCase.ts
@@ -208,12 +75,16 @@ C:.
 |   |   |       GenerateBudgetFromCalculationUseCase.ts
 |   |   |       GetSavedComparisonsUseCase.ts
 |   |   |       GetSuggestionsUseCase.ts
+|   |   |       GetTemplateAnalyticsUseCase.ts
 |   |   |       GetTemplateRecommendationsUseCase.ts
 |   |   |       GetTrendingTemplatesUseCase.ts
 |   |   |       GetUserFavoritesUseCase.ts
 |   |   |       ImportCalculationTemplateUseCase.ts
+|   |   |       PromoteTemplateToVerifiedUseCase.ts
 |   |   |       RateTemplateUseCase.ts
+|   |   |       ReviewPromotionRequestUseCase.ts
 |   |   |       SaveCalculationResultUseCase.ts
+|   |   |       TrackTemplateUsageUseCase.ts
 |   |   |       UpdateSuggestionStatusUseCase.ts
 |   |   |       
 |   |   +---common
@@ -312,6 +183,12 @@ C:.
 |   |   |   |       Task.ts
 |   |   |   |       
 |   |   |   +---subscription
+|   |   |   +---tracking
+|   |   |   |       AuthorCredit.ts
+|   |   |   |       PromotionRequest.ts
+|   |   |   |       TemplateRanking.ts
+|   |   |   |       UsageLog.ts
+|   |   |   |       
 |   |   |   \---user
 |   |   |           User.ts
 |   |   |           UserBehaviorPattern.ts
@@ -320,6 +197,7 @@ C:.
 |   |   |           
 |   |   +---repositories
 |   |   |       AccountingTransactionRepository.ts
+|   |   |       AuthorCreditRepository.ts
 |   |   |       BudgetItemRepository.ts
 |   |   |       CalculationComparisonRepository.ts
 |   |   |       CalculationParameterRepository.ts
@@ -337,8 +215,10 @@ C:.
 |   |   |       PhaseRepository.ts
 |   |   |       ProjectBudgetRepository.ts
 |   |   |       ProjectRepository.ts
+|   |   |       PromotionRequestRepository.ts
 |   |   |       RefreshTokenRepository.ts
 |   |   |       TaskRepository.ts
+|   |   |       TemplateRankingRepository.ts
 |   |   |       TemplateRatingRepository.ts
 |   |   |       TemplateSuggestionRepository.ts
 |   |   |       TrendingCalculationRepository.ts
@@ -347,6 +227,7 @@ C:.
 |   |   |       UserInteractionRepository.ts
 |   |   |       UserRecommendationRepository.ts
 |   |   |       UserRepository.ts
+|   |   |       UserTemplateUsageLogRepository.ts
 |   |   |       
 |   |   \---services
 |   |           AccountingService.ts
@@ -375,6 +256,7 @@ C:.
 |   |   |   |   
 |   |   |   +---entities
 |   |   |   |       AccountingTransactionEntity.ts
+|   |   |   |       AuthorCreditEntity.ts
 |   |   |   |       BudgetItemEntity.ts
 |   |   |   |       CalculationComparisonEntity.ts
 |   |   |   |       CalculationFeedbackEntity.ts
@@ -401,8 +283,10 @@ C:.
 |   |   |   |       ProjectDocumentEntity.ts
 |   |   |   |       ProjectEntity.ts
 |   |   |   |       ProjectTeamMemberEntity.ts
+|   |   |   |       PromotionRequestEntity.ts
 |   |   |   |       RefreshTokenEntity.ts
 |   |   |   |       TaskEntity.ts
+|   |   |   |       TemplateRankingEntity.ts
 |   |   |   |       TemplateRatingEntity.ts
 |   |   |   |       TemplateSuggestionEntity.ts
 |   |   |   |       TrendingCalculationEntity.ts
@@ -413,12 +297,14 @@ C:.
 |   |   |   |       UserInteractionEntity.ts
 |   |   |   |       UserRecommendationEntity.ts
 |   |   |   |       UserTemplateUsageEntity.ts
+|   |   |   |       UserTemplateUsageLogEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
 |   |   |   |       1748298338069-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
+|   |   |   |       TypeOrmAuthorCreditRepository.ts
 |   |   |   |       TypeOrmBudgetItemRepository.ts
 |   |   |   |       TypeOrmCalculationComparisonRepository.ts
 |   |   |   |       TypeOrmCalculationParameterRepository.ts
@@ -436,8 +322,10 @@ C:.
 |   |   |   |       TypeOrmPhaseRepository.ts
 |   |   |   |       TypeOrmProjectBudgetRepository.ts
 |   |   |   |       TypeOrmProjectRepository.ts
+|   |   |   |       TypeOrmPromotionRequestRepository.ts
 |   |   |   |       TypeOrmRefreshTokenRepository.ts
 |   |   |   |       TypeOrmTaskRepository.ts
+|   |   |   |       TypeOrmTemplateRankingRepository.ts
 |   |   |   |       TypeOrmTemplateRatingRepository.ts
 |   |   |   |       TypeOrmTemplateSuggestionRepository.ts
 |   |   |   |       TypeOrmTrendingCalculationRepository.ts
@@ -445,6 +333,7 @@ C:.
 |   |   |   |       TypeOrmUserFavoriteRepository.ts
 |   |   |   |       TypeOrmUserInteractionRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
+|   |   |   |       TypeOrmUserTemplateUsageLogRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
 |   |   |       |   calculation-templates.ts

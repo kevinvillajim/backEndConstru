@@ -41,6 +41,101 @@ export class TypeOrmUserCalculationTemplateRepository
 	}
 
 	// === CRUD BÁSICO ===
+	/**
+	 * Encuentra todas las plantillas con filtros (para uso en rankings)
+	 */
+	async findAll(
+		filters?: {
+			status?: string[];
+			isActive?: boolean;
+			isPublic?: boolean;
+			category?: string;
+			targetProfessions?: string[];
+		},
+		pagination?: {
+			page: number;
+			limit: number;
+			sortBy?: string;
+			sortOrder?: "ASC" | "DESC";
+		}
+	): Promise<{templates: UserCalculationTemplate[]; total: number}> {
+		let queryBuilder = this.repository
+			.createQueryBuilder("template")
+			.leftJoinAndSelect("template.user", "user");
+
+		// Aplicar filtros
+		if (filters) {
+			if (filters.status && filters.status.length > 0) {
+				queryBuilder = queryBuilder.andWhere(
+					"template.status IN (:...statuses)",
+					{
+						statuses: filters.status,
+					}
+				);
+			}
+
+			if (filters.isActive !== undefined) {
+				queryBuilder = queryBuilder.andWhere("template.is_active = :isActive", {
+					isActive: filters.isActive,
+				});
+			}
+
+			if (filters.isPublic !== undefined) {
+				queryBuilder = queryBuilder.andWhere("template.is_public = :isPublic", {
+					isPublic: filters.isPublic,
+				});
+			}
+
+			if (filters.category) {
+				queryBuilder = queryBuilder.andWhere("template.category = :category", {
+					category: filters.category,
+				});
+			}
+
+			if (filters.targetProfessions && filters.targetProfessions.length > 0) {
+				const professionConditions = filters.targetProfessions.map(
+					(_, index) =>
+						`JSON_CONTAINS(template.target_professions, :profession${index})`
+				);
+				queryBuilder = queryBuilder.andWhere(
+					`(${professionConditions.join(" OR ")})`
+				);
+
+				filters.targetProfessions.forEach((profession, index) => {
+					queryBuilder = queryBuilder.setParameter(
+						`profession${index}`,
+						`"${profession}"`
+					);
+				});
+			}
+		}
+
+		// Calcular total
+		const total = await queryBuilder.getCount();
+
+		// Aplicar paginación y ordenamiento
+		if (pagination) {
+			const skip = (pagination.page - 1) * pagination.limit;
+			queryBuilder = queryBuilder.skip(skip).take(pagination.limit);
+
+			if (pagination.sortBy) {
+				const order = pagination.sortOrder || "ASC";
+				queryBuilder = queryBuilder.orderBy(
+					`template.${pagination.sortBy}`,
+					order
+				);
+			} else {
+				queryBuilder = queryBuilder.orderBy("template.updated_at", "DESC");
+			}
+		}
+
+		const entities = await queryBuilder.getMany();
+		const templates = await Promise.all(
+			entities.map((entity) => this.toDomainModel(entity))
+		);
+
+		return {templates, total};
+	}
 	async findByUserId(
 		userId: string,
 		filters?: UserTemplateFilters,

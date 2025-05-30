@@ -13,6 +13,24 @@ import {
 export interface UserCalculationTemplateRepository {
 	// === CRUD BÁSICO ===
 	/**
+	 * Encuentra todas las plantillas con filtros (para uso en rankings)
+	 */
+	findAll(
+		filters?: {
+			status?: string[];
+			isActive?: boolean;
+			isPublic?: boolean;
+			category?: string;
+			targetProfessions?: string[];
+		},
+		pagination?: {
+			page: number;
+			limit: number;
+			sortBy?: string;
+			sortOrder?: "ASC" | "DESC";
+		}
+	): Promise<{templates: UserCalculationTemplate[]; total: number}>;
+	/**
 	 * Encuentra todas las plantillas de un usuario con filtros opcionales
 	 */
 	findByUserId(
