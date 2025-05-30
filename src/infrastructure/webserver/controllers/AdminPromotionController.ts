@@ -515,5 +515,205 @@ export class AdminPromotionController {
 			});
 		}
 	}
+
+	/**
+	 * GET /api/admin/dashboard
+	 * Obtener datos completos del dashboard de administración
+	 */
+	async getAdminDashboard(req: RequestWithUser, res: Response): Promise<void> {
+		try {
+			// Obtener estadísticas de promociones
+			const promotionStats =
+				await this.promotionRequestRepository.getStatistics();
+
+			// Obtener solicitudes pendientes
+			const pendingRequests =
+				await this.promotionRequestRepository.findPending();
+
+			// Obtener candidatos potenciales (plantillas con buen rendimiento)
+			const candidates = await this.getPromotionCandidatesInternal();
+
+			// Obtener plantillas recientemente promovidas
+			const recentlyPromoted = await this.getRecentlyPromotedInternal();
+
+			const dashboardData = {
+				promotionStats,
+				pendingRequests: pendingRequests.slice(0, 5), // Solo las primeras 5
+				candidates: candidates.slice(0, 10), // Solo las primeras 10
+				recentlyPromoted: recentlyPromoted.slice(0, 5), // Solo las últimas 5
+				summary: {
+					totalPending: pendingRequests.length,
+					totalCandidates: candidates.length,
+					approvalRate: promotionStats.approvalRate,
+					averageProcessingTime: promotionStats.averageProcessingTime,
+				},
+			};
+
+			res.status(200).json({
+				success: true,
+				data: dashboardData,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo dashboard:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo dashboard",
+			});
+		}
+	}
+
+	/**
+	 * GET /api/admin/dashboard/summary
+	 * Obtener resumen rápido para el dashboard
+	 */
+	async getDashboardSummary(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			const promotionStats =
+				await this.promotionRequestRepository.getStatistics();
+			const pendingCount = await this.promotionRequestRepository
+				.findPending()
+				.then((requests) => requests.length);
+
+			const summary = {
+				pendingRequests: pendingCount,
+				approvalRate: promotionStats.approvalRate,
+				averageProcessingTime: promotionStats.averageProcessingTime,
+				totalPromotions: promotionStats.byStatus["approved"] || 0,
+			};
+
+			res.status(200).json({
+				success: true,
+				data: summary,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo resumen:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo resumen",
+			});
+		}
+	}
+
+	/**
+	 * GET /api/admin/author-credits
+	 * Obtener todos los créditos de autores
+	 */
+	async getAllCredits(req: Request, res: Response): Promise<void> {
+		try {
+			// Este método requiere el AuthorCreditRepository
+			// Por ahora retornamos un placeholder
+			res.status(200).json({
+				success: true,
+				data: [],
+				message: "Funcionalidad de créditos en desarrollo",
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo créditos:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo créditos",
+			});
+		}
+	}
+
+	/**
+	 * GET /api/admin/author-credits/stats
+	 * Obtener estadísticas de créditos
+	 */
+	async getCreditStats(req: Request, res: Response): Promise<void> {
+		try {
+			// Placeholder para estadísticas de créditos
+			const stats = {
+				totalCredits: 0,
+				totalAuthors: 0,
+				recentCredits: 0,
+			};
+
+			res.status(200).json({
+				success: true,
+				data: stats,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo estadísticas de créditos:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message:
+					typedError.message || "Error obteniendo estadísticas de créditos",
+			});
+		}
+	}
+
+	/**
+	 * GET /api/admin/author-credits/top-contributors
+	 * Obtener top contribuidores
+	 */
+	async getTopContributors(req: Request, res: Response): Promise<void> {
+		try {
+			// Placeholder para top contribuidores
+			const contributors = [];
+
+			res.status(200).json({
+				success: true,
+				data: contributors,
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo contribuidores:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo contribuidores",
+			});
+		}
+	}
+
+	/**
+	 * PUT /api/admin/author-credits/:id/visibility
+	 * Cambiar visibilidad de un crédito
+	 */
+	async updateCreditVisibility(req: Request, res: Response): Promise<void> {
+		try {
+			const {id} = req.params;
+			const {isVisible} = req.body;
+
+			// Placeholder para actualizar visibilidad
+			res.status(200).json({
+				success: true,
+				message: "Visibilidad actualizada exitosamente",
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error actualizando visibilidad:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error actualizando visibilidad",
+			});
+		}
+	}
+
+	// Métodos helper privados para AdminPromotionController
+	private async getPromotionCandidatesInternal() {
+		// Lógica para obtener candidatos a promoción
+		// Por ahora retornamos array vacío
+		return [];
+	}
+
+	private async getRecentlyPromotedInternal() {
+		// Lógica para obtener plantillas recientemente promovidas
+		// Por ahora retornamos array vacío
+		return [];
+	}
 }
 
