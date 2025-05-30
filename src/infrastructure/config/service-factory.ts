@@ -147,6 +147,8 @@ import {AdminPromotionController} from "../webserver/controllers/AdminPromotionC
 import {TemplateAnalyticsController} from "../webserver/controllers/TemplateAnalyticsController";
 import { GlobalStatsController } from "../webserver/controllers/GlobalStatsController";
 import { GetGlobalTemplateStatsUseCase } from "../../application/calculation/GetGlobalTemplateStatsUseCase";
+import { TemplateTrackingController } from "../webserver/controllers/TemplateTrackingController";
+
 
 // ============= JOBS =============
 import {
@@ -298,6 +300,7 @@ let userCalculationTemplateController: UserCalculationTemplateController;
 let adminPromotionController: AdminPromotionController;
 let templateAnalyticsController: TemplateAnalyticsController;
 let globalStatsController: GlobalStatsController;
+let templateTrackingController: TemplateTrackingController;
 
 
 // ============= VARIABLES GLOBALES DE JOBS =============
@@ -508,6 +511,15 @@ export function initializeServices() {
 
 		getUserTemplateStatsUseCase = new GetUserTemplateStatsUseCase(
 			userCalculationTemplateRepository
+		);
+
+		getGlobalTemplateStatsUseCase = new GetGlobalTemplateStatsUseCase(
+			userCalculationTemplateRepository,
+			calculationTemplateRepository,
+			userTemplateUsageLogRepository,
+			templateRankingRepository,
+			promotionRequestRepository,
+			authorCreditRepository
 		);
 
 		// ============= INICIALIZAR OTROS CASOS DE USO =============
@@ -819,6 +831,11 @@ export function initializeServices() {
 			getGlobalTemplateStatsUseCase,
 		); 
 
+		templateTrackingController = new TemplateTrackingController(
+			trackTemplateUsageUseCase
+		);
+
+
 		// ============= INICIALIZAR JOBS =============
 		enhancedRankingJob = initializeRankingJobs();
 		console.log("Enhanced ranking calculation jobs initialized");
@@ -1087,6 +1104,14 @@ export function getGlobalStatsController() {
 			"Services not initialized. Call initializeServices() first."
 		);
 	return globalStatsController;
+}
+
+export function getTemplateTrackingController() {
+	if (!templateTrackingController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return templateTrackingController;
 }
 
 // ============= GETTERS PARA SERVICIOS =============
@@ -1451,6 +1476,8 @@ export function toggleJobs(enabled: boolean): void {
         console.log("⏸️  All jobs paused");
     }
 }
+
+
 
 // ============= EXPORT DE NUEVAS FUNCIONES =============
 export {

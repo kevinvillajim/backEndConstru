@@ -1,11 +1,11 @@
-// src/infrastructure/webserver/docs/routes/templateAnalyticsRoutes.documented.ts
+// src/infrastructure/webserver/docs/routes/templateAnalyticsRoutes.documented.ts - CORREGIDO
 import {Router} from "express";
 import {authenticate} from "../../middlewares/authMiddleware";
 import {requireAdminRole} from "../../middlewares/adminAuthMiddleware";
 import {
-	validateAnalyticsQuery,
-	validateTemplateId,
-	validateRankingQuery,
+	validateAnalyticsParams, // ✅ CORREGIDO: Existe en analyticsValidator
+	validateTrendingParams, // ✅ CORREGIDO: Existe en analyticsValidator
+	validateUsageStatsParams, // ✅ CORREGIDO: Existe en analyticsValidator
 } from "../../validators/analyticsValidator";
 import {getTemplateAnalyticsController} from "../../../config/service-factory";
 
@@ -108,7 +108,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/analytics/templates/{templateId}:
+ * /api/analytics/templates/{id}:
  *   get:
  *     summary: Obtener analytics de una plantilla específica
  *     tags: [Template Analytics]
@@ -116,12 +116,19 @@ const router = Router();
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: templateId
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
  *           format: uuid
  *         description: ID de la plantilla
+ *       - in: query
+ *         name: templateType
+ *         schema:
+ *           type: string
+ *           enum: [personal, verified]
+ *           default: personal
+ *         description: Tipo de plantilla
  *       - in: query
  *         name: period
  *         schema:
@@ -147,61 +154,13 @@ const router = Router();
  *         description: No autorizado
  */
 router.get(
-	"/templates/:templateId",
-	authenticate,
-	validateTemplateId,
-	validateAnalyticsQuery,
+	"/templates/:id",
+	validateAnalyticsParams, // ✅ CORREGIDO: Usa función que existe
 	(req, res) => {
 		const controller = getTemplateAnalyticsController();
 		return controller.getTemplateAnalytics(req, res);
 	}
 );
-
-/**
- * @swagger
- * /api/analytics/rankings:
- *   get:
- *     summary: Obtener rankings de plantillas
- *     tags: [Template Analytics]
- *     parameters:
- *       - in: query
- *         name: period
- *         schema:
- *           type: string
- *           enum: [daily, weekly, monthly, yearly]
- *           default: weekly
- *         description: Período del ranking
- *       - in: query
- *         name: templateType
- *         schema:
- *           type: string
- *           enum: [personal, verified]
- *         description: Tipo de plantillas a incluir
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 10
- *         description: Número máximo de resultados
- *     responses:
- *       200:
- *         description: Rankings obtenidos exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   $ref: '#/components/schemas/RankingData'
- */
-router.get("/rankings", validateRankingQuery, (req, res) => {
-	const controller = getTemplateAnalyticsController();
-	return controller.getRankings(req, res);
-});
 
 /**
  * @swagger
@@ -217,6 +176,12 @@ router.get("/rankings", validateRankingQuery, (req, res) => {
  *           enum: [daily, weekly, monthly, yearly]
  *           default: weekly
  *         description: Período de tendencia
+ *       - in: query
+ *         name: templateType
+ *         schema:
+ *           type: string
+ *           enum: [personal, verified]
+ *         description: Tipo de plantillas a incluir
  *       - in: query
  *         name: limit
  *         schema:
@@ -252,72 +217,21 @@ router.get("/rankings", validateRankingQuery, (req, res) => {
  *                       usageCount:
  *                         type: integer
  */
-router.get("/trending", validateRankingQuery, (req, res) => {
+router.get("/trending", validateTrendingParams, (req, res) => {
+	// ✅ CORREGIDO
 	const controller = getTemplateAnalyticsController();
-	return controller.getTrending(req, res);
+	return controller.getTrendingTemplates(req, res);
 });
 
 /**
  * @swagger
- * /api/analytics/global-stats:
+ * /api/analytics/trending/summary:
  *   get:
- *     summary: Obtener estadísticas globales del sistema
+ *     summary: Obtener resumen de tendencias por períodos
  *     tags: [Template Analytics]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: period
- *         schema:
- *           type: string
- *           enum: [day, week, month, year]
- *           default: month
- *         description: Período para las estadísticas
  *     responses:
  *       200:
- *         description: Estadísticas globales obtenidas exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   $ref: '#/components/schemas/GlobalStats'
- *       403:
- *         description: Acceso denegado - Solo administradores
- */
-router.get(
-	"/global-stats",
-	authenticate,
-	requireAdminRole,
-	validateAnalyticsQuery,
-	(req, res) => {
-		const controller = getTemplateAnalyticsController();
-		return controller.getGlobalStats(req, res);
-	}
-);
-
-/**
- * @swagger
- * /api/analytics/user-stats/{userId}:
- *   get:
- *     summary: Obtener estadísticas de un usuario específico
- *     tags: [Template Analytics]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: ID del usuario
- *     responses:
- *       200:
- *         description: Estadísticas del usuario obtenidas exitosamente
+ *         description: Resumen de tendencias obtenido exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -327,19 +241,123 @@ router.get(
  *                   type: boolean
  *                 data:
  *                   type: object
- *                   properties:
- *                     totalTemplates:
- *                       type: integer
- *                     totalUsage:
- *                       type: integer
- *                     averageRating:
- *                       type: number
- *                     templatesInTrending:
- *                       type: integer
  */
-router.get("/user-stats/:userId", authenticate, (req, res) => {
+router.get("/trending/summary", (req, res) => {
 	const controller = getTemplateAnalyticsController();
-	return controller.getUserStats(req, res);
+	return controller.getTrendingSummary(req, res);
+});
+
+/**
+ * @swagger
+ * /api/analytics/trending/category/{category}:
+ *   get:
+ *     summary: Obtener plantillas trending por categoría
+ *     tags: [Template Analytics]
+ *     parameters:
+ *       - in: path
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Categoría de plantillas
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [daily, weekly, monthly, yearly]
+ *           default: weekly
+ *         description: Período de tendencia
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 5
+ *         description: Número de plantillas
+ *     responses:
+ *       200:
+ *         description: Plantillas trending por categoría obtenidas exitosamente
+ */
+router.get(
+	"/trending/category/:category",
+	validateTrendingParams, // ✅ CORREGIDO
+	(req, res) => {
+		const controller = getTemplateAnalyticsController();
+		return controller.getTrendingByCategory(req, res);
+	}
+);
+
+/**
+ * @swagger
+ * /api/analytics/trending/profession/{profession}:
+ *   get:
+ *     summary: Obtener plantillas trending por profesión
+ *     tags: [Template Analytics]
+ *     parameters:
+ *       - in: path
+ *         name: profession
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Profesión objetivo
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [daily, weekly, monthly, yearly]
+ *           default: weekly
+ *         description: Período de tendencia
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 5
+ *         description: Número de plantillas
+ *     responses:
+ *       200:
+ *         description: Plantillas trending por profesión obtenidas exitosamente
+ */
+router.get(
+	"/trending/profession/:profession",
+	validateTrendingParams, // ✅ CORREGIDO
+	(req, res) => {
+		const controller = getTemplateAnalyticsController();
+		return controller.getTrendingByProfession(req, res);
+	}
+);
+
+/**
+ * @swagger
+ * /api/analytics/track/{id}/stats:
+ *   get:
+ *     summary: Obtener estadísticas de uso de una plantilla
+ *     tags: [Template Analytics]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID de la plantilla
+ *       - in: query
+ *         name: templateType
+ *         schema:
+ *           type: string
+ *           enum: [personal, verified]
+ *           default: personal
+ *         description: Tipo de plantilla
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ */
+router.get("/track/:id/stats", validateUsageStatsParams, (req, res) => {
+	// ✅ CORREGIDO
+	const trackingController = getTemplateTrackingController();
+	return trackingController.getTemplateUsageStats(req, res);
 });
 
 export default router;

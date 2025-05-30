@@ -325,3 +325,105 @@ export const validateMostUsedParams = (
 	req.query = value;
 	next();
 };
+
+/**
+ * Validador para ID de plantilla en parámetros de URL
+ */
+export const validateTemplateId = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): void => {
+	const schema = Joi.object({
+		id: Joi.string().uuid().required().messages({
+			"string.uuid": "El ID de la plantilla debe ser un UUID válido",
+			"any.required": "El ID de la plantilla es obligatorio",
+		}),
+	});
+
+	const {error} = schema.validate(req.params, {abortEarly: false});
+
+	if (error) {
+		res.status(400).json({
+			success: false,
+			message: "Error de validación",
+			errors: error.details.map((detail) => ({
+				field: detail.path.join("."),
+				message: detail.message,
+			})),
+		});
+		return;
+	}
+
+	next();
+};
+
+/**
+ * Validador para ID de usuario en parámetros de URL
+ */
+export const validateUserId = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): void => {
+	const schema = Joi.object({
+		userId: Joi.string().uuid().required().messages({
+			"string.uuid": "El ID del usuario debe ser un UUID válido",
+			"any.required": "El ID del usuario es obligatorio",
+		}),
+	});
+
+	const {error} = schema.validate(req.params, {abortEarly: false});
+
+	if (error) {
+		res.status(400).json({
+			success: false,
+			message: "Error de validación",
+			errors: error.details.map((detail) => ({
+				field: detail.path.join("."),
+				message: detail.message,
+			})),
+		});
+		return;
+	}
+
+	next();
+};
+
+/**
+ * Validador para estadísticas globales
+ */
+export const validateGlobalStatsParams = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): void => {
+	const schema = Joi.object({
+		period: Joi.string()
+			.valid("day", "week", "month", "year")
+			.default("month")
+			.messages({
+				"any.only": "period debe ser 'day', 'week', 'month' o 'year'",
+			}),
+		includeDetails: Joi.boolean().default(true).messages({
+			"boolean.base": "includeDetails debe ser un booleano",
+		}),
+	});
+
+	const {error, value} = schema.validate(req.query, {abortEarly: false});
+
+	if (error) {
+		res.status(400).json({
+			success: false,
+			message: "Error de validación",
+			errors: error.details.map((detail) => ({
+				field: detail.path.join("."),
+				message: detail.message,
+			})),
+		});
+		return;
+	}
+
+	req.query = value;
+	next();
+};

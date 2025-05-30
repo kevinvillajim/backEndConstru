@@ -3,9 +3,9 @@ import {Router} from "express";
 import {authenticate} from "../../middlewares/authMiddleware";
 import {requireAdminRole} from "../../middlewares/adminAuthMiddleware";
 import {
-	validatePromotionRequest,
-	validatePromotionReview,
-	validatePromotionImplementation,
+	validateCreatePromotionRequest, // ✅ CORREGIDO
+	validateReviewPromotionRequest, // ✅ CORREGIDO
+	validatePromoteTemplate, // ✅ CORREGIDO
 } from "../../validators/promotionValidator";
 import {getAdminPromotionController} from "../../../config/service-factory";
 
@@ -130,7 +130,7 @@ const router = Router();
  */
 router.get("/dashboard", authenticate, requireAdminRole, (req, res) => {
 	const controller = getAdminPromotionController();
-	return controller.getDashboard(req, res);
+	return controller.getAdminDashboard(req, res); // ✅ CORREGIDO
 });
 
 /**
@@ -270,7 +270,7 @@ router.post(
 	"/promotion-requests",
 	authenticate,
 	requireAdminRole,
-	validatePromotionRequest,
+	validateCreatePromotionRequest, // ✅ CORREGIDO
 	(req, res) => {
 		const controller = getAdminPromotionController();
 		return controller.createPromotionRequest(req, res);
@@ -314,7 +314,7 @@ router.get(
 	requireAdminRole,
 	(req, res) => {
 		const controller = getAdminPromotionController();
-		return controller.getPromotionRequest(req, res);
+		return controller.getPromotionRequestById(req, res); // ✅ CORREGIDO
 	}
 );
 
@@ -377,7 +377,7 @@ router.put(
 	"/promotion-requests/:requestId/review",
 	authenticate,
 	requireAdminRole,
-	validatePromotionReview,
+	validateReviewPromotionRequest, // ✅ CORREGIDO
 	(req, res) => {
 		const controller = getAdminPromotionController();
 		return controller.reviewPromotionRequest(req, res);
@@ -456,10 +456,10 @@ router.post(
 	"/promotion-requests/:requestId/implement",
 	authenticate,
 	requireAdminRole,
-	validatePromotionImplementation,
+	validatePromoteTemplate, // ✅ CORREGIDO
 	(req, res) => {
 		const controller = getAdminPromotionController();
-		return controller.implementPromotion(req, res);
+		return controller.promoteTemplate(req, res); // ✅ CORREGIDO
 	}
 );
 
