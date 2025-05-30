@@ -5,7 +5,11 @@ import {
 	validateAnalyticsParams,
 	validateTrendingParams,
 } from "../validators/analyticsValidator";
-import {getTemplateAnalyticsController} from "../../config/service-factory";
+import {
+	getTemplateAnalyticsController,
+	getTemplateTrackingController,
+} from "../../config/service-factory";
+
 
 const router = Router();
 

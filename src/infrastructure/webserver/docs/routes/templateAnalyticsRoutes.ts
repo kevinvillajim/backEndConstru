@@ -7,7 +7,10 @@ import {
 	validateTrendingParams, // ✅ CORREGIDO: Existe en analyticsValidator
 	validateUsageStatsParams, // ✅ CORREGIDO: Existe en analyticsValidator
 } from "../../validators/analyticsValidator";
-import {getTemplateAnalyticsController} from "../../../config/service-factory";
+import {
+	getTemplateAnalyticsController,
+	getTemplateTrackingController,
+} from "../../../config/service-factory";
 
 const router = Router();
 
