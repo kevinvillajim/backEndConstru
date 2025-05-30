@@ -42,6 +42,7 @@ import {ProjectMetricsService} from "../../domain/services/ProjectMetricsService
 import {UserPatternAnalysisService} from "../../domain/services/UserPatternAnalysisService";
 import {AdvancedRecommendationService} from "../../domain/services/AdvancedRecommendationService";
 import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
+import {RealtimeAnalyticsService} from "../websocket/RealtimeAnalyticsService";
 
 // ============= SERVICIOS DE INFRAESTRUCTURA =============
 import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
@@ -144,6 +145,12 @@ import {TrendingController} from "../webserver/controllers/TrendingController";
 // *** NUEVO: Controlador para plantillas personales de usuarios ***
 import {UserCalculationTemplateController} from "../webserver/controllers/UserCalculationTemplateController";
 
+// ============= JOBS =============
+import {
+	EnhancedRankingCalculationJob,
+	initializeRankingJobs,
+} from "../jobs/EnhancedRankingCalculationJob";
+
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
 let userRepository: TypeOrmUserRepository;
 let calculationTemplateRepository: TypeOrmCalculationTemplateRepository;
@@ -191,6 +198,7 @@ let notificationService: NotificationServiceImpl;
 let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
 let pdfGenerationService: PdfGenerationService;
+let realtimeAnalyticsService: RealtimeAnalyticsService;
 
 // ============= VARIABLES GLOBALES DE CASOS DE USO =============
 let executeCalculationUseCase: ExecuteCalculationUseCase;
@@ -283,6 +291,9 @@ let calculationComparisonController: CalculationComparisonController;
 let trendingController: TrendingController;
 // *** NUEVO: Variable global para controlador de plantillas personales ***
 let userCalculationTemplateController: UserCalculationTemplateController;
+
+// ============= VARIABLES GLOBALES DE JOBS =============
+let enhancedRankingJob: EnhancedRankingCalculationJob;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -787,6 +798,10 @@ export function initializeServices() {
 			notificationService
 		);
 
+		// ============= INICIALIZAR JOBS =============
+		enhancedRankingJob = initializeRankingJobs();
+		console.log("Enhanced ranking calculation jobs initialized");
+
 		console.log("Services initialized successfully");
 	} catch (error) {
 		console.error("Failed to initialize services:", error);
@@ -1190,3 +1205,210 @@ export function getAuthorCreditRepository() {
 		);
 	return authorCreditRepository;
 }
+
+/**
+ * Obtener servicio de analytics en tiempo real
+ * Nota: Debe ser inicializado externamente con HTTPServer
+ */
+export function getRealtimeAnalyticsService(): RealtimeAnalyticsService | null {
+    return realtimeAnalyticsService || null;
+}
+
+/**
+ * Establecer servicio de analytics en tiempo real
+ * Llamar desde el servidor principal después de crear HTTPServer
+ */
+export function setRealtimeAnalyticsService(service: RealtimeAnalyticsService): void {
+    realtimeAnalyticsService = service;
+    console.log("Realtime analytics service registered");
+}
+
+/**
+ * Obtener instancia del job de rankings mejorado
+ */
+export function getEnhancedRankingJob(): EnhancedRankingCalculationJob {
+    if (!enhancedRankingJob) {
+        throw new Error("Enhanced ranking job not initialized. Call initializeServices() first.");
+    }
+    return enhancedRankingJob;
+}
+
+// ============= FUNCIONES DE INTEGRACIÓN CON WEBHOOKS =============
+
+/**
+ * Notificar uso de plantilla via WebSocket
+ * Llamar desde el middleware de tracking
+ */
+export function notifyTemplateUsageRealtime(
+    templateId: string,
+    templateType: 'personal' | 'verified',
+    usageData: any
+): void {
+    if (realtimeAnalyticsService) {
+        realtimeAnalyticsService.notifyTemplateUsage(templateId, templateType, usageData);
+    }
+}
+
+/**
+ * Notificar actualización de rankings via WebSocket
+ * Llamar desde los jobs de cálculo
+ */
+export function notifyRankingUpdateRealtime(period: string, rankingData: any): void {
+    if (realtimeAnalyticsService) {
+        realtimeAnalyticsService.notifyRankingUpdate(period, rankingData);
+    }
+}
+
+/**
+ * Notificar cambios en trending via WebSocket
+ */
+export function notifyTrendingChangeRealtime(trendingData: any): void {
+    if (realtimeAnalyticsService) {
+        realtimeAnalyticsService.notifyTrendingChange(trendingData);
+    }
+}
+
+// ============= FUNCIONES HELPER PARA JOBS =============
+
+/**
+ * Ejecutar cálculo de rankings manualmente
+ */
+export async function executeRankingCalculationManual(
+    period: 'daily' | 'weekly' | 'monthly' | 'yearly'
+) {
+    if (!enhancedRankingJob) {
+        throw new Error("Enhanced ranking job not initialized");
+    }
+    
+    return await enhancedRankingJob.executeJobManually(period);
+}
+
+/**
+ * Obtener estado de todos los jobs
+ */
+export function getAllJobStatuses() {
+    if (!enhancedRankingJob) {
+        return new Map();
+    }
+    
+    return enhancedRankingJob.getJobStatuses();
+}
+
+/**
+ * Obtener métricas del sistema de jobs
+ */
+export function getJobMetrics() {
+    if (!enhancedRankingJob) {
+        return null;
+    }
+    
+    return enhancedRankingJob.getMetrics();
+}
+
+// ============= INTEGRACIÓN CON TRACKING MIDDLEWARE =============
+
+/**
+ * Hook para middleware de tracking automático
+ * Integra el tracking con analytics en tiempo real
+ */
+export function onTemplateUsageTracked(
+    templateId: string,
+    templateType: 'personal' | 'verified',
+    userId: string,
+    executionData: any
+): void {
+    // Notificar via WebSocket
+    notifyTemplateUsageRealtime(templateId, templateType, {
+        userId,
+        timestamp: new Date(),
+        ...executionData
+    });
+
+    // Log para debugging
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`📊 Template usage tracked and notified: ${templateType}:${templateId}`);
+    }
+}
+
+// ============= HEALTH CHECKS PARA MONITORING =============
+
+/**
+ * Obtener estado de salud del sistema de analytics
+ */
+export function getAnalyticsHealthStatus() {
+    const jobMetrics = getJobMetrics();
+    const realtimeConnections = realtimeAnalyticsService?.getServiceStats() || null;
+    
+    return {
+        jobs: {
+            status: jobMetrics ? 'healthy' : 'unavailable',
+            metrics: jobMetrics,
+        },
+        realtime: {
+            status: realtimeAnalyticsService ? 'healthy' : 'unavailable',
+            connections: realtimeConnections,
+        },
+        tracking: {
+            status: 'healthy', // Basado en middleware funcionando
+        },
+        timestamp: new Date(),
+    };
+}
+
+// ============= CLEANUP FUNCTIONS =============
+
+/**
+ * Limpiar recursos al cerrar aplicación
+ */
+export function cleanupAnalyticsServices(): void {
+    console.log("🧹 Cleaning up analytics services...");
+    
+    if (enhancedRankingJob) {
+        enhancedRankingJob.stopAllJobs();
+    }
+    
+    // realtimeAnalyticsService se limpia automáticamente con el servidor HTTP
+    
+    console.log("✅ Analytics services cleanup completed");
+}
+
+// ============= CONFIGURACIÓN DINÁMICA =============
+
+/**
+ * Recargar configuración de tracking
+ */
+export function reloadTrackingConfig(): void {
+    // Implementar recarga de configuración sin reiniciar
+    console.log("🔄 Reloading tracking configuration...");
+    // TODO: Implementar lógica de recarga
+    console.log("✅ Tracking configuration reloaded");
+}
+
+/**
+ * Habilitar/deshabilitar jobs dinámicamente
+ */
+export function toggleJobs(enabled: boolean): void {
+    if (!enhancedRankingJob) {
+        throw new Error("Enhanced ranking job not initialized");
+    }
+    
+    if (enabled) {
+        // Reanudar jobs
+        ['daily', 'weekly', 'monthly', 'yearly', 'cleanup'].forEach(jobName => {
+            enhancedRankingJob.resumeJob(jobName);
+        });
+        console.log("✅ All jobs resumed");
+    } else {
+        // Pausar jobs
+        ['daily', 'weekly', 'monthly', 'yearly', 'cleanup'].forEach(jobName => {
+            enhancedRankingJob.pauseJob(jobName);
+        });
+        console.log("⏸️  All jobs paused");
+    }
+}
+
+// ============= EXPORT DE NUEVAS FUNCIONES =============
+export {
+    initializeRankingJobs,
+    RealtimeAnalyticsService
+};

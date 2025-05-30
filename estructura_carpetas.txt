@@ -14,7 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|                       
+|                   
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
