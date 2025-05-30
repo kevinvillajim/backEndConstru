@@ -113,7 +113,7 @@ router.post(
  * Obtener datos completos del dashboard de administración
  */
 router.get("/dashboard", (req, res) => {
-	const dashboardController = getAdminDashboardController();
+	const dashboardController = getAdminPromotionController();
 	return dashboardController.getAdminDashboard(req, res);
 });
 
@@ -122,7 +122,7 @@ router.get("/dashboard", (req, res) => {
  * Obtener resumen rápido para el dashboard
  */
 router.get("/dashboard/summary", (req, res) => {
-	const dashboardController = getAdminDashboardController();
+	const dashboardController = getAdminPromotionController();
 	return dashboardController.getDashboardSummary(req, res);
 });
 
@@ -182,7 +182,7 @@ router.get("/templates/recently-promoted", (req, res) => {
  * Obtener todos los créditos de autores
  */
 router.get("/author-credits", (req, res) => {
-	const authorCreditsController = getAuthorCreditsController();
+	const authorCreditsController = getAdminPromotionController();
 	return authorCreditsController.getAllCredits(req, res);
 });
 
@@ -191,7 +191,7 @@ router.get("/author-credits", (req, res) => {
  * Obtener estadísticas de créditos
  */
 router.get("/author-credits/stats", (req, res) => {
-	const authorCreditsController = getAuthorCreditsController();
+	const authorCreditsController = getAdminPromotionController();
 	return authorCreditsController.getCreditStats(req, res);
 });
 
@@ -200,7 +200,7 @@ router.get("/author-credits/stats", (req, res) => {
  * Obtener top contribuidores
  */
 router.get("/author-credits/top-contributors", (req, res) => {
-	const authorCreditsController = getAuthorCreditsController();
+	const authorCreditsController = getAdminPromotionController();
 	return authorCreditsController.getTopContributors(req, res);
 });
 
@@ -209,7 +209,7 @@ router.get("/author-credits/top-contributors", (req, res) => {
  * Cambiar visibilidad de un crédito
  */
 router.put("/author-credits/:id/visibility", (req, res) => {
-	const authorCreditsController = getAuthorCreditsController();
+	const authorCreditsController = getAdminPromotionController();
 	return authorCreditsController.updateCreditVisibility(req, res);
 });
 
