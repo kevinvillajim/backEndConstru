@@ -4,7 +4,7 @@ import {UserCalculationTemplateRepository} from "../../domain/repositories/UserC
 import {CalculationTemplateRepository} from "../../domain/repositories/CalculationTemplateRepository";
 import {CalculationParameterRepository} from "../../domain/repositories/CalculationParameterRepository";
 import {AuthorCreditRepository} from "../../domain/repositories/AuthorCreditRepository";
-import {NotificationService} from "../../domain/services/NotificationService";
+import {NotificationService, NotificationType} from "../../domain/services/NotificationService";
 import {
 	PromotionRequestStatus,
 	PromotionRequestData,
@@ -15,8 +15,9 @@ import {
 	ProfessionType,
 	TemplateSource,
 } from "../../domain/models/calculation/CalculationTemplate";
-import {CreateCalculationParameterDTO} from "../../domain/models/calculation/CalculationParameter";
+import {CreateCalculationParameterDTO, ParameterScope} from "../../domain/models/calculation/CalculationParameter";
 import {CreateAuthorCreditDTO} from "../../domain/models/tracking/AuthorCredit";
+import {ParameterDataType} from "../../domain/models/calculation/CalculationParameter";
 
 export interface PromoteTemplateInput {
 	promotionRequestId: string;
@@ -100,7 +101,7 @@ export class PromoteTemplateToVerifiedUseCase {
 				name: param.name,
 				description: param.label,
 				dataType: this.mapParameterType(param.type),
-				scope: param.scope,
+				scope: this.mapScopeToParameterScope(param.scope),
 				displayOrder: param.displayOrder,
 				isRequired: param.required,
 				defaultValue: param.defaultValue?.toString(),
@@ -207,7 +208,9 @@ export class PromoteTemplateToVerifiedUseCase {
 		return points;
 	}
 
-	private determineRecognitionLevel(qualityScore: number): string {
+	private determineRecognitionLevel(
+		qualityScore: number
+	): "bronze" | "silver" | "gold" | "platinum" {
 		if (qualityScore >= 9) return "platinum";
 		if (qualityScore >= 7.5) return "gold";
 		if (qualityScore >= 6) return "silver";
@@ -251,17 +254,35 @@ export class PromoteTemplateToVerifiedUseCase {
 		return professionMap[profession] || ProfessionType.ALL;
 	}
 
+	private mapScopeToParameterScope(scope: "input" | "internal" | "output"): ParameterScope {
+		switch (scope) {
+			case "input":
+				return ParameterScope.INPUT;
+			case "internal":
+				return ParameterScope.INTERNAL;
+			case "output":
+				return ParameterScope.OUTPUT;
+			default:
+				throw new Error(`Invalid scope: ${scope}`);
+		}
+	}
+
 	private mapParameterType(
 		type: "number" | "text" | "select" | "boolean"
-	): string {
-		const typeMap = {
-			number: "number",
-			text: "string",
-			select: "enum",
-			boolean: "boolean",
-		};
-
-		return typeMap[type];
+	): ParameterDataType {
+		// ✅ CAMBIAR string por ParameterDataType
+		switch (type) {
+			case "number":
+				return ParameterDataType.NUMBER; // ✅ USAR ENUM
+			case "text":
+				return ParameterDataType.STRING; // ✅ USAR ENUM
+			case "select":
+				return ParameterDataType.ENUM; // ✅ USAR ENUM
+			case "boolean":
+				return ParameterDataType.BOOLEAN; // ✅ USAR ENUM
+			default:
+				return ParameterDataType.STRING; // ✅ USAR ENUM
+		}
 	}
 
 	private async sendSuccessNotifications(
@@ -273,14 +294,8 @@ export class PromoteTemplateToVerifiedUseCase {
 			// Notificar al autor original
 			await this.notificationService.sendToUser(personalTemplate.author.id, {
 				title: "🎉 ¡Tu plantilla ahora es oficial!",
-				message: `Tu plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada y ahora está disponible para toda la comunidad.`,
-				type: "success",
-				category: "template_promotion",
-				data: {
-					personalTemplateId: personalTemplate.id,
-					verifiedTemplateId: verifiedTemplate.id,
-					pointsEarned: this.calculateAuthorPoints(promotionRequest.metrics),
-				},
+				content: `Tu plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada y ahora está disponible para toda la comunidad.`,
+				type: NotificationType.SYSTEM,
 			});
 
 			// Notificar al solicitante si es diferente
@@ -289,9 +304,8 @@ export class PromoteTemplateToVerifiedUseCase {
 					promotionRequest.requestedBy,
 					{
 						title: "Promoción implementada exitosamente",
-						message: `La plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada.`,
-						type: "success",
-						category: "admin_success",
+						content: `La plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada.`,
+						type: NotificationType.SYSTEM,
 					}
 				);
 			}

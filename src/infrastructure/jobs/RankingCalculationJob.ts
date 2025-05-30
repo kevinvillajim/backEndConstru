@@ -1,6 +1,7 @@
 // src/infrastructure/jobs/RankingCalculationJob.ts
-import cron from "node-cron";
+import cron, {ScheduledTask} from "node-cron"; // Import ScheduledTask
 import {getCalculateTemplateRankingsUseCase} from "../config/service-factory";
+import {RankingCalculationResult} from "../../domain/models/RankingCalculationResult";
 import {
 	getTrackingConfig,
 	validateTrackingConfig,
@@ -13,6 +14,7 @@ import {
 export class RankingCalculationJob {
 	private static instance: RankingCalculationJob;
 	private isRunning = false;
+	private scheduledTasks: ScheduledTask[] = []; // Array to store tasks
 
 	private constructor() {}
 
@@ -47,8 +49,12 @@ export class RankingCalculationJob {
 			`   Criterios mínimos: ${config.rankings.minimumCriteria.totalUsage} usos, ${config.rankings.minimumCriteria.uniqueUsers} usuarios`
 		);
 
+		// Clear any existing tasks if start is called multiple times (optional, based on desired behavior)
+		this.stop();
+		this.scheduledTasks = [];
+
 		// Job diario
-		cron.schedule(
+		const dailyJob = cron.schedule(
 			config.jobs.schedules.daily,
 			async () => {
 				await this.calculateDailyRankings();
@@ -57,9 +63,10 @@ export class RankingCalculationJob {
 				timezone: config.jobs.timezone,
 			}
 		);
+		this.scheduledTasks.push(dailyJob); // Store the task
 
 		// Job semanal
-		cron.schedule(
+		const weeklyJob = cron.schedule(
 			config.jobs.schedules.weekly,
 			async () => {
 				await this.calculateWeeklyRankings();
@@ -68,9 +75,10 @@ export class RankingCalculationJob {
 				timezone: config.jobs.timezone,
 			}
 		);
+		this.scheduledTasks.push(weeklyJob); // Store the task
 
 		// Job mensual
-		cron.schedule(
+		const monthlyJob = cron.schedule(
 			config.jobs.schedules.monthly,
 			async () => {
 				await this.calculateMonthlyRankings();
@@ -79,9 +87,10 @@ export class RankingCalculationJob {
 				timezone: config.jobs.timezone,
 			}
 		);
+		this.scheduledTasks.push(monthlyJob); // Store the task
 
 		// Job anual
-		cron.schedule(
+		const yearlyJob = cron.schedule(
 			config.jobs.schedules.yearly,
 			async () => {
 				await this.calculateYearlyRankings();
@@ -90,9 +99,10 @@ export class RankingCalculationJob {
 				timezone: config.jobs.timezone,
 			}
 		);
+		this.scheduledTasks.push(yearlyJob); // Store the task
 
 		// Job de limpieza de datos
-		cron.schedule(
+		const cleanupJob = cron.schedule(
 			config.dataRetention.cleanupSchedule,
 			async () => {
 				await this.cleanupOldData();
@@ -101,6 +111,7 @@ export class RankingCalculationJob {
 				timezone: config.jobs.timezone,
 			}
 		);
+		this.scheduledTasks.push(cleanupJob); // Store the task
 
 		console.log("✅ Jobs de rankings programados correctamente");
 	}
@@ -143,7 +154,7 @@ export class RankingCalculationJob {
 	 * Calcula rankings semanales
 	 */
 	private async calculateWeeklyRankings(): Promise<void> {
-		if (this.isRunning) return;
+		if (this.isRunning) return; // Consider adding the console log here too for consistency
 
 		this.isRunning = true;
 		console.log("📊 Iniciando cálculo de rankings semanales...");
@@ -155,6 +166,14 @@ export class RankingCalculationJob {
 			console.log(
 				`✅ Rankings semanales calculados: ${result.totalRankingsCalculated} rankings`
 			);
+			// You might want to log more details like in calculateDailyRankings
+			console.log(`   - Plantillas personales: ${result.personalTemplates}`);
+			console.log(`   - Plantillas verificadas: ${result.verifiedTemplates}`);
+			if (result.topTemplate) {
+				console.log(
+					`   - Top template: ${result.topTemplate.templateId} (${result.topTemplate.templateType}) con score ${result.topTemplate.score}`
+				);
+			}
 		} catch (error) {
 			console.error("❌ Error calculando rankings semanales:", error);
 		} finally {
@@ -166,7 +185,7 @@ export class RankingCalculationJob {
 	 * Calcula rankings mensuales
 	 */
 	private async calculateMonthlyRankings(): Promise<void> {
-		if (this.isRunning) return;
+		if (this.isRunning) return; // Consider adding the console log here too
 
 		this.isRunning = true;
 		console.log("📊 Iniciando cálculo de rankings mensuales...");
@@ -178,6 +197,14 @@ export class RankingCalculationJob {
 			console.log(
 				`✅ Rankings mensuales calculados: ${result.totalRankingsCalculated} rankings`
 			);
+			// You might want to log more details like in calculateDailyRankings
+			console.log(`   - Plantillas personales: ${result.personalTemplates}`);
+			console.log(`   - Plantillas verificadas: ${result.verifiedTemplates}`);
+			if (result.topTemplate) {
+				console.log(
+					`   - Top template: ${result.topTemplate.templateId} (${result.topTemplate.templateType}) con score ${result.topTemplate.score}`
+				);
+			}
 		} catch (error) {
 			console.error("❌ Error calculando rankings mensuales:", error);
 		} finally {
@@ -189,7 +216,7 @@ export class RankingCalculationJob {
 	 * Calcula rankings anuales
 	 */
 	private async calculateYearlyRankings(): Promise<void> {
-		if (this.isRunning) return;
+		if (this.isRunning) return; // Consider adding the console log here too
 
 		this.isRunning = true;
 		console.log("📊 Iniciando cálculo de rankings anuales...");
@@ -201,6 +228,14 @@ export class RankingCalculationJob {
 			console.log(
 				`✅ Rankings anuales calculados: ${result.totalRankingsCalculated} rankings`
 			);
+			// You might want to log more details like in calculateDailyRankings
+			console.log(`   - Plantillas personales: ${result.personalTemplates}`);
+			console.log(`   - Plantillas verificadas: ${result.verifiedTemplates}`);
+			if (result.topTemplate) {
+				console.log(
+					`   - Top template: ${result.topTemplate.templateId} (${result.topTemplate.templateType}) con score ${result.topTemplate.score}`
+				);
+			}
 		} catch (error) {
 			console.error("❌ Error calculando rankings anuales:", error);
 		} finally {
@@ -213,7 +248,7 @@ export class RankingCalculationJob {
 	 */
 	async calculateManual(
 		period: "daily" | "weekly" | "monthly" | "yearly"
-	): Promise<void> {
+	): Promise<RankingCalculationResult> {
 		console.log(`📊 Cálculo manual de rankings ${period}...`);
 
 		try {
@@ -288,6 +323,8 @@ export class RankingCalculationJob {
 	 */
 	stop(): void {
 		console.log("🛑 Deteniendo jobs de rankings...");
-		cron.destroy();
+		this.scheduledTasks.forEach((task) => task.stop()); // Stop each task
+		this.scheduledTasks = []; // Clear the array
+		console.log("🛑 Todos los jobs de rankings detenidos.");
 	}
 }

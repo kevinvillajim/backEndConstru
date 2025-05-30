@@ -21,6 +21,11 @@ export enum NotificationType {
 	BUDGET_APPROVAL = "budget_approval",
 	PRICE_UPDATE = "price_update",
 	MATERIAL_IMPORT = "material_import",
+	INFO = "info",
+	WARNING = "warning",
+	ERROR = "error",
+	SUCCESS = "success",
+	SYSTEM = "system",
 }
 
 export enum NotificationPriority {

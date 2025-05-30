@@ -120,3 +120,5 @@ export interface NotificationService {
 	 */
 	getUserNotificationPreferences(userId: string): Promise<any>;
 }
+
+export { NotificationType };

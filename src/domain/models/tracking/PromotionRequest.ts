@@ -80,4 +80,5 @@ export interface PromotionRequestFilters {
 	dateFrom?: Date;
 	dateTo?: Date;
 	minQualityScore?: number;
+	personalTemplateId?: string;
 }
