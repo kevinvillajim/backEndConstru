@@ -1,10 +1,12 @@
 // src/infrastructure/jobs/EnhancedRankingCalculationJob.ts
-import cron from 'node-cron';
-import { 
-  getCalculateTemplateRankingsUseCase,
-  getNotificationService,
-  getRealtimeAnalyticsService 
-} from '../config/service-factory';
+import * as cron from "node-cron";
+import {
+	getCalculateTemplateRankingsUseCase,
+	getNotificationService,
+	getRealtimeAnalyticsService,
+	getUserTemplateUsageLogRepository,
+	getTemplateRankingRepository,
+} from "../config/service-factory";
 import { getTrackingConfig } from '../config/trackingConfig';
 
 interface JobExecutionResult {
@@ -129,7 +131,6 @@ export class EnhancedRankingCalculationJob {
           }
         },
         {
-          scheduled: false,
           timezone: this.config.jobs.timezone
         }
       );
@@ -314,18 +315,19 @@ export class EnhancedRankingCalculationJob {
     try {
       const notificationService = getNotificationService();
       
-      // Notificar a administradores sobre el fallo del job
-      await notificationService.notifyAdmins({
-        title: `🚨 Job Failed: ${jobName}`,
-        content: `El job de cálculo de rankings "${jobName}" ha fallado. Error: ${error.message || error}`,
-        type: 'alert',
-        category: 'system_error',
-        data: {
-          jobName,
-          error: error.message || String(error),
-          timestamp: new Date().toISOString()
-        }
-      });
+      // // Notificar a administradores sobre el fallo del job
+      // await notificationService.notifyAdmins({
+      //   title: `🚨 Job Failed: ${jobName}`,
+      //   content: `El job de cálculo de rankings "${jobName}" ha fallado. Error: ${error.message || error}`,
+      //   type: 'alert',
+      //   category: 'system_error',
+      //   data: {
+      //     jobName,
+      //     error: error.message || String(error),
+      //     timestamp: new Date().toISOString()
+      //   }
+      // });
+      console.log(notificationService, "Agregar servicio de Notificacion Back!!")
     } catch (notificationError) {
       console.error('Error sending job failure notification:', notificationError);
     }
@@ -444,17 +446,6 @@ export class EnhancedRankingCalculationJob {
     
     return ((totalExecutions - totalFailures) / totalExecutions) * 100;
   }
-}
-
-// Funciones helper para obtener repositorios (implementar según tu sistema)
-function getUserTemplateUsageLogRepository() {
-  // Implementar según tu service factory
-  throw new Error('Implement getUserTemplateUsageLogRepository');
-}
-
-function getTemplateRankingRepository() {
-  // Implementar según tu service factory
-  throw new Error('Implement getTemplateRankingRepository');
 }
 
 // Singleton para exportar
