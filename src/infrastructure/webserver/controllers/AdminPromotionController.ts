@@ -461,4 +461,59 @@ export class AdminPromotionController {
 			});
 		}
 	}
+
+	/**
+	 * GET /api/admin/templates/candidates
+	 * Obtener candidatos para promoción
+	 */
+	async getPromotionCandidates(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			// Lógica para obtener plantillas candidatas
+			// Por ahora retornamos array vacío
+			res.status(200).json({
+				success: true,
+				data: [],
+				message: "Funcionalidad en desarrollo",
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo candidatos:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo candidatos",
+			});
+		}
+	}
+
+	/**
+	 * GET /api/admin/templates/recently-promoted
+	 * Obtener plantillas recientemente promovidas
+	 */
+	async getRecentlyPromoted(
+		req: RequestWithUser,
+		res: Response
+	): Promise<void> {
+		try {
+			// Lógica para obtener plantillas recientemente promovidas
+			// Por ahora retornamos array vacío
+			res.status(200).json({
+				success: true,
+				data: [],
+				message: "Funcionalidad en desarrollo",
+			});
+		} catch (error) {
+			const typedError = handleError(error);
+			console.error("Error obteniendo plantillas promovidas:", typedError);
+
+			res.status(500).json({
+				success: false,
+				message: typedError.message || "Error obteniendo plantillas promovidas",
+			});
+		}
+	}
 }
+

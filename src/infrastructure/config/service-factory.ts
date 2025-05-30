@@ -142,8 +142,11 @@ import {TemplateRatingController} from "../webserver/controllers/TemplateRatingC
 import {TemplateSuggestionController} from "../webserver/controllers/TemplateSuggestionController";
 import {CalculationComparisonController} from "../webserver/controllers/CalculationComparisonController";
 import {TrendingController} from "../webserver/controllers/TrendingController";
-// *** NUEVO: Controlador para plantillas personales de usuarios ***
 import {UserCalculationTemplateController} from "../webserver/controllers/UserCalculationTemplateController";
+import {AdminPromotionController} from "../webserver/controllers/AdminPromotionController";
+import {TemplateAnalyticsController} from "../webserver/controllers/TemplateAnalyticsController";
+import { GlobalStatsController } from "../webserver/controllers/GlobalStatsController";
+import { GetGlobalTemplateStatsUseCase } from "../../application/calculation/GetGlobalTemplateStatsUseCase";
 
 // ============= JOBS =============
 import {
@@ -258,6 +261,7 @@ let createPromotionRequestUseCase: CreatePromotionRequestUseCase;
 let reviewPromotionRequestUseCase: ReviewPromotionRequestUseCase;
 let promoteTemplateToVerifiedUseCase: PromoteTemplateToVerifiedUseCase;
 let getTemplateAnalyticsUseCase: GetTemplateAnalyticsUseCase;
+let getGlobalTemplateStatsUseCase: GetGlobalTemplateStatsUseCase;
 
 
 // ============= VARIABLES GLOBALES DE CONTROLADORES =============
@@ -291,6 +295,10 @@ let calculationComparisonController: CalculationComparisonController;
 let trendingController: TrendingController;
 // *** NUEVO: Variable global para controlador de plantillas personales ***
 let userCalculationTemplateController: UserCalculationTemplateController;
+let adminPromotionController: AdminPromotionController;
+let templateAnalyticsController: TemplateAnalyticsController;
+let globalStatsController: GlobalStatsController;
+
 
 // ============= VARIABLES GLOBALES DE JOBS =============
 let enhancedRankingJob: EnhancedRankingCalculationJob;
@@ -797,6 +805,19 @@ export function initializeServices() {
 			categoryRepository,
 			notificationService
 		);
+		adminPromotionController = new AdminPromotionController(
+			createPromotionRequestUseCase,
+			reviewPromotionRequestUseCase,
+			promoteTemplateToVerifiedUseCase,
+			promotionRequestRepository
+		);
+		templateAnalyticsController = new TemplateAnalyticsController(
+			getTemplateAnalyticsUseCase,
+			getTrendingTemplatesUseCase
+		);
+		globalStatsController = new GlobalStatsController(
+			getGlobalTemplateStatsUseCase,
+		); 
 
 		// ============= INICIALIZAR JOBS =============
 		enhancedRankingJob = initializeRankingJobs();
@@ -1042,6 +1063,30 @@ export function getUserController() {
 			"Services not initialized. Call initializeServices() first."
 		);
 	return userController;
+}
+
+export function getAdminPromotionController() {
+	if (!adminPromotionController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return adminPromotionController;
+}
+
+export function getTemplateAnalyticsController() {
+	if (!templateAnalyticsController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return templateAnalyticsController;
+}
+
+export function getGlobalStatsController() {
+	if (!globalStatsController)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return globalStatsController;
 }
 
 // ============= GETTERS PARA SERVICIOS =============
