@@ -14,7 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|                  
+|                       
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -73,6 +73,8 @@ C:.
 |   |   |       ExportCalculationTemplateUseCase.ts
 |   |   |       FavoriteTemplateUseCase.ts
 |   |   |       GenerateBudgetFromCalculationUseCase.ts
+|   |   |       GetAdminDashboardDataUseCase.ts
+|   |   |       GetGlobalTemplateStatsUseCase.ts
 |   |   |       GetSavedComparisonsUseCase.ts
 |   |   |       GetSuggestionsUseCase.ts
 |   |   |       GetTemplateAnalyticsUseCase.ts
@@ -394,6 +396,7 @@ C:.
 |   |   +---webserver
 |   |   |   +---controllers
 |   |   |   |       AccountingController.ts
+|   |   |   |       AdminPromotionController.ts
 |   |   |   |       AdvancedRecommendationController.ts
 |   |   |   |       AuthController.ts
 |   |   |   |       BudgetController.ts
@@ -415,10 +418,12 @@ C:.
 |   |   |   |       ProjectScheduleController.ts
 |   |   |   |       SupplierIntegrationController.ts
 |   |   |   |       TaskController.ts
+|   |   |   |       TemplateAnalyticsController.ts
 |   |   |   |       TemplateFavoriteController.ts
 |   |   |   |       TemplateImportExportController.ts
 |   |   |   |       TemplateRatingController.ts
 |   |   |   |       TemplateSuggestionController.ts
+|   |   |   |       TemplateTrackingController.ts
 |   |   |   |       TrendingController.ts
 |   |   |   |       TwoFactorAuthController.ts
 |   |   |   |       UserCalculationTemplateController.ts
@@ -450,6 +455,7 @@ C:.
 |   |   |   |           userTemplateRoutes.documented.ts
 |   |   |   |           
 |   |   |   +---middlewares
+|   |   |   |       adminAuthMiddleware.ts
 |   |   |   |       authMiddleware.ts
 |   |   |   |       corsMiddleware.ts
 |   |   |   |       mirrorCorsMiddleware.ts
@@ -460,6 +466,7 @@ C:.
 |   |   |   |       
 |   |   |   +---routes
 |   |   |   |       accountingRoutes.ts
+|   |   |   |       adminPromotionRoutes.ts
 |   |   |   |       advancedRecommendationRoutes.ts
 |   |   |   |       authRoutes.ts
 |   |   |   |       budgetRoutes.ts
@@ -477,6 +484,7 @@ C:.
 |   |   |   |       projectPredictionRoutes.ts
 |   |   |   |       projectScheduleRoutes.ts
 |   |   |   |       supplierIntegrationRoutes.ts
+|   |   |   |       templateAnalyticsRoutes.ts
 |   |   |   |       templateImportExportRoutes.ts
 |   |   |   |       twoFactorAuthRoutes.ts
 |   |   |   |       userRoutes.ts
@@ -487,12 +495,14 @@ C:.
 |   |   |   |       queryUtils.ts
 |   |   |   |       
 |   |   |   \---validators
+|   |   |           analyticsValidator.ts
 |   |   |           authValidator.ts
 |   |   |           budgetValidator.ts
 |   |   |           calculationValidator.ts
 |   |   |           materialRequestValidator.ts
 |   |   |           materialValidator.ts
 |   |   |           projectScheduleValidator.ts
+|   |   |           promotionValidator.ts
 |   |   |           suggestionValidator.ts
 |   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts
