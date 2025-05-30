@@ -14,7 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|                        
+|                  
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -150,6 +150,8 @@ C:.
 |   |   |       AuthenticationError.ts
 |   |   |       
 |   |   +---models
+|   |   |   |   RankingCalculationResult.ts
+|   |   |   |   
 |   |   |   +---auth
 |   |   |   |       RefreshToken.ts
 |   |   |   |       
@@ -249,6 +251,7 @@ C:.
 |   |   +---config
 |   |   |       container.ts
 |   |   |       service-factory.ts
+|   |   |       trackingConfig.ts
 |   |   |       
 |   |   +---database
 |   |   |   |   data-source.ts
@@ -300,7 +303,7 @@ C:.
 |   |   |   |       UserTemplateUsageLogEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1748298338069-InitialSchema.ts
+|   |   |   |       1748594062064-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
@@ -366,6 +369,9 @@ C:.
 |   |   |   \---supplier
 |   |   |           ExampleSupplierAdapter.ts
 |   |   |           
+|   |   +---jobs
+|   |   |       RankingCalculationJob.ts
+|   |   |       
 |   |   +---security
 |   |   |   +---encryption
 |   |   |   \---jwt
@@ -449,6 +455,7 @@ C:.
 |   |   |   |       mirrorCorsMiddleware.ts
 |   |   |   |       permissiveCorsMiddleware.ts
 |   |   |   |       securityHeadersMiddleware.ts
+|   |   |   |       trackingMiddleware.ts
 |   |   |   |       validationMiddleware.ts
 |   |   |   |       
 |   |   |   +---routes
