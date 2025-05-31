@@ -7,7 +7,7 @@ import {
 	NotificationType,
 	NotificationPriority,
 } from "../../infrastructure/database/entities/NotificationEntity";
-import { InvoiceStatus } from "@infrastructure/database/entities/InvoiceEntity";
+import { InvoiceStatus } from "../../infrastructure/database/entities/InvoiceEntity";
 
 export class SyncInvoiceWithSriUseCase {
 	constructor(

@@ -1,13 +1,13 @@
 // src/infrastructure/database/repositories/TypeOrmGeographicalZoneRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {GeographicalZoneRepository} from "@domain/repositories/GeographicalZoneRepository";
+import {GeographicalZoneRepository} from "../../../domain/repositories/GeographicalZoneRepository";
 import {
 	GeographicalZone,
 	CreateGeographicalZoneDTO,
 	UpdateGeographicalZoneDTO,
 	SeismicZoneType,
-} from "@domain/models/calculation/GeographicalZone";
+} from "../../../domain/models/calculation/GeographicalZone";
 import {GeographicalZoneEntity} from "../entities/GeographicalZoneEntity";
 
 export class TypeOrmGeographicalZoneRepository

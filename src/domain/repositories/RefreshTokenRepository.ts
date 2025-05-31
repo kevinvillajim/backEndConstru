@@ -1,5 +1,5 @@
 // src/domain/repositories/RefreshTokenRepository.ts
-import {RefreshToken, CreateRefreshTokenDTO} from "@domain/models/auth/RefreshToken";
+import {RefreshToken, CreateRefreshTokenDTO} from "../../domain/models/auth/RefreshToken";
 
 export interface RefreshTokenRepository {
 	findByToken(token: string): Promise<RefreshToken | null>;

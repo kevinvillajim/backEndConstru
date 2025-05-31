@@ -4,7 +4,7 @@ import {AppDataSource} from "../data-source";
 import {
 	NotificationRepository,
 	Notification,
-} from "@domain/repositories/NotificationRepository";
+} from "../../../domain/repositories/NotificationRepository";
 import { NotificationEntity } from "../entities/NotificationEntity";
 import { MoreThan, IsNull } from "typeorm";
 import {NotificationPriority} from "../entities/NotificationEntity";

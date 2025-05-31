@@ -14,7 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|                   
+|                        
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -305,7 +305,7 @@ C:.
 |   |   |   |       UserTemplateUsageLogEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1748594062064-InitialSchema.ts
+|   |   |   |       1748666873460-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
@@ -372,6 +372,7 @@ C:.
 |   |   |           ExampleSupplierAdapter.ts
 |   |   |           
 |   |   +---jobs
+|   |   |       EnhancedRankingCalculationJob.ts
 |   |   |       RankingCalculationJob.ts
 |   |   |       
 |   |   +---security
@@ -404,6 +405,7 @@ C:.
 |   |   |   |       CalculationController.ts
 |   |   |   |       CalculationTemplateController.ts
 |   |   |   |       EnhancedProjectDashboardController.ts
+|   |   |   |       GlobalStatsController.ts
 |   |   |   |       InvoiceController.ts
 |   |   |   |       MaterialController.ts
 |   |   |   |       MaterialPropertyController.ts
@@ -434,6 +436,7 @@ C:.
 |   |   |   |   |   
 |   |   |   |   \---routes
 |   |   |   |           accountingRoutes.documented.ts
+|   |   |   |           adminPromotionRoutes.ts
 |   |   |   |           advancedRecommendationRoutes.documented.ts
 |   |   |   |           authRoutes.documented.ts
 |   |   |   |           budgetRoutes.documented.ts
@@ -451,6 +454,7 @@ C:.
 |   |   |   |           projectScheduleRoutes.documented.ts
 |   |   |   |           supplierIntegrationRoutes.documented.ts
 |   |   |   |           taskRoutes.documented.ts
+|   |   |   |           templateAnalyticsRoutes.ts
 |   |   |   |           templateImportExportRoutes.documented.ts
 |   |   |   |           userTemplateRoutes.documented.ts
 |   |   |   |           
@@ -458,6 +462,7 @@ C:.
 |   |   |   |       adminAuthMiddleware.ts
 |   |   |   |       authMiddleware.ts
 |   |   |   |       corsMiddleware.ts
+|   |   |   |       enhancedTrackingMiddleware.ts
 |   |   |   |       mirrorCorsMiddleware.ts
 |   |   |   |       permissiveCorsMiddleware.ts
 |   |   |   |       securityHeadersMiddleware.ts
@@ -509,6 +514,7 @@ C:.
 |   |   |           userTemplateValidator.ts
 |   |   |           
 |   |   \---websocket
+|   |           RealtimeAnalyticsService.ts
 |   |           WebSocketService.ts
 |   |           
 |   +---interfaces

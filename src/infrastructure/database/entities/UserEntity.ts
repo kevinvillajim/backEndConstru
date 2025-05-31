@@ -15,7 +15,7 @@ import {
 	SubscriptionPlan,
 	UserGender,
 	ProfessionalType,
-} from "@domain/models/user/User";
+} from "../../../domain/models/user/User";
 import { UserAddressEntity } from "./UserAddressEntity";
 
 @Entity("users")

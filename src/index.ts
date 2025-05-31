@@ -184,32 +184,37 @@ async function bootstrap() {
 		// *** NUEVO: Importar rutas de plantillas personales ***
 		const userTemplateRoutes =
 			require("./infrastructure/webserver/routes/userTemplateRoutes").default;
+		const adminPromotionRoutes =
+			require("./infrastructure/webserver/routes/adminPromotionRoutes").default;
+		const templateAnalyticsRoutes =
+			require("./infrastructure/webserver/routes/templateAnalyticsRoutes").default;
 
 		// Configure routes
 		app.use("/api/auth", authRoutes);
+		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 		app.use("/api/calculations", calculationRoutes);
+		app.use("/api/calculations/templates", templateImportExportRoutes);
+		app.use("/api/user-templates", userTemplateRoutes);
+		app.use("/api/analytics", templateAnalyticsRoutes);
+		app.use("/api/admin/promotions", adminPromotionRoutes);
 		app.use("/api/budgets", budgetRoutes);
 		app.use("/api/schedule", projectScheduleRoutes);
 		app.use("/api/notifications", notificationRoutes);
 		app.use("/api/reports", progressReportRoutes);
 		app.use("/api/material-requests", materialRequestRoutes);
 		app.use("/api/materials", materialRoutes);
-		app.use("/api/calculations/templates", templateImportExportRoutes);
-		app.use("/api/supplier-integration", supplierIntegrationRoutes);
 		app.use("/api/material-properties", materialPropertyRoutes);
+		app.use("/api/supplier-integration", supplierIntegrationRoutes);
 		app.use("/api/dashboards", projectDashboardRoutes);
+		app.use("/api/dashboards/enhanced", enhancedProjectDashboardRoutes);
 		app.use("/api/metrics", projectMetricsRoutes);
 		app.use("/api/orders", orderRoutes);
 		app.use("/api/recommendations/advanced", advancedRecommendationRoutes);
-		app.use("/api/auth/2fa", twoFactorAuthRoutes);
 		app.use("/api/invoices", invoiceRoutes);
 		app.use("/api/users", userRoutes);
 		app.use("/api/accounting", accountingRoutes);
-		app.use("/api/dashboards/enhanced", enhancedProjectDashboardRoutes);
 		app.use("/api/predictions", projectPredictionRoutes);
-		// *** NUEVO: Configurar rutas de plantillas personales ***
-		app.use("/api/user-templates", userTemplateRoutes);
-
+		
 		// Global error handler
 		app.use(
 			(

@@ -9,7 +9,7 @@ import {
 	NotificationPriority,
 } from "../../infrastructure/database/entities/NotificationEntity";
 import {PdfGenerationService} from "../../infrastructure/services/PdfGenerationService";
-import { InvoiceStatus } from "@infrastructure/database/entities/InvoiceEntity";
+import { InvoiceStatus } from "../../infrastructure/database/entities/InvoiceEntity";
 
 export interface EmailAttachment {
 	filename: string;

@@ -4,12 +4,12 @@ import {AppDataSource} from "../data-source";
 import {
 	MaterialRepository,
 	HistoricalPriceData,
-} from "@domain/repositories/MaterialRepository";
+} from "../../../domain/repositories/MaterialRepository";
 import {
 	MaterialPriceHistoryEntity,
 	PriceChangeReason,
 } from "../entities/MaterialPriceHistoryEntity";
-import {Material} from "@domain/models/material/Material";
+import {Material} from "../../../domain/models/material/Material";
 import {MaterialEntity} from "../entities/MaterialEntity";
 
 export class TypeOrmMaterialRepository implements MaterialRepository {

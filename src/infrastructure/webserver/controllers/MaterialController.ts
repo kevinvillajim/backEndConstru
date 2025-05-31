@@ -4,12 +4,16 @@ import {MaterialRepository} from "../../../domain/repositories/MaterialRepositor
 import {handleError} from "../utils/errorHandler";
 import { UserRole } from "../../../domain/models/user/User";
 import {RequestWithUser} from "../middlewares/authMiddleware";
-import { BulkUpdateMaterialPricesUseCase } from "@application/material/BulkUpdateMaterialPricesUseCase";
-import { MaterialPriceHistoryEntity, PriceChangeReason } from "@infrastructure/database/entities/MaterialPriceHistoryEntity";
-import { NotificationServiceImpl } from "@infrastructure/services/NotificationServiceImpl";
-import { AppDataSource } from "@infrastructure/database/data-source";
+import { BulkUpdateMaterialPricesUseCase } from "../../../application/material/BulkUpdateMaterialPricesUseCase";
+import {
+	MaterialPriceHistoryEntity,
+	PriceChangeReason,
+} from "../../database/entities/MaterialPriceHistoryEntity";
+import {NotificationServiceImpl} from "../../services/NotificationServiceImpl";
+import {AppDataSource} from "../../database/data-source";
 import {getNotificationService} from "../../config/service-factory";
 import { parse } from "path";
+
 
 export class MaterialController {
 	private compareMaterialPricesUseCase: any;

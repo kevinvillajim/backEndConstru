@@ -1,11 +1,11 @@
 // src/infrastructure/database/repositories/TypeOrmMaterialRequestRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {MaterialRequestRepository} from "@domain/repositories/MaterialRequestRepository";
+import {MaterialRequestRepository} from "../../../domain/repositories/MaterialRequestRepository";
 import {
 	MaterialRequest,
 	MaterialRequestStatus,
-} from "@domain/models/project/MaterialRequest";
+} from "../../../domain/models/project/MaterialRequest";
 import {MaterialRequestEntity} from "../entities/MaterialRequestEntity";
 import {TaskEntity} from "../entities/TaskEntity";
 

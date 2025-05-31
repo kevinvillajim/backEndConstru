@@ -1,8 +1,8 @@
 // src/infrastructure/database/repositories/TypeOrmAccountingTransactionRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {AccountingTransactionRepository} from "@domain/repositories/AccountingTransactionRepository";
-import {AccountingTransaction} from "@domain/services/AccountingService";
+import {AccountingTransactionRepository} from "../../../domain/repositories/AccountingTransactionRepository";
+import {AccountingTransaction} from "../../../domain/services/AccountingService";
 import {
 	AccountingTransactionEntity,
 	TransactionStatus,

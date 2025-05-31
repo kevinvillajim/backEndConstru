@@ -1,7 +1,7 @@
 // src/infrastructure/database/repositories/TypeOrmUserCalculationTemplateRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {UserCalculationTemplateRepository} from "@domain/repositories/UserCalculationTemplateRepository";
+import {UserCalculationTemplateRepository} from "../../../domain/repositories/UserCalculationTemplateRepository";
 import {
 	UserCalculationTemplate,
 	CreateUserCalculationTemplateDTO,
@@ -13,7 +13,7 @@ import {
 	UserTemplateStatus,
 	UserTemplateSourceType,
 	UserTemplateDifficulty,
-} from "@domain/models/calculation/UserCalculationTemplate";
+} from "../../../domain/models/calculation/UserCalculationTemplate";
 import {UserCalculationTemplateEntity} from "../entities/UserCalculationTemplateEntity";
 import {CalculationTemplateEntity} from "../entities/CalculationTemplateEntity";
 import {CalculationResultEntity} from "../entities/CalculationResultEntity";

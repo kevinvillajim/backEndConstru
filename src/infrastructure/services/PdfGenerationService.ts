@@ -4,10 +4,10 @@ import fs from "fs";
 import path from "path";
 import {ProjectBudget} from "../../domain/models/project/ProjectBudget";
 import {BudgetItem} from "../../domain/models/project/BudgetItem";
-import { InvoiceRepository } from "@domain/repositories/InvoiceRepository";
-import { UserRepository } from "@domain/repositories/UserRepository";
-import { TypeOrmInvoiceRepository } from "@infrastructure/database/repositories/TypeOrmInvoiceRepository";
-import { TypeOrmUserRepository } from "@infrastructure/database/repositories/TypeOrmUserRepository";
+import { InvoiceRepository } from "../../domain/repositories/InvoiceRepository";
+import {UserRepository} from "../../domain/repositories/UserRepository";
+import { TypeOrmInvoiceRepository } from "../../infrastructure/database/repositories/TypeOrmInvoiceRepository";
+import {TypeOrmUserRepository} from "../../infrastructure/database/repositories/TypeOrmUserRepository";
 
 export class PdfGenerationService {
 	constructor(

@@ -1,8 +1,8 @@
 // src/infrastructure/database/repositories/TypeOrmProjectRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {ProjectRepository} from "@domain/repositories/ProjectRepository";
-import {Project} from "@domain/models/project/Project";
+import {ProjectRepository} from "../../../domain/repositories/ProjectRepository";
+import {Project} from "../../../domain/models/project/Project";
 import {ProjectEntity} from "../entities/ProjectEntity";
 
 export class TypeOrmProjectRepository implements ProjectRepository {

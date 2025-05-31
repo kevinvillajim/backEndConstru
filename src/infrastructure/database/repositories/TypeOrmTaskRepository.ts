@@ -1,8 +1,8 @@
 // src/infrastructure/database/repositories/TypeOrmTaskRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {TaskRepository} from "@domain/repositories/TaskRepository";
-import {Task} from "@domain/models/project/Task";
+import {TaskRepository} from "../../../domain/repositories/TaskRepository";
+import {Task} from "../../../domain/models/project/Task";
 import {TaskEntity} from "../entities/TaskEntity";
 
 export class TypeOrmTaskRepository implements TaskRepository {

@@ -20,7 +20,7 @@ import {seedMamposteriaTemplates} from "./nec-mamposteria-seeds";
 import {seedInstalacionesElectricasTemplates} from "./nec-instalaciones-electricas-seeds";
 import {seedTelecomunicacionesTemplates} from "./nec-telecomunicaciones-seeds";
 import {seedAccesibilidadUniversalTemplates} from "./nec-accesibilidad-universal-seeds";
-import { AppDataSource } from "@infrastructure/database/data-source";
+import { AppDataSource } from "../../../../infrastructure/database/data-source";
 
 /**
  * Función principal para inicializar todas las plantillas de cálculo basadas en la normativa NEC

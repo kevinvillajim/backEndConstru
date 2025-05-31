@@ -1,8 +1,8 @@
 // src/infrastructure/database/repositories/TypeOrmPhaseRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {PhaseRepository} from "@domain/repositories/PhaseRepository";
-import {Phase} from "@domain/models/project/Phase";
+import {PhaseRepository} from "../../../domain/repositories/PhaseRepository";
+import {Phase} from "../../../domain/models/project/Phase";
 import {PhaseEntity} from "../entities/PhaseEntity";
 
 export class TypeOrmPhaseRepository implements PhaseRepository {

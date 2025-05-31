@@ -1,8 +1,12 @@
 // src/infrastructure/database/repositories/TypeOrmOrderRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {OrderRepository} from "@domain/repositories/OrderRepository";
-import {Order, OrderStatus, PaymentStatus} from "@domain/models/order/Order";
+import {OrderRepository} from "../../../domain/repositories/OrderRepository";
+import {
+	Order,
+	OrderStatus,
+	PaymentStatus,
+} from "../../../domain/models/order/Order";
 import {OrderEntity} from "../entities/OrderEntity";
 
 export class TypeOrmOrderRepository implements OrderRepository {

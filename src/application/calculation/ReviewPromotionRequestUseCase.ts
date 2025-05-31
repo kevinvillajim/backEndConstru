@@ -1,7 +1,7 @@
 // src/application/calculation/ReviewPromotionRequestUseCase.ts
 import {PromotionRequestRepository} from "../../domain/repositories/PromotionRequestRepository";
 import {UserRepository} from "../../domain/repositories/UserRepository";
-import {NotificationService} from "../../domain/services/NotificationService";
+import {NotificationService, NotificationType} from "../../domain/services/NotificationService";
 import {
 	PromotionRequestData,
 	PromotionRequestStatus,
@@ -174,14 +174,11 @@ export class ReviewPromotionRequestUseCase {
 					promotionRequest.originalAuthorId,
 					{
 						title,
-						message,
-						type: action === "approve" ? "notification" : "notification", // ✅ Usar tipo válido
-						category: "template_promotion",
-						data: {
-							promotionRequestId: promotionRequest.id,
-							templateId: promotionRequest.personalTemplateId,
-							action,
-						},
+						content: message,
+						type:
+							action === "approve"
+								? NotificationType.SUCCESS
+								: NotificationType.INFO,
 					}
 				);
 			}
@@ -192,9 +189,8 @@ export class ReviewPromotionRequestUseCase {
 					promotionRequest.requestedBy,
 					{
 						title: `Solicitud de promoción ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "en revisión"}`,
-						message: `La solicitud de promoción para "${promotionRequest.personalTemplate?.name}" ha sido ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "marcada para revisión"}.`,
-						type: action === "approve" ? "notification" : "notification", // ✅ Usar tipo válido
-						category: "admin_action",
+						content: `La solicitud de promoción para "${promotionRequest.personalTemplate?.name}" ha sido ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "marcada para revisión"}.`,
+						type: action === "approve" ? NotificationType.SUCCESS : NotificationType.INFO,
 					}
 				);
 			}

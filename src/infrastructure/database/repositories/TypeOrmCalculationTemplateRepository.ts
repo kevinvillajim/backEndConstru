@@ -1,9 +1,15 @@
 // src/infrastructure/database/repositories/TypeOrmCalculationTemplateRepository.ts
 import { Repository } from "typeorm";
 import { AppDataSource } from "../data-source";
-import { CalculationTemplateRepository } from "@domain/repositories/CalculationTemplateRepository";
-import { CalculationTemplate, CreateCalculationTemplateDTO, UpdateCalculationTemplateDTO, CalculationType, ProfessionType } from "@domain/models/calculation/CalculationTemplate";
-import { CalculationParameter } from "@domain/models/calculation/CalculationParameter";
+import {CalculationTemplateRepository} from "../../../domain/repositories/CalculationTemplateRepository";
+import {
+	CalculationTemplate,
+	CreateCalculationTemplateDTO,
+	UpdateCalculationTemplateDTO,
+	CalculationType,
+	ProfessionType,
+} from "../../../domain/models/calculation/CalculationTemplate";
+import {CalculationParameter} from "../../../domain/models/calculation/CalculationParameter";
 import { CalculationTemplateEntity } from "../entities/CalculationTemplateEntity";
 import { CalculationParameterEntity } from "../entities/CalculationParameterEntity";
 

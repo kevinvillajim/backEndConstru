@@ -1,11 +1,11 @@
 // src/infrastructure/database/repositories/TypeOrmRefreshTokenRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {RefreshTokenRepository} from "@domain/repositories/RefreshTokenRepository";
+import {RefreshTokenRepository} from "../../../domain/repositories/RefreshTokenRepository";
 import {
 	RefreshToken,
 	CreateRefreshTokenDTO,
-} from "@domain/models/auth/RefreshToken";
+} from "../../../domain/models/auth/RefreshToken";
 import {RefreshTokenEntity} from "../entities/RefreshTokenEntity";
 
 export class TypeOrmRefreshTokenRepository implements RefreshTokenRepository {

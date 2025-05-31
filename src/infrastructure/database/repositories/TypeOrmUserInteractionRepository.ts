@@ -1,7 +1,7 @@
 // src/infrastructure/database/repositories/TypeOrmUserInteractionRepository.ts
 import {Repository} from "typeorm";
-import {UserInteraction} from "@domain/models/user/UserInteraction";
-import {UserInteractionRepository} from "@domain/repositories/UserInteractionRepository";
+import {UserInteraction} from "../../../domain/models/user/UserInteraction";
+import {UserInteractionRepository} from "../../../domain/repositories/UserInteractionRepository";
 import {
 	UserInteractionEntity,
 	InteractionType,

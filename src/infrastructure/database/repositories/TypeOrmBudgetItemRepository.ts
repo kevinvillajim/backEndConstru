@@ -1,8 +1,8 @@
 // src/infrastructure/database/repositories/TypeOrmBudgetItemRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {BudgetItemRepository} from "@domain/repositories/BudgetItemRepository";
-import {BudgetItem} from "@domain/models/project/BudgetItem";
+import {BudgetItemRepository} from "../../../domain/repositories/BudgetItemRepository";
+import {BudgetItem} from "../../../domain/models/project/BudgetItem";
 import {BudgetItemEntity} from "../entities/BudgetItemEntity";
 
 export class TypeOrmBudgetItemRepository implements BudgetItemRepository {

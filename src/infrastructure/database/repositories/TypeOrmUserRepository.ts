@@ -1,7 +1,7 @@
 // src/infrastructure/database/repositories/TypeOrmUserRepository.ts
 import {Repository} from "typeorm";
-import {User} from "@domain/models/user/User";
-import {UserRepository} from "@domain/repositories/UserRepository";
+import {User} from "../../../domain/models/user/User";
+import {UserRepository} from "../../../domain/repositories/UserRepository";
 import {UserEntity} from "../entities/UserEntity";
 import { AppDataSource } from "../data-source";
 import crypto from "crypto";

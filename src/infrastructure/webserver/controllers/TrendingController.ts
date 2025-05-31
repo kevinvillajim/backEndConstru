@@ -1,7 +1,7 @@
 // src/infrastructure/webserver/controllers/TrendingController.ts
-import { GetTrendingTemplatesUseCase } from "../../../application/calculation/GetTrendingTemplatesUseCase";
+import {GetTrendingTemplatesUseCase} from "../../../application/calculation/GetTrendingTemplatesUseCase";
 import {Request, Response} from "express";
-import { handleError } from "../utils/errorHandler";
+import {handleError} from "../utils/errorHandler";
 
 export class TrendingController {
 	constructor(
@@ -12,12 +12,14 @@ export class TrendingController {
 		try {
 			const {period = "weekly", limit = 10} = req.query;
 
-			// Validar period
-			const validPeriods = ["daily", "weekly", "monthly"];
-			if (!validPeriods.includes(period as string)) {
+			// Validar period con type guard
+			const validPeriods = ["daily", "weekly", "monthly", "yearly"] as const;
+			type ValidPeriod = (typeof validPeriods)[number];
+
+			if (!validPeriods.includes(period as ValidPeriod)) {
 				res.status(400).json({
 					success: false,
-					message: "Período inválido. Use: daily, weekly, monthly",
+					message: "Período inválido. Use: daily, weekly, monthly, yearly",
 				});
 				return;
 			}
@@ -32,8 +34,10 @@ export class TrendingController {
 				return;
 			}
 
+			// Ahora period está validado y puede ser usado con el tipo correcto
 			const trendingTemplates = await this.getTrendingTemplatesUseCase.execute(
-				period as string,
+				period as ValidPeriod,
+				undefined,
 				limitNum
 			);
 

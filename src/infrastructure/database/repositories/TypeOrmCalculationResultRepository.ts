@@ -1,12 +1,12 @@
 // src/infrastructure/database/repositories/TypeOrmCalculationResultRepository.ts
 import {Repository} from "typeorm";
 import {AppDataSource} from "../data-source";
-import {CalculationResultRepository} from "@domain/repositories/CalculationResultRepository";
+import {CalculationResultRepository} from "../../../domain/repositories/CalculationResultRepository";
 import {
 	CalculationResult,
 	CreateCalculationResultDTO,
 	SaveCalculationResultDTO,
-} from "@domain/models/calculation/CalculationResult";
+} from "../../../domain/models/calculation/CalculationResult";
 import {CalculationResultEntity} from "../entities/CalculationResultEntity";
 
 export class TypeOrmCalculationResultRepository
