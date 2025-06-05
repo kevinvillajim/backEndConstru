@@ -20,7 +20,6 @@ export enum CalculationType {
 	ELECTRICAL = "electrical",
 	TELECOMMUNICATIONS = "telecommunications",
 }
-
 export enum ProfessionType {
 	ARCHITECT = "architect",
 	CIVIL_ENGINEER = "civil_engineer",
