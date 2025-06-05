@@ -2,6 +2,7 @@ import { MaterialCalculationTemplate, MaterialCalculationType } from "../../../d
 import { UserMaterialCalculationTemplate } from "../../../domain/models/calculation/UserMaterialCalculationTemplate";
 import { MaterialCalculationTemplateRepository } from "../../../domain/repositories/MaterialCalculationTemplateRepository";
 import { UserMaterialCalculationTemplateRepository } from "../../../domain/repositories/UserMaterialCalculationTemplateRepository";
+import {MaterialTemplateRankingRepository} from "../../../domain/repositories/MaterialTemplateRankingRepository";
 
 // src/application/calculation/material/GetMaterialTrendingTemplatesUseCase.ts
 export class GetMaterialTrendingTemplatesUseCase {

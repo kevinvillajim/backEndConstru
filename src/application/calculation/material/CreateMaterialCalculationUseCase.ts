@@ -7,6 +7,8 @@ import {MaterialCalculationService} from "../../../domain/services/MaterialCalcu
 import {MaterialCalculationResult} from "../../../domain/models/calculation/MaterialCalculationResult";
 import {MaterialCalculationTemplate, MaterialParameter} from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import {UserMaterialCalculationTemplate} from "../../../domain/models/calculation/UserMaterialCalculationTemplate";
+import {ValidationResult} from "../../../domain/models/common/ValidationResult";
+import {RegionalFactor} from "../../../domain/models/calculation/MaterialCalculationTemplate";
 
 
 

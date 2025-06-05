@@ -1,6 +1,7 @@
 import { MaterialCalculationType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import { MaterialCalculationTemplateRepository } from "../../../domain/repositories/MaterialCalculationTemplateRepository";
 import { UserMaterialCalculationTemplateRepository } from "../../../domain/repositories/UserMaterialCalculationTemplateRepository";
+import {MaterialTemplateUsageLogRepository} from "../../../domain/repositories/MaterialTemplateUsageLogRepository";
 
 // src/application/calculation/material/TrackMaterialTemplateUsageUseCase.ts
 export class TrackMaterialTemplateUsageUseCase {

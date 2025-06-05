@@ -1,6 +1,7 @@
 import { MaterialCalculationType, MaterialOutput, MaterialParameter, WasteFactor } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import {UserMaterialCalculationTemplate} from "../../../domain/models/calculation/UserMaterialCalculationTemplate";
 import { UserMaterialCalculationTemplateRepository } from "../../../domain/repositories/UserMaterialCalculationTemplateRepository";
+import {MaterialTemplateValidationService} from "../../../domain/services/MaterialTemplateValidationService";
 
 // src/application/calculation/material/CreateUserMaterialTemplateUseCase.ts
 export class CreateUserMaterialTemplateUseCase {

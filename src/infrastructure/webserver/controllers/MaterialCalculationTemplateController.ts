@@ -1,7 +1,10 @@
-import { MaterialCalculationType, MaterialParameter } from "../../../domain/models/calculation/MaterialCalculationTemplate";
+import { MaterialCalculationType, MaterialParameter, ParameterDataType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import { MaterialCalculationTemplateRepository, MaterialTemplateFilters } from "../../../domain/repositories/MaterialCalculationTemplateRepository";
-import { getMaterialCalculationService } from "@infrastructure/config/service-factory";
+import {getMaterialCalculationService} from "../../../infrastructure/config/service-factory";
 import { handleError } from "../utils/errorHandler";
+import { Request, Response } from "express";
+import { GetMaterialTemplatesByTypeUseCase } from "../../../application/calculation/material/GetMaterialTemplatesByTypeUseCase";
+import {SearchMaterialTemplatesUseCase} from "../../../application/calculation/material/SearchMaterialTemplatesUseCase";
 
 // src/infrastructure/webserver/controllers/MaterialCalculationTemplateController.ts
 export class MaterialCalculationTemplateController {
@@ -41,10 +44,12 @@ export class MaterialCalculationTemplateController {
 			};
 
 			const pagination = {
-				page: parseInt(page as string),
-				limit: parseInt(limit as string),
+				page: parseInt(page as string) || 1,
+				limit: parseInt(limit as string) || 20,
 				sortBy: sortBy as string,
-				sortOrder: (sortOrder as string)?.toUpperCase() as "ASC" | "DESC",
+				sortOrder: ((sortOrder as string)?.toLowerCase() === "desc"
+					? "desc"
+					: "asc") as "asc" | "desc",
 			};
 
 			const {templates, total} = await this.materialTemplateRepository.findAll(
@@ -240,7 +245,7 @@ export class MaterialCalculationTemplateController {
 				return parseFloat(value);
 			case "boolean":
 				return value.toLowerCase() === "true";
-			case "array":
+			case "array" as ParameterDataType:
 				try {
 					return JSON.parse(value);
 				} catch {
@@ -261,7 +266,7 @@ export class MaterialCalculationTemplateController {
 				return true;
 			case "enum":
 				return param.allowedValues?.[0] || "default";
-			case "array":
+			case "array" as ParameterDataType:
 				return param.allowedValues || ["sample"];
 			default:
 				return "sample_value";

@@ -1,6 +1,8 @@
+import { GetMaterialAnalyticsUseCase } from "../../../application/calculation/material/GetMaterialAnalyticsUseCase";
 import { GetMaterialTrendingTemplatesUseCase } from "../../../application/calculation/material/GetMaterialTrendingTemplatesUseCase";
 import { MaterialCalculationType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import { handleError } from "../utils/errorHandler";
+import {Request, Response} from "express";
 
 // src/infrastructure/webserver/controllers/MaterialTrendingController.ts
 export class MaterialTrendingController {

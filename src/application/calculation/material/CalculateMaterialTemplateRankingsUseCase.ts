@@ -1,4 +1,6 @@
 import { MaterialCalculationType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
+import {MaterialTemplateUsageLogRepository} from "../../../domain/repositories/MaterialTemplateUsageLogRepository";
+import {MaterialTemplateRankingRepository} from "../../../domain/repositories/MaterialTemplateRankingRepository";
 
 // src/application/calculation/material/CalculateMaterialTemplateRankingsUseCase.ts
 export class CalculateMaterialTemplateRankingsUseCase {
@@ -34,7 +36,10 @@ export class CalculateMaterialTemplateRankingsUseCase {
 
 			// 3. Calcular trend scores y rankings
 			const rankedStats = await this.calculateTrendScores(
-				typeStats,
+				typeStats.map((stat) => ({
+					...stat,
+					materialType: stat.materialType as MaterialCalculationType,
+				})),
 				period,
 				periodStart
 			);
