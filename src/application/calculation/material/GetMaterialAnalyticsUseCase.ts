@@ -1,6 +1,6 @@
-import { MaterialCalculationTemplateRepository } from "../../../domain/repositories/MaterialCalculationTemplateRepository";
-
 // src/application/calculation/material/GetMaterialAnalyticsUseCase.ts
+import {MaterialCalculationTemplateRepository} from "../../../domain/repositories/MaterialCalculationTemplateRepository";
+
 interface MaterialAnalyticsRequest {
 	period?: string;
 	includeComparisons?: boolean;

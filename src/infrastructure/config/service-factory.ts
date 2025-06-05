@@ -171,6 +171,12 @@ import { MaterialTrendingController } from "../../infrastructure/webserver/contr
 import {MaterialTemplateValidationServiceImpl} from "../services/MaterialTemplateValidationServiceImpl";
 import {TypeOrmMaterialTemplateUsageLogRepository} from "../database/repositories/TypeOrmMaterialTemplateUsageLogRepository";
 import {TypeOrmMaterialTemplateRankingRepository} from "../database/repositories/TypeOrmMaterialTemplateRankingRepository";
+import {GetMaterialTemplatesByTypeUseCase} from "../../application/calculation/material/GetMaterialTemplatesByTypeUseCase";
+import {SearchMaterialTemplatesUseCase} from "../../application/calculation/material/SearchMaterialTemplatesUseCase";
+import {GetMaterialAnalyticsUseCase} from "../../application/calculation/material/GetMaterialAnalyticsUseCase";
+import {TypeOrmMaterialCalculationResultRepository} from "../database/repositories/TypeOrmMaterialCalculationResultRepository";
+import {TypeOrmUserMaterialCalculationTemplateRepository} from "../database/repositories/TypeOrmUserMaterialCalculationTemplateRepository";
+import {UserMaterialTemplateController} from "../webserver/controllers/UserMaterialTemplateController";
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
 let userRepository: TypeOrmUserRepository;
@@ -321,11 +327,9 @@ let materialCalculationTemplateRepository: MaterialCalculationTemplateRepository
 let userMaterialCalculationTemplateRepository: UserMaterialCalculationTemplateRepository;
 let materialCalculationResultRepository: MaterialCalculationResultRepository;
 let materialCalculationService: MaterialCalculationService;
-let materialTemplateValidationService: MaterialTemplateValidationService;
 let createMaterialCalculationUseCase: CreateMaterialCalculationUseCase;
 let createUserMaterialTemplateUseCase: CreateUserMaterialTemplateUseCase;
-let getMaterialTemplatesByTypeUseCase: GetMaterialTemplatesByTypeUseCase;
-let executeMaterialCalculationUseCase: ExecuteMaterialCalculationUseCase;
+let executeMaterialCalculationUseCase: CreateMaterialCalculationUseCase;
 // Controllers de materiales
 let materialCalculationTemplateController: MaterialCalculationTemplateController;
 let materialCalculationController: MaterialCalculationController;
@@ -333,12 +337,16 @@ let userMaterialTemplateController: UserMaterialTemplateController;
 let materialTrendingController: MaterialTrendingController;
 
 // Use cases adicionales
-let getMaterialTemplatesByTypeUseCase: GetMaterialTemplatesByTypeUseCase;
-let searchMaterialTemplatesUseCase: SearchMaterialTemplatesUseCase;
-let getMaterialAnalyticsUseCase: GetMaterialAnalyticsUseCase;
 let materialTemplateValidationService: MaterialTemplateValidationServiceImpl;
 let materialTemplateUsageLogRepository: TypeOrmMaterialTemplateUsageLogRepository;
 let materialTemplateRankingRepository: TypeOrmMaterialTemplateRankingRepository;
+let getMaterialTemplatesByTypeUseCase: GetMaterialTemplatesByTypeUseCase;
+let searchMaterialTemplatesUseCase: SearchMaterialTemplatesUseCase;
+let getMaterialAnalyticsUseCase: GetMaterialAnalyticsUseCase;
+let getMaterialTrendingTemplatesUseCase: GetMaterialTrendingTemplatesUseCase;
+let trackMaterialTemplateUsageUseCase: TrackMaterialTemplateUsageUseCase;
+let calculateMaterialTemplateRankingsUseCase: CalculateMaterialTemplateRankingsUseCase;
+
 
 
 // ============= VARIABLES GLOBALES DE JOBS =============
@@ -732,6 +740,19 @@ export function initializeServices() {
 		getTemplateAnalyticsUseCase = new GetTemplateAnalyticsUseCase(
 			userTemplateUsageLogRepository,
 			templateRankingRepository
+		);
+
+		getMaterialTemplatesByTypeUseCase = new GetMaterialTemplatesByTypeUseCase(
+			getMaterialCalculationTemplateRepository()
+		);
+
+		searchMaterialTemplatesUseCase = new SearchMaterialTemplatesUseCase(
+			getMaterialCalculationTemplateRepository()
+		);
+
+		getMaterialAnalyticsUseCase = new GetMaterialAnalyticsUseCase(
+			getMaterialCalculationTemplateRepository(),
+			getMaterialTemplateUsageLogRepository()
 		);
 
 		// ============= INICIALIZAR CONTROLADORES PRINCIPALES =============
@@ -1382,6 +1403,16 @@ export const getCreateUserMaterialTemplateUseCase =
 		return createUserMaterialTemplateUseCase;
 	};
 
+export const getSearchMaterialTemplatesUseCase =
+	(): SearchMaterialTemplatesUseCase => {
+		if (!searchMaterialTemplatesUseCase) {
+			searchMaterialTemplatesUseCase = new SearchMaterialTemplatesUseCase(
+				getMaterialCalculationTemplateRepository()
+			);
+		}
+		return searchMaterialTemplatesUseCase;
+	};
+
 // Getters para controllers
 export const getMaterialCalculationTemplateController = (): MaterialCalculationTemplateController => {
   if (!materialCalculationTemplateController) {
@@ -1405,16 +1436,29 @@ export const getMaterialCalculationController = (): MaterialCalculationControlle
   return materialCalculationController;
 };
 
-export const getUserMaterialTemplateController = (): UserMaterialTemplateController => {
-  if (!userMaterialTemplateController) {
-    userMaterialTemplateController = new UserMaterialTemplateController(
-      getCreateUserMaterialTemplateUseCase(),
-      getUserMaterialCalculationTemplateRepository(),
-      getMaterialTemplateValidationService()
-    );
-  }
-  return userMaterialTemplateController;
-};
+export const getGetMaterialAnalyticsUseCase =
+	(): GetMaterialAnalyticsUseCase => {
+		if (!getMaterialAnalyticsUseCase) {
+			getMaterialAnalyticsUseCase = new GetMaterialAnalyticsUseCase(
+				getMaterialCalculationTemplateRepository(),
+				getMaterialTemplateUsageLogRepository()
+			);
+		}
+		return getMaterialAnalyticsUseCase;
+	};
+
+export const getUserMaterialTemplateController =
+	(): UserMaterialTemplateController => {
+		if (!userMaterialTemplateController) {
+			userMaterialTemplateController = new UserMaterialTemplateController(
+				getCreateUserMaterialTemplateUseCase(),
+				getUserMaterialCalculationTemplateRepository(),
+				getMaterialTemplateValidationService()
+			);
+		}
+		return userMaterialTemplateController;
+	};
+
 
 export const getMaterialTrendingController = (): MaterialTrendingController => {
   if (!materialTrendingController) {
@@ -1427,46 +1471,52 @@ export const getMaterialTrendingController = (): MaterialTrendingController => {
 };
 
 // Getters para use cases adicionales
-export const getGetMaterialTemplatesByTypeUseCase = (): GetMaterialTemplatesByTypeUseCase => {
-  if (!getMaterialTemplatesByTypeUseCase) {
-    getMaterialTemplatesByTypeUseCase = new GetMaterialTemplatesByTypeUseCase(
-      getMaterialCalculationTemplateRepository()
-    );
-  }
-  return getMaterialTemplatesByTypeUseCase;
-};
+export const getGetMaterialTemplatesByTypeUseCase =
+	(): GetMaterialTemplatesByTypeUseCase => {
+		if (!getMaterialTemplatesByTypeUseCase) {
+			getMaterialTemplatesByTypeUseCase = new GetMaterialTemplatesByTypeUseCase(
+				getMaterialCalculationTemplateRepository()
+			);
+		}
+		return getMaterialTemplatesByTypeUseCase;
+	};
 
-export const getGetMaterialTrendingTemplatesUseCase = (): GetMaterialTrendingTemplatesUseCase => {
-  if (!getMaterialTrendingTemplatesUseCase) {
-    getMaterialTrendingTemplatesUseCase = new GetMaterialTrendingTemplatesUseCase(
-      getMaterialTemplateRankingRepository(),
-      getMaterialCalculationTemplateRepository(),
-      getUserMaterialCalculationTemplateRepository()
-    );
-  }
-  return getMaterialTrendingTemplatesUseCase;
-};
+export const getGetMaterialTrendingTemplatesUseCase =
+	(): GetMaterialTrendingTemplatesUseCase => {
+		if (!getMaterialTrendingTemplatesUseCase) {
+			getMaterialTrendingTemplatesUseCase =
+				new GetMaterialTrendingTemplatesUseCase(
+					getMaterialTemplateRankingRepository(),
+					getMaterialCalculationTemplateRepository(),
+					getUserMaterialCalculationTemplateRepository()
+				);
+		}
+		return getMaterialTrendingTemplatesUseCase;
+	};
 
-export const getTrackMaterialTemplateUsageUseCase = (): TrackMaterialTemplateUsageUseCase => {
-  if (!trackMaterialTemplateUsageUseCase) {
-    trackMaterialTemplateUsageUseCase = new TrackMaterialTemplateUsageUseCase(
-      getMaterialTemplateUsageLogRepository(),
-      getMaterialCalculationTemplateRepository(),
-      getUserMaterialCalculationTemplateRepository()
-    );
-  }
-  return trackMaterialTemplateUsageUseCase;
-};
+export const getTrackMaterialTemplateUsageUseCase =
+	(): TrackMaterialTemplateUsageUseCase => {
+		if (!trackMaterialTemplateUsageUseCase) {
+			trackMaterialTemplateUsageUseCase = new TrackMaterialTemplateUsageUseCase(
+				getMaterialTemplateUsageLogRepository(),
+				getMaterialCalculationTemplateRepository(),
+				getUserMaterialCalculationTemplateRepository()
+			);
+		}
+		return trackMaterialTemplateUsageUseCase;
+	};
 
-export const getCalculateMaterialTemplateRankingsUseCase = (): CalculateMaterialTemplateRankingsUseCase => {
-  if (!calculateMaterialTemplateRankingsUseCase) {
-    calculateMaterialTemplateRankingsUseCase = new CalculateMaterialTemplateRankingsUseCase(
-      getMaterialTemplateUsageLogRepository(),
-      getMaterialTemplateRankingRepository()
-    );
-  }
-  return calculateMaterialTemplateRankingsUseCase;
-};
+export const getCalculateMaterialTemplateRankingsUseCase =
+	(): CalculateMaterialTemplateRankingsUseCase => {
+		if (!calculateMaterialTemplateRankingsUseCase) {
+			calculateMaterialTemplateRankingsUseCase =
+				new CalculateMaterialTemplateRankingsUseCase(
+					getMaterialTemplateUsageLogRepository(),
+					getMaterialTemplateRankingRepository()
+				);
+		}
+		return calculateMaterialTemplateRankingsUseCase;
+	};
 
 export function getMaterialTemplateValidationService() {
 	if (!materialTemplateValidationService)

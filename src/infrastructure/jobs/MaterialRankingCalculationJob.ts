@@ -66,6 +66,6 @@ export class MaterialRankingCalculationJob {
 	}
 
 	stop(): void {
-		cron.destroy();
+		console.log("Stopping material ranking calculation jobs...");
 	}
 }

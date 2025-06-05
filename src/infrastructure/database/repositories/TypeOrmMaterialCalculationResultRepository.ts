@@ -100,7 +100,12 @@ export class TypeOrmMaterialCalculationResultRepository
 		id: string,
 		data: Partial<MaterialCalculationResult>
 	): Promise<MaterialCalculationResult | null> {
-		await this.repository.update(id, data);
+		const updateData: any = {
+			...data,
+			updatedAt: new Date(),
+		};
+
+		await this.repository.update(id, updateData);
 		return this.findById(id);
 	}
 
