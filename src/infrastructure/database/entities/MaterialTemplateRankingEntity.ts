@@ -1,12 +1,10 @@
 // src/infrastructure/database/entities/MaterialTemplateRankingEntity.ts
-import { MaterialCalculationType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
 	CreateDateColumn,
-	ManyToOne,
-	JoinColumn,
+	UpdateDateColumn,
 } from "typeorm";
 
 @Entity("material_template_rankings")
@@ -27,7 +25,16 @@ export class MaterialTemplateRankingEntity {
 	@Column({
 		name: "material_type",
 		type: "enum",
-		enum: Object.values(MaterialCalculationType),
+		enum: [
+			"masonry",
+			"concrete",
+			"finishes",
+			"stairs",
+			"electrical",
+			"furniture",
+			"mortar",
+			"flooring",
+		],
 	})
 	materialType: string;
 
@@ -110,7 +117,7 @@ export class MaterialTemplateRankingEntity {
 		scale: 4,
 		default: 0,
 	})
-	growthRate: number; // % crecimiento vs período anterior
+	growthRate: number;
 
 	@CreateDateColumn({name: "created_at"})
 	createdAt: Date;

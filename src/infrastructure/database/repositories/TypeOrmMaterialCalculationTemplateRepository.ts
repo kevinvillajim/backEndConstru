@@ -1,12 +1,17 @@
-import { MaterialCalculationTemplate, MaterialCalculationType, MaterialUnit } from "../../../domain/models/calculation/MaterialCalculationTemplate";
-import { PaginationOptions } from "../../../domain/models/common/PaginationOptions";
-import { MaterialCalculationTemplateRepository, MaterialTemplateFilters } from "../../../domain/repositories/MaterialCalculationTemplateRepository";
-import { Repository } from "typeorm";
-import { AppDataSource } from "../data-source";
-import { ParameterDataType, ParameterScope } from "../entities/CalculationParameterEntity";
-import { MaterialCalculationTemplateEntity } from "../entities/MaterialCalculationTemplateEntity";
-
 // src/infrastructure/database/repositories/TypeOrmMaterialCalculationTemplateRepository.ts
+import {Repository} from "typeorm";
+import {AppDataSource} from "../data-source";
+import {
+	MaterialCalculationTemplateRepository,
+	MaterialTemplateFilters,
+} from "../../../domain/repositories/MaterialCalculationTemplateRepository";
+import {
+	MaterialCalculationTemplate,
+	MaterialCalculationType,
+} from "../../../domain/models/calculation/MaterialCalculationTemplate";
+import {MaterialCalculationTemplateEntity} from "../entities/MaterialCalculationTemplateEntity";
+import {PaginationOptions} from "../../../domain/models/common/PaginationOptions";
+
 export class TypeOrmMaterialCalculationTemplateRepository
 	implements MaterialCalculationTemplateRepository
 {
@@ -31,7 +36,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 		type: MaterialCalculationType
 	): Promise<MaterialCalculationTemplate[]> {
 		const entities = await this.repository.find({
-			where: {type, isActive: true},
+			where: {type: type as string, isActive: true},
 			relations: ["parameters"],
 			order: {isFeatured: "DESC", usageCount: "DESC", name: "ASC"},
 		});
@@ -140,11 +145,13 @@ export class TypeOrmMaterialCalculationTemplateRepository
 
 		// Aplicar paginación y ordenamiento
 		if (pagination) {
-			const skip = (pagination.page - 1) * pagination.limit;
-			queryBuilder = queryBuilder.skip(skip).take(pagination.limit);
+			const skip = ((pagination.page || 1) - 1) * (pagination.limit || 10);
+			queryBuilder = queryBuilder.skip(skip).take(pagination.limit || 10);
 
 			if (pagination.sortBy) {
-				const order = pagination.sortOrder || "ASC";
+				const order = (pagination.sortOrder || "ASC").toUpperCase() as
+					| "ASC"
+					| "DESC";
 				queryBuilder = queryBuilder.orderBy(
 					`template.${pagination.sortBy}`,
 					order
@@ -168,11 +175,16 @@ export class TypeOrmMaterialCalculationTemplateRepository
 	): Promise<MaterialCalculationTemplate> {
 		const entity = this.repository.create({
 			...data,
+			type: data.type as string,
+			shareLevel: data.shareLevel as string,
 			createdAt: new Date(),
 			updatedAt: new Date(),
-		});
+		} as any);
 
 		const savedEntity = await this.repository.save(entity);
+		if (Array.isArray(savedEntity)) {
+			throw new Error("Expected a single entity but received an array.");
+		}
 		return this.toDomainModel(savedEntity);
 	}
 
@@ -180,7 +192,15 @@ export class TypeOrmMaterialCalculationTemplateRepository
 		id: string,
 		data: Partial<MaterialCalculationTemplate>
 	): Promise<MaterialCalculationTemplate | null> {
-		await this.repository.update(id, {...data, updatedAt: new Date()});
+		const updateData = {
+			...data,
+			updatedAt: new Date(),
+		};
+
+		// Remover campos que causan problemas de tipo
+		const {parameters, ...safeUpdateData} = updateData as any;
+
+		await this.repository.update(id, safeUpdateData);
 		return this.findById(id);
 	}
 
@@ -188,7 +208,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 		const result = await this.repository.update(id, {
 			isActive: false,
 			updatedAt: new Date(),
-		});
+		} as any);
 		return result.affected !== undefined && result.affected > 0;
 	}
 
@@ -207,10 +227,10 @@ export class TypeOrmMaterialCalculationTemplateRepository
 		const newAverageRating = totalRating / newRatingCount;
 
 		const result = await this.repository.update(id, {
-			averageRating: Math.round(newAverageRating * 100) / 100, // 2 decimales
+			averageRating: Math.round(newAverageRating * 100) / 100,
 			ratingCount: newRatingCount,
 			updatedAt: new Date(),
-		});
+		} as any);
 
 		return result.affected !== undefined && result.affected > 0;
 	}
@@ -231,14 +251,14 @@ export class TypeOrmMaterialCalculationTemplateRepository
 					id: p.id,
 					name: p.name,
 					description: p.description,
-					dataType: p.dataType as ParameterDataType,
-					scope: p.scope as ParameterScope,
+					dataType: p.dataType as any,
+					scope: p.scope as any,
 					displayOrder: p.displayOrder,
 					isRequired: p.isRequired,
 					defaultValue: p.defaultValue,
 					minValue: p.minValue,
 					maxValue: p.maxValue,
-					unit: p.unit as MaterialUnit,
+					unit: p.unit as any,
 					allowedValues: p.allowedValues,
 					helpText: p.helpText,
 					dependsOnParameters: p.dependsOnParameters,
@@ -250,7 +270,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 			isActive: entity.isActive,
 			isVerified: entity.isVerified,
 			isFeatured: entity.isFeatured,
-			shareLevel: entity.shareLevel as ShareLevel,
+			shareLevel: entity.shareLevel as any,
 			createdBy: entity.createdBy,
 			version: entity.version,
 			usageCount: entity.usageCount,

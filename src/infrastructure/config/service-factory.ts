@@ -149,18 +149,18 @@ import { GlobalStatsController } from "../webserver/controllers/GlobalStatsContr
 import { GetGlobalTemplateStatsUseCase } from "../../application/calculation/GetGlobalTemplateStatsUseCase";
 import { TemplateTrackingController } from "../webserver/controllers/TemplateTrackingController";
 
-import {MaterialCalculationResultRepository} from "../../domain/repositories/MaterialCalculationResultRepository";
-import {MaterialCalculationTemplateRepository} from "../../domain/repositories/MaterialCalculationTemplateRepository";
-import {UserMaterialCalculationTemplateRepository} from "../../domain/repositories/UserMaterialCalculationTemplateRepository";
-import { CreateMaterialCalculationUseCase } from "../../application/calculation/material/CreateMaterialCalculationUseCase";
-import {CreateUserMaterialTemplateUseCase} from "../../application/calculation/material/CreateUserMaterialTemplateUseCase";
-import { MaterialCalculationService } from "../../domain/services/MaterialCalculationService";
-
 // ============= JOBS =============
 import {
 	EnhancedRankingCalculationJob,
 	initializeRankingJobs,
 } from "../jobs/EnhancedRankingCalculationJob";
+
+import {MaterialCalculationResultRepository} from "../../domain/repositories/MaterialCalculationResultRepository";
+import {MaterialCalculationTemplateRepository} from "../../domain/repositories/MaterialCalculationTemplateRepository";
+import {UserMaterialCalculationTemplateRepository} from "../../domain/repositories/UserMaterialCalculationTemplateRepository";
+import {CreateMaterialCalculationUseCase} from "../../application/calculation/material/CreateMaterialCalculationUseCase";
+import {CreateUserMaterialTemplateUseCase} from "../../application/calculation/material/CreateUserMaterialTemplateUseCase";
+import {MaterialCalculationService} from "../../domain/services/MaterialCalculationService";
 import { CalculateMaterialTemplateRankingsUseCase } from "../../application/calculation/material/CalculateMaterialTemplateRankingsUseCase";
 import { GetMaterialTrendingTemplatesUseCase } from "../../application/calculation/material/GetMaterialTrendingTemplatesUseCase";
 import { TrackMaterialTemplateUsageUseCase } from "../../application/calculation/material/TrackMaterialTemplateUsageUseCase";
@@ -168,7 +168,9 @@ import { TypeOrmMaterialCalculationTemplateRepository } from "../../infrastructu
 import { MaterialCalculationController } from "../../infrastructure/webserver/controllers/MaterialCalculationController";
 import { MaterialCalculationTemplateController } from "../../infrastructure/webserver/controllers/MaterialCalculationTemplateController";
 import { MaterialTrendingController } from "../../infrastructure/webserver/controllers/MaterialTrendingController";
-
+import {MaterialTemplateValidationServiceImpl} from "../services/MaterialTemplateValidationServiceImpl";
+import {TypeOrmMaterialTemplateUsageLogRepository} from "../database/repositories/TypeOrmMaterialTemplateUsageLogRepository";
+import {TypeOrmMaterialTemplateRankingRepository} from "../database/repositories/TypeOrmMaterialTemplateRankingRepository";
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
 let userRepository: TypeOrmUserRepository;
@@ -334,6 +336,10 @@ let materialTrendingController: MaterialTrendingController;
 let getMaterialTemplatesByTypeUseCase: GetMaterialTemplatesByTypeUseCase;
 let searchMaterialTemplatesUseCase: SearchMaterialTemplatesUseCase;
 let getMaterialAnalyticsUseCase: GetMaterialAnalyticsUseCase;
+let materialTemplateValidationService: MaterialTemplateValidationServiceImpl;
+let materialTemplateUsageLogRepository: TypeOrmMaterialTemplateUsageLogRepository;
+let materialTemplateRankingRepository: TypeOrmMaterialTemplateRankingRepository;
+
 
 // ============= VARIABLES GLOBALES DE JOBS =============
 let enhancedRankingJob: EnhancedRankingCalculationJob;
@@ -378,6 +384,11 @@ export function initializeServices() {
 		templateRankingRepository = new TypeOrmTemplateRankingRepository();
 		promotionRequestRepository = new TypeOrmPromotionRequestRepository();
 		authorCreditRepository = new TypeOrmAuthorCreditRepository();
+		materialTemplateUsageLogRepository =
+			new TypeOrmMaterialTemplateUsageLogRepository();
+		materialTemplateRankingRepository =
+			new TypeOrmMaterialTemplateRankingRepository();
+
 
 		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
@@ -390,6 +401,9 @@ export function initializeServices() {
 		advancedRecommendationService = new AdvancedRecommendationService();
 		twoFactorAuthService = new TwoFactorAuthService();
 		userService = new UserService(userRepository);
+		materialTemplateValidationService =
+			new MaterialTemplateValidationServiceImpl();
+
 
 		// Servicios de infraestructura
 		emailService = new EmailServiceImpl(
@@ -1453,6 +1467,30 @@ export const getCalculateMaterialTemplateRankingsUseCase = (): CalculateMaterial
   }
   return calculateMaterialTemplateRankingsUseCase;
 };
+
+export function getMaterialTemplateValidationService() {
+	if (!materialTemplateValidationService)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return materialTemplateValidationService;
+}
+
+export function getMaterialTemplateUsageLogRepository() {
+	if (!materialTemplateUsageLogRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return materialTemplateUsageLogRepository;
+}
+
+export function getMaterialTemplateRankingRepository() {
+	if (!materialTemplateRankingRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return materialTemplateRankingRepository;
+}
 
 /**
  * Obtener servicio de analytics en tiempo real

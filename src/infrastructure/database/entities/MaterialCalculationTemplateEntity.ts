@@ -9,7 +9,8 @@ import {
 	ManyToOne,
 	JoinColumn,
 } from "typeorm";
-import { MaterialParameterEntity } from "./MaterialParameterEntity";
+import {MaterialParameterEntity} from "./MaterialParameterEntity";
+import {UserEntity} from "./UserEntity";
 
 @Entity("material_calculation_templates")
 export class MaterialCalculationTemplateEntity {
@@ -74,6 +75,10 @@ export class MaterialCalculationTemplateEntity {
 
 	@Column({name: "created_by", nullable: true})
 	createdBy: string;
+
+	@ManyToOne(() => UserEntity, {nullable: true})
+	@JoinColumn({name: "created_by"})
+	creator: UserEntity;
 
 	@Column({default: 1})
 	version: number;

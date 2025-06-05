@@ -1,5 +1,4 @@
 // src/infrastructure/database/entities/MaterialTemplateUsageLogEntity.ts
-import { MaterialCalculationType } from "../../../domain/models/calculation/MaterialCalculationTemplate";
 import {
 	Entity,
 	PrimaryGeneratedColumn,
@@ -8,8 +7,8 @@ import {
 	ManyToOne,
 	JoinColumn,
 } from "typeorm";
-import { MaterialCalculationResultEntity } from "./MaterialCalculationResultEntity";
-import { UserEntity } from "./UserEntity";
+import {MaterialCalculationResultEntity} from "./MaterialCalculationResultEntity";
+import {UserEntity} from "./UserEntity";
 
 @Entity("material_template_usage_logs")
 export class MaterialTemplateUsageLogEntity {
@@ -29,7 +28,16 @@ export class MaterialTemplateUsageLogEntity {
 	@Column({
 		name: "material_type",
 		type: "enum",
-		enum: Object.values(MaterialCalculationType),
+		enum: [
+			"masonry",
+			"concrete",
+			"finishes",
+			"stairs",
+			"electrical",
+			"furniture",
+			"mortar",
+			"flooring",
+		],
 	})
 	materialType: string;
 
