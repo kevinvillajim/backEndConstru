@@ -1,6 +1,13 @@
 // src/domain/models/calculation/MaterialCalculationTemplate.ts
-// Import or define ParameterDataType
-export type ParameterDataType = "string" | "number" | "boolean" | "date"; // Example definition
+
+export type ParameterDataType =
+	| "string"
+	| "number"
+	| "boolean"
+	| "date"
+	| "enum";
+export type ParameterScope = "input" | "output" | "calculated";
+export type ShareLevel = "private" | "organization" | "public";
 
 export enum MaterialCalculationType {
 	MASONRY = "masonry", // Mampostería (ladrillos, bloques)
@@ -38,7 +45,7 @@ export interface MaterialCalculationTemplate {
 	isActive: boolean;
 	isVerified: boolean;
 	isFeatured: boolean;
-	shareLevel: "private" | "organization" | "public";
+	shareLevel: ShareLevel;
 	createdBy?: string;
 	version: number;
 	usageCount: number;
@@ -59,9 +66,10 @@ export interface MaterialOutput {
 
 export interface MaterialParameter {
 	id: string;
+	name: string;
 	description: string;
 	dataType: ParameterDataType;
-	scope: string; // Replace with appropriate type or import ParameterScope if defined elsewhere
+	scope: ParameterScope;
 	displayOrder: number;
 	isRequired: boolean;
 	defaultValue?: string;
@@ -87,4 +95,26 @@ export interface RegionalFactor {
 	materialType: string;
 	adjustmentFactor: number; // Factor multiplicador
 	reason: string; // "disponibilidad", "transporte"
+}
+
+// Interfaz para validación
+export interface ValidationResult {
+	isValid: boolean;
+	errors: string[];
+}
+
+// Interfaces para repositorios que faltaban
+export interface MaterialTemplateUsageLogRepository {
+	create(log: any): Promise<any>;
+	getUsageStatsByPeriod(start: Date, end: Date): Promise<any[]>;
+}
+
+export interface MaterialTemplateRankingRepository {
+	findByPeriod(period: string, type?: string, limit?: number): Promise<any[]>;
+	upsert(ranking: any): Promise<any>;
+}
+
+// Servicio de validación para materiales
+export interface MaterialTemplateValidationService {
+	validateTemplate(template: any): Promise<ValidationResult>;
 }
