@@ -1,7 +1,8 @@
 // src/infrastructure/webserver/routes/userMaterialTemplateRoutes.ts
 import {Router} from "express";
 import {authenticate} from "../middlewares/authMiddleware";
-import {validateUserMaterialTemplate} from "../validators/userMaterialTemplateValidator";
+import {validateUserMaterialTemplate} from "../validators/materialCalculationValidator";
+import {getUserMaterialTemplateController} from "../../config/service-factory";
 
 const router = Router();
 
