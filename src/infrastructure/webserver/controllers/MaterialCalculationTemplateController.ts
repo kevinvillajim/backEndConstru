@@ -36,7 +36,13 @@ export class MaterialCalculationTemplateController {
 			const filters: MaterialTemplateFilters = {
 				type: type as MaterialCalculationType,
 				subCategory: subCategory as string,
-				isFeatured: isFeatured === "true",
+				// ✅ CORRECCIÓN: Solo establecer isFeatured si se especifica explícitamente
+				isFeatured:
+					isFeatured === "true"
+						? true
+						: isFeatured === "false"
+							? false
+							: undefined,
 				searchTerm: searchTerm as string,
 				tags: tags ? (tags as string).split(",") : undefined,
 				minRating: minRating ? parseFloat(minRating as string) : undefined,

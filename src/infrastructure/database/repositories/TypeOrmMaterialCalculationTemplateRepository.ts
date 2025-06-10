@@ -26,7 +26,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 	async findById(id: string): Promise<MaterialCalculationTemplate | null> {
 		const entity = await this.repository.findOne({
 			where: {id},
-			relations: ["parameters"],
+			// relations: ["parameters"],
 		});
 
 		return entity ? this.toDomainModel(entity) : null;
@@ -37,7 +37,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 	): Promise<MaterialCalculationTemplate[]> {
 		const entities = await this.repository.find({
 			where: {type: type as string, isActive: true},
-			relations: ["parameters"],
+			// relations: ["parameters"],
 			order: {isFeatured: "DESC", usageCount: "DESC", name: "ASC"},
 		});
 
@@ -59,7 +59,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 	async findFeatured(): Promise<MaterialCalculationTemplate[]> {
 		const entities = await this.repository.find({
 			where: {isFeatured: true, isActive: true},
-			relations: ["parameters"],
+			// relations: ["parameters"],
 			order: {usageCount: "DESC", averageRating: "DESC"},
 			take: 12,
 		});
@@ -71,9 +71,9 @@ export class TypeOrmMaterialCalculationTemplateRepository
 		filters?: MaterialTemplateFilters,
 		pagination?: PaginationOptions
 	): Promise<{templates: MaterialCalculationTemplate[]; total: number}> {
-		let queryBuilder = this.repository
-			.createQueryBuilder("template")
-			.leftJoinAndSelect("template.parameters", "parameters");
+		let queryBuilder = this.repository.createQueryBuilder("template");
+		// TEMPORALMENTE COMENTAR LA LÍNEA DE PARÁMETROS:
+		// .leftJoinAndSelect("template.parameters", "parameters");
 
 		// Aplicar filtros
 		if (filters) {
@@ -246,6 +246,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 			subCategory: entity.subCategory,
 			formula: entity.formula,
 			materialOutputs: entity.materialOutputs,
+			// CAMBIAR ESTO PARA MANEJAR PARÁMETROS VACÍOS:
 			parameters:
 				entity.parameters?.map((p) => ({
 					id: p.id,
@@ -263,7 +264,7 @@ export class TypeOrmMaterialCalculationTemplateRepository
 					helpText: p.helpText,
 					dependsOnParameters: p.dependsOnParameters,
 					materialCalculationTemplateId: entity.id,
-				})) || [],
+				})) || [], // ✅ Garantizar que siempre devuelva un array vacío si no hay parámetros
 			wasteFactors: entity.wasteFactors,
 			regionalFactors: entity.regionalFactors,
 			normativeReference: entity.normativeReference,
