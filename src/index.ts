@@ -188,7 +188,10 @@ async function bootstrap() {
 			require("./infrastructure/webserver/routes/adminPromotionRoutes").default;
 		const templateAnalyticsRoutes =
 			require("./infrastructure/webserver/routes/templateAnalyticsRoutes").default;
+		const materialCalculationRoutes =
+			require("./infrastructure/webserver/routes/materialCalculationRoutes").default;
 
+		
 		// Configure routes
 		app.use("/api/auth", authRoutes);
 		app.use("/api/auth/2fa", twoFactorAuthRoutes);
@@ -214,6 +217,7 @@ async function bootstrap() {
 		app.use("/api/users", userRoutes);
 		app.use("/api/accounting", accountingRoutes);
 		app.use("/api/predictions", projectPredictionRoutes);
+		app.use("/api/material-calculation", materialCalculationRoutes);
 		
 		// Global error handler
 		app.use(
