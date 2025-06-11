@@ -47,6 +47,9 @@ import {UserPatternAnalysisService} from "../../domain/services/UserPatternAnaly
 import {AdvancedRecommendationService} from "../../domain/services/AdvancedRecommendationService";
 import {TwoFactorAuthService} from "../../domain/services/TwoFactorAuthService";
 import {RealtimeAnalyticsService} from "../websocket/RealtimeAnalyticsService";
+import { CalculationBudgetService } from "../../domain/services/CalculationBudgetService";
+import { BudgetPricingService } from "../../domain/services/BudgetPricingService";
+import { BudgetTemplateService } from "../../domain/services/BudgetTemplateService";
 
 // ============= SERVICIOS DE INFRAESTRUCTURA =============
 import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
@@ -88,7 +91,10 @@ import {CreatePromotionRequestUseCase} from "../../application/calculation/Creat
 import {ReviewPromotionRequestUseCase} from "../../application/calculation/ReviewPromotionRequestUseCase";
 import {PromoteTemplateToVerifiedUseCase} from "../../application/calculation/PromoteTemplateToVerifiedUseCase";
 import {GetTemplateAnalyticsUseCase} from "../../application/calculation/GetTemplateAnalyticsUseCase";
-
+import { CreateCalculationBudgetUseCase } from "../../application/budget/CreateCalculationBudgetUseCase";
+import { UpdateBudgetPricingUseCase } from "../../application/budget/UpdateBudgetPricingUseCase";
+import { GenerateProfessionalBudgetUseCase } from "../../application/budget/GenerateProfessionalBudgetUseCase";
+import { ApplyBudgetTemplateUseCase } from "../../application/budget/ApplyBudgetTemplateUseCase";
 
 // ============= OTROS CASOS DE USO =============
 import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
@@ -152,6 +158,8 @@ import {TemplateAnalyticsController} from "../webserver/controllers/TemplateAnal
 import { GlobalStatsController } from "../webserver/controllers/GlobalStatsController";
 import { GetGlobalTemplateStatsUseCase } from "../../application/calculation/GetGlobalTemplateStatsUseCase";
 import { TemplateTrackingController } from "../webserver/controllers/TemplateTrackingController";
+import { CalculationBudgetController } from "../webserver/controllers/CalculationBudgetController";
+import { BudgetTemplateController } from "../webserver/controllers/BudgetTemplateController";
 
 // ============= JOBS =============
 import {
@@ -238,6 +246,9 @@ let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
 let pdfGenerationService: PdfGenerationService;
 let realtimeAnalyticsService: RealtimeAnalyticsService;
+let calculationBudgetService: CalculationBudgetService | null = null;
+let budgetPricingService: BudgetPricingService | null = null;
+let budgetTemplateService: BudgetTemplateService | null = null;
 
 // ============= VARIABLES GLOBALES DE CASOS DE USO =============
 let executeCalculationUseCase: ExecuteCalculationUseCase;
@@ -267,6 +278,10 @@ let shareUserTemplateUseCase: ShareUserTemplateUseCase;
 let changeTemplateStatusUseCase: ChangeTemplateStatusUseCase;
 let getPublicUserTemplatesUseCase: GetPublicUserTemplatesUseCase;
 let getUserTemplateStatsUseCase: GetUserTemplateStatsUseCase;
+let createCalculationBudgetUseCase: CreateCalculationBudgetUseCase | null = null;
+let updateBudgetPricingUseCase: UpdateBudgetPricingUseCase | null = null;
+let generateProfessionalBudgetUseCase: GenerateProfessionalBudgetUseCase | null = null;
+let applyBudgetTemplateUseCase: ApplyBudgetTemplateUseCase | null = null;
 
 // ============= OTROS CASOS DE USO =============
 let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
@@ -348,6 +363,8 @@ let materialCalculationTemplateController: MaterialCalculationTemplateController
 let materialCalculationController: MaterialCalculationController;
 let userMaterialTemplateController: UserMaterialTemplateController;
 let materialTrendingController: MaterialTrendingController;
+let calculationBudgetController: CalculationBudgetController | null = null;
+let budgetTemplateController: BudgetTemplateController | null = null;
 
 // Use cases adicionales
 let materialTemplateValidationService: MaterialTemplateValidationServiceImpl;
@@ -425,9 +442,10 @@ export function initializeServices() {
 		advancedRecommendationService = new AdvancedRecommendationService();
 		twoFactorAuthService = new TwoFactorAuthService();
 		userService = new UserService(userRepository);
-		materialTemplateValidationService =
-			new MaterialTemplateValidationServiceImpl();
-
+		materialTemplateValidationService = new MaterialTemplateValidationServiceImpl();
+		calculationBudgetService = new CalculationBudgetService();
+		budgetPricingService = new BudgetPricingService();
+		budgetTemplateService = new BudgetTemplateService();
 
 		// Servicios de infraestructura
 		emailService = new EmailServiceImpl(
@@ -771,6 +789,43 @@ export function initializeServices() {
 			getMaterialTemplateUsageLogRepository()
 		);
 
+		createCalculationBudgetUseCase = new CreateCalculationBudgetUseCase(
+			calculationBudgetRepository,
+			budgetTemplateRepository,
+			calculationResultRepository,
+			budgetLineItemRepository,
+			professionalCostRepository,
+			materialRepository,
+			calculationBudgetService,
+			budgetTemplateService
+		  );
+		
+		  updateBudgetPricingUseCase = new UpdateBudgetPricingUseCase(
+			calculationBudgetRepository,
+			budgetLineItemRepository,
+			materialRepository,
+			notificationRepository,
+			budgetPricingService
+		  );
+		
+		  generateProfessionalBudgetUseCase = new GenerateProfessionalBudgetUseCase(
+			calculationBudgetRepository,
+			budgetLineItemRepository,
+			professionalCostRepository,
+			userRepository,
+			pdfGenerationService,
+			emailService
+		  );
+		
+		  applyBudgetTemplateUseCase = new ApplyBudgetTemplateUseCase(
+			calculationBudgetRepository,
+			budgetTemplateRepository,
+			budgetLineItemRepository,
+			professionalCostRepository,
+			calculationBudgetService,
+			budgetTemplateService
+		  );
+
 		// ============= INICIALIZAR CONTROLADORES PRINCIPALES =============
 		authController = new AuthController(authService, userRepository);
 		calculationController = new CalculationController(
@@ -918,6 +973,22 @@ export function initializeServices() {
 			trackTemplateUsageUseCase
 		);
 
+		calculationBudgetController = new CalculationBudgetController(
+			createCalculationBudgetUseCase,
+			updateBudgetPricingUseCase,
+			generateProfessionalBudgetUseCase,
+			calculationBudgetRepository,
+			budgetLineItemRepository,
+			professionalCostRepository,
+			calculationBudgetService,
+			budgetPricingService
+		  );
+		
+		  budgetTemplateController = new BudgetTemplateController(
+			budgetTemplateRepository,
+			budgetTemplateService,
+			applyBudgetTemplateUseCase
+		  );
 
 		// ============= INICIALIZAR JOBS =============
 		enhancedRankingJob = initializeRankingJobs();
@@ -1484,6 +1555,20 @@ export const getMaterialCalculationController = (): MaterialCalculationControlle
   return materialCalculationController;
 };
 
+export function getCalculationBudgetController(): CalculationBudgetController {
+	if (!calculationBudgetController) {
+	  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+	}
+	return calculationBudgetController;
+  }
+  
+  export function getBudgetTemplateController(): BudgetTemplateController {
+	if (!budgetTemplateController) {
+	  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+	}
+	return budgetTemplateController;
+  }
+
 export const getGetMaterialAnalyticsUseCase =
 	(): GetMaterialAnalyticsUseCase => {
 		if (!getMaterialAnalyticsUseCase) {
@@ -1566,6 +1651,34 @@ export const getCalculateMaterialTemplateRankingsUseCase =
 		return calculateMaterialTemplateRankingsUseCase;
 	};
 
+	export function getCreateCalculationBudgetUseCase(): CreateCalculationBudgetUseCase {
+		if (!createCalculationBudgetUseCase) {
+		  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+		}
+		return createCalculationBudgetUseCase;
+	  }
+	  
+	  export function getUpdateBudgetPricingUseCase(): UpdateBudgetPricingUseCase {
+		if (!updateBudgetPricingUseCase) {
+		  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+		}
+		return updateBudgetPricingUseCase;
+	  }
+	  
+	  export function getGenerateProfessionalBudgetUseCase(): GenerateProfessionalBudgetUseCase {
+		if (!generateProfessionalBudgetUseCase) {
+		  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+		}
+		return generateProfessionalBudgetUseCase;
+	  }
+	  
+	  export function getApplyBudgetTemplateUseCase(): ApplyBudgetTemplateUseCase {
+		if (!applyBudgetTemplateUseCase) {
+		  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+		}
+		return applyBudgetTemplateUseCase;
+	  }
+
 export function getMaterialTemplateValidationService() {
 	if (!materialTemplateValidationService)
 		throw new Error(
@@ -1606,6 +1719,27 @@ export function setRealtimeAnalyticsService(service: RealtimeAnalyticsService): 
     realtimeAnalyticsService = service;
     console.log("Realtime analytics service registered");
 }
+
+export function getCalculationBudgetService(): CalculationBudgetService {
+	if (!calculationBudgetService) {
+	  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+	}
+	return calculationBudgetService;
+  }
+  
+  export function getBudgetPricingService(): BudgetPricingService {
+	if (!budgetPricingService) {
+	  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+	}
+	return budgetPricingService;
+  }
+  
+  export function getBudgetTemplateService(): BudgetTemplateService {
+	if (!budgetTemplateService) {
+	  throw new Error("Budget services not initialized. Call initializeBudgetServices() first.");
+	}
+	return budgetTemplateService;
+  }
 
 /**
  * Obtener instancia del job de rankings mejorado

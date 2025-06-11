@@ -1,10 +1,10 @@
 // src/infrastructure/database/repositories/TypeOrmBudgetTemplateRepository.ts
-import { Repository } from "typeorm";
-import { AppDataSource } from "../data-source";
+import { Repository, FindManyOptions, FindOneOptions, SelectQueryBuilder } from "typeorm";
 import { BudgetTemplateRepository } from "../../../domain/repositories/BudgetTemplateRepository";
-import { BudgetTemplate, CreateBudgetTemplateDTO, ProjectType, TemplateScope } from "../../../domain/models/calculation/BudgetTemplate";
-import { BudgetTemplateEntity } from "../entities/BudgetTemplateEntity";
+import { BudgetTemplate, ProjectType, TemplateScope } from "../../../domain/models/calculation/BudgetTemplate";
+import { BudgetTemplateEntity, ProjectTypeEntity, TemplateScopeEntity } from "../entities/BudgetTemplateEntity";
 import { PaginationOptions } from "../../../domain/models/common/PaginationOptions";
+import { AppDataSource } from "../data-source";
 
 export class TypeOrmBudgetTemplateRepository implements BudgetTemplateRepository {
   private repository: Repository<BudgetTemplateEntity>;
@@ -13,125 +13,272 @@ export class TypeOrmBudgetTemplateRepository implements BudgetTemplateRepository
     this.repository = AppDataSource.getRepository(BudgetTemplateEntity);
   }
 
+  async create(template: BudgetTemplate): Promise<BudgetTemplate> {
+    const entity = this.toEntity(template);
+    const savedEntity = await this.repository.save(entity);
+    return this.toDomain(savedEntity);
+  }
+
   async findById(id: string): Promise<BudgetTemplate | null> {
-    const template = await this.repository.findOne({
+    const entity = await this.repository.findOne({
       where: { id },
       relations: ["creator"]
     });
-
-    return template ? this.toDomainModel(template) : null;
+    
+    return entity ? this.toDomain(entity) : null;
   }
 
-  async findByProjectType(projectType: ProjectType, geographicalZone?: string): Promise<BudgetTemplate[]> {
-    const queryBuilder = this.repository.createQueryBuilder("template")
-      .where("template.projectType = :projectType", { projectType })
-      .andWhere("template.isActive = :isActive", { isActive: true });
-
-    if (geographicalZone) {
-      queryBuilder.andWhere("template.geographicalZone = :geographicalZone", { geographicalZone });
-    }
-
-    queryBuilder.orderBy("template.usageCount", "DESC");
-
-    const templates = await queryBuilder.getMany();
-    return templates.map(template => this.toDomainModel(template));
-  }
-
-  async findByScope(scope: TemplateScope, userId?: string): Promise<BudgetTemplate[]> {
-    const queryBuilder = this.repository.createQueryBuilder("template")
-      .where("template.scope = :scope", { scope })
-      .andWhere("template.isActive = :isActive", { isActive: true });
-
-    if (userId && scope === TemplateScope.PERSONAL) {
-      queryBuilder.andWhere("template.createdBy = :userId", { userId });
-    }
-
-    queryBuilder.orderBy("template.createdAt", "DESC");
-
-    const templates = await queryBuilder.getMany();
-    return templates.map(template => this.toDomainModel(template));
-  }
-
-  async findActiveTemplates(filters?: {
-    projectType?: ProjectType;
-    geographicalZone?: string;
-    scope?: TemplateScope;
-  }): Promise<BudgetTemplate[]> {
-    const queryBuilder = this.repository.createQueryBuilder("template")
-      .where("template.isActive = :isActive", { isActive: true });
-
-    if (filters?.projectType) {
-      queryBuilder.andWhere("template.projectType = :projectType", { 
-        projectType: filters.projectType 
-      });
-    }
-
-    if (filters?.geographicalZone) {
-      queryBuilder.andWhere("template.geographicalZone = :geographicalZone", { 
-        geographicalZone: filters.geographicalZone 
-      });
-    }
-
-    if (filters?.scope) {
-      queryBuilder.andWhere("template.scope = :scope", { 
-        scope: filters.scope 
-      });
-    }
-
-    queryBuilder.orderBy("template.usageCount", "DESC")
-      .addOrderBy("template.createdAt", "DESC");
-
-    const templates = await queryBuilder.getMany();
-    return templates.map(template => this.toDomainModel(template));
-  }
-
-  async findPopularTemplates(limit: number = 10): Promise<BudgetTemplate[]> {
-    const templates = await this.repository.find({
-      where: { 
-        isActive: true,
-        scope: TemplateScope.SYSTEM
-      },
-      order: { 
-        usageCount: "DESC",
-        createdAt: "DESC"
-      },
-      take: limit
+  async findByUserOrPublic(userId: string): Promise<BudgetTemplate[]> {
+    const entities = await this.repository.find({
+      where: [
+        { createdBy: userId }, // Templates del usuario
+        { scope: TemplateScopeEntity.SYSTEM }, // Templates del sistema
+        { scope: TemplateScopeEntity.SHARED } // Templates compartidos
+      ],
+      relations: ["creator"],
+      order: { usageCount: "DESC", createdAt: "DESC" }
     });
 
-    return templates.map(template => this.toDomainModel(template));
+    return entities.map(entity => this.toDomain(entity));
   }
 
-  async create(templateData: CreateBudgetTemplateDTO): Promise<BudgetTemplate> {
-    const templateEntity = this.toEntity(templateData);
-    const savedTemplate = await this.repository.save(templateEntity);
-    return this.toDomainModel(savedTemplate);
+  async findByUserWithFilters(
+    userId: string,
+    filters: any,
+    pagination?: PaginationOptions
+  ): Promise<{ items: BudgetTemplate[]; total: number; page: number; limit: number }> {
+    
+    const queryBuilder = this.repository.createQueryBuilder("template")
+      .leftJoinAndSelect("template.creator", "creator");
+
+    // Filtros de acceso
+    queryBuilder.andWhere(
+      "(template.createdBy = :userId OR template.scope IN (:...publicScopes))",
+      { 
+        userId, 
+        publicScopes: [TemplateScopeEntity.SYSTEM, TemplateScopeEntity.SHARED] 
+      }
+    );
+
+    // Aplicar filtros adicionales
+    this.applyFilters(queryBuilder, filters);
+
+    // Aplicar paginación
+    if (pagination) {
+      const offset = (pagination.page - 1) * pagination.limit;
+      queryBuilder.skip(offset).take(pagination.limit);
+
+      // Aplicar ordenamiento
+      if (pagination.sortBy) {
+        const order = pagination.sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        queryBuilder.orderBy(`template.${pagination.sortBy}`, order);
+      } else {
+        queryBuilder.orderBy("template.usageCount", "DESC")
+                   .addOrderBy("template.createdAt", "DESC");
+      }
+    }
+
+    const [entities, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items: entities.map(entity => this.toDomain(entity)),
+      total,
+      page: pagination?.page || 1,
+      limit: pagination?.limit || entities.length
+    };
   }
 
-  async update(id: string, templateData: Partial<BudgetTemplate>): Promise<BudgetTemplate | null> {
-    const template = await this.repository.findOne({ where: { id } });
-    if (!template) return null;
+  async findTrending(options: {
+    limit?: number;
+    projectType?: ProjectType;
+    geographicalZone?: string;
+  }): Promise<BudgetTemplate[]> {
+    
+    const queryBuilder = this.repository.createQueryBuilder("template")
+      .leftJoinAndSelect("template.creator", "creator")
+      .where("template.isActive = :isActive", { isActive: true })
+      .andWhere("template.scope IN (:...publicScopes)", {
+        publicScopes: [TemplateScopeEntity.SYSTEM, TemplateScopeEntity.SHARED]
+      });
 
-    Object.assign(template, templateData);
-    const updatedTemplate = await this.repository.save(template);
-    return this.toDomainModel(updatedTemplate);
+    if (options.projectType) {
+      queryBuilder.andWhere("template.projectType = :projectType", {
+        projectType: this.toEntityProjectType(options.projectType)
+      });
+    }
+
+    if (options.geographicalZone) {
+      queryBuilder.andWhere("template.geographicalZone = :zone", {
+        zone: options.geographicalZone
+      });
+    }
+
+    queryBuilder
+      .orderBy("template.usageCount", "DESC")
+      .addOrderBy("template.averageRating", "DESC")
+      .limit(options.limit || 10);
+
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this.toDomain(entity));
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await this.repository.delete(id);
-    return result.affected !== 0;
+  async update(id: string, template: Partial<BudgetTemplate>): Promise<BudgetTemplate> {
+    const existingEntity = await this.repository.findOneOrFail({ where: { id } });
+    
+    // Actualizar campos
+    Object.assign(existingEntity, this.toEntity(template as BudgetTemplate));
+    existingEntity.updatedAt = new Date();
+
+    const savedEntity = await this.repository.save(existingEntity);
+    return this.toDomain(savedEntity);
   }
 
-  async incrementUsage(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+
+  async countPersonalByUser(userId: string): Promise<number> {
+    return await this.repository.count({
+      where: {
+        createdBy: userId,
+        scope: TemplateScopeEntity.PERSONAL,
+        isActive: true
+      }
+    });
+  }
+
+  async findRecommendationsFor(
+    projectType: ProjectType,
+    geographicalZone: string,
+    userId: string
+  ): Promise<BudgetTemplate[]> {
+    
+    const queryBuilder = this.repository.createQueryBuilder("template")
+      .leftJoinAndSelect("template.creator", "creator")
+      .where("template.isActive = :isActive", { isActive: true })
+      .andWhere("(template.createdBy = :userId OR template.scope IN (:...publicScopes))", {
+        userId,
+        publicScopes: [TemplateScopeEntity.SYSTEM, TemplateScopeEntity.SHARED]
+      });
+
+    // Priorizar coincidencia exacta de tipo de proyecto
+    queryBuilder.andWhere("template.projectType = :projectType", {
+      projectType: this.toEntityProjectType(projectType)
+    });
+
+    // Priorizar zona geográfica similar
+    queryBuilder.andWhere("template.geographicalZone = :zone", {
+      zone: geographicalZone
+    });
+
+    queryBuilder
+      .orderBy("template.isVerified", "DESC")
+      .addOrderBy("template.usageCount", "DESC")
+      .addOrderBy("template.averageRating", "DESC")
+      .limit(5);
+
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this.toDomain(entity));
+  }
+
+  async incrementUsageCount(id: string): Promise<void> {
     await this.repository.increment({ id }, "usageCount", 1);
   }
 
-  private toDomainModel(entity: BudgetTemplateEntity): BudgetTemplate {
+  async updateAverageRating(id: string, newRating: number): Promise<void> {
+    await this.repository.update(id, { averageRating: newRating });
+  }
+
+  async findSimilar(template: BudgetTemplate, limit: number = 5): Promise<BudgetTemplate[]> {
+    const queryBuilder = this.repository.createQueryBuilder("template")
+      .leftJoinAndSelect("template.creator", "creator")
+      .where("template.id != :id", { id: template.id })
+      .andWhere("template.isActive = :isActive", { isActive: true })
+      .andWhere("template.scope IN (:...publicScopes)", {
+        publicScopes: [TemplateScopeEntity.SYSTEM, TemplateScopeEntity.SHARED]
+      });
+
+    // Buscar por tipo de proyecto similar
+    queryBuilder.andWhere("template.projectType = :projectType", {
+      projectType: this.toEntityProjectType(template.projectType)
+    });
+
+    // Ordenar por similitud (zona geográfica, rating, uso)
+    queryBuilder
+      .addSelect(
+        `CASE WHEN template.geographicalZone = :zone THEN 1 ELSE 0 END`,
+        "zone_match"
+      )
+      .setParameter("zone", template.geographicalZone)
+      .orderBy("zone_match", "DESC")
+      .addOrderBy("template.averageRating", "DESC")
+      .addOrderBy("template.usageCount", "DESC")
+      .limit(limit);
+
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this.toDomain(entity));
+  }
+
+  // Métodos auxiliares privados
+
+  private applyFilters(queryBuilder: SelectQueryBuilder<BudgetTemplateEntity>, filters: any): void {
+    if (filters.projectType) {
+      queryBuilder.andWhere("template.projectType = :projectType", {
+        projectType: this.toEntityProjectType(filters.projectType)
+      });
+    }
+
+    if (filters.geographicalZone) {
+      queryBuilder.andWhere("template.geographicalZone = :zone", {
+        zone: filters.geographicalZone
+      });
+    }
+
+    if (filters.scope) {
+      queryBuilder.andWhere("template.scope = :scope", {
+        scope: this.toEntityScope(filters.scope)
+      });
+    }
+
+    if (filters.isVerified !== undefined) {
+      queryBuilder.andWhere("template.isVerified = :isVerified", {
+        isVerified: filters.isVerified
+      });
+    }
+
+    if (filters.isActive !== undefined) {
+      queryBuilder.andWhere("template.isActive = :isActive", {
+        isActive: filters.isActive
+      });
+    }
+
+    if (filters.search) {
+      queryBuilder.andWhere(
+        "(template.name ILIKE :search OR template.description ILIKE :search)",
+        { search: `%${filters.search}%` }
+      );
+    }
+
+    if (filters.minRating) {
+      queryBuilder.andWhere("template.averageRating >= :minRating", {
+        minRating: filters.minRating
+      });
+    }
+
+    if (filters.minUsage) {
+      queryBuilder.andWhere("template.usageCount >= :minUsage", {
+        minUsage: filters.minUsage
+      });
+    }
+  }
+
+  private toDomain(entity: BudgetTemplateEntity): BudgetTemplate {
     return {
       id: entity.id,
       name: entity.name,
       description: entity.description,
-      projectType: entity.projectType,
-      scope: entity.scope,
+      projectType: this.fromEntityProjectType(entity.projectType),
+      scope: this.fromEntityScope(entity.scope),
       geographicalZone: entity.geographicalZone,
       wasteFactors: entity.wasteFactors,
       laborRates: entity.laborRates,
@@ -148,9 +295,74 @@ export class TypeOrmBudgetTemplateRepository implements BudgetTemplateRepository
     };
   }
 
-  private toEntity(model: CreateBudgetTemplateDTO): BudgetTemplateEntity {
-    const entity = new BudgetTemplateEntity();
-    Object.assign(entity, model);
-    return entity;
+  private toEntity(domain: BudgetTemplate): Partial<BudgetTemplateEntity> {
+    return {
+      id: domain.id,
+      name: domain.name,
+      description: domain.description,
+      projectType: this.toEntityProjectType(domain.projectType),
+      scope: this.toEntityScope(domain.scope),
+      geographicalZone: domain.geographicalZone,
+      wasteFactors: domain.wasteFactors,
+      laborRates: domain.laborRates,
+      laborProductivity: domain.laborProductivity,
+      indirectCosts: domain.indirectCosts,
+      professionalFees: domain.professionalFees,
+      necCompliance: domain.necCompliance,
+      createdBy: domain.createdBy,
+      isActive: domain.isActive,
+      isVerified: domain.isVerified,
+      usageCount: domain.usageCount,
+      createdAt: domain.createdAt,
+      updatedAt: domain.updatedAt
+    };
+  }
+
+  private toEntityProjectType(projectType: ProjectType): ProjectTypeEntity {
+    const mapping: Record<ProjectType, ProjectTypeEntity> = {
+      [ProjectType.RESIDENTIAL_SINGLE]: ProjectTypeEntity.RESIDENTIAL_SINGLE,
+      [ProjectType.RESIDENTIAL_MULTI]: ProjectTypeEntity.RESIDENTIAL_MULTI,
+      [ProjectType.COMMERCIAL_SMALL]: ProjectTypeEntity.COMMERCIAL_SMALL,
+      [ProjectType.COMMERCIAL_LARGE]: ProjectTypeEntity.COMMERCIAL_LARGE,
+      [ProjectType.INDUSTRIAL]: ProjectTypeEntity.INDUSTRIAL,
+      [ProjectType.INFRASTRUCTURE]: ProjectTypeEntity.INFRASTRUCTURE,
+      [ProjectType.RENOVATION]: ProjectTypeEntity.RENOVATION,
+      [ProjectType.SPECIALIZED]: ProjectTypeEntity.SPECIALIZED
+    };
+    return mapping[projectType];
+  }
+
+  private fromEntityProjectType(entityType: ProjectTypeEntity): ProjectType {
+    const mapping: Record<ProjectTypeEntity, ProjectType> = {
+      [ProjectTypeEntity.RESIDENTIAL_SINGLE]: ProjectType.RESIDENTIAL_SINGLE,
+      [ProjectTypeEntity.RESIDENTIAL_MULTI]: ProjectType.RESIDENTIAL_MULTI,
+      [ProjectTypeEntity.COMMERCIAL_SMALL]: ProjectType.COMMERCIAL_SMALL,
+      [ProjectTypeEntity.COMMERCIAL_LARGE]: ProjectType.COMMERCIAL_LARGE,
+      [ProjectTypeEntity.INDUSTRIAL]: ProjectType.INDUSTRIAL,
+      [ProjectTypeEntity.INFRASTRUCTURE]: ProjectType.INFRASTRUCTURE,
+      [ProjectTypeEntity.RENOVATION]: ProjectType.RENOVATION,
+      [ProjectTypeEntity.SPECIALIZED]: ProjectType.SPECIALIZED
+    };
+    return mapping[entityType];
+  }
+
+  private toEntityScope(scope: TemplateScope): TemplateScopeEntity {
+    const mapping: Record<TemplateScope, TemplateScopeEntity> = {
+      [TemplateScope.SYSTEM]: TemplateScopeEntity.SYSTEM,
+      [TemplateScope.COMPANY]: TemplateScopeEntity.COMPANY,
+      [TemplateScope.PERSONAL]: TemplateScopeEntity.PERSONAL,
+      [TemplateScope.SHARED]: TemplateScopeEntity.SHARED
+    };
+    return mapping[scope];
+  }
+
+  private fromEntityScope(entityScope: TemplateScopeEntity): TemplateScope {
+    const mapping: Record<TemplateScopeEntity, TemplateScope> = {
+      [TemplateScopeEntity.SYSTEM]: TemplateScope.SYSTEM,
+      [TemplateScopeEntity.COMPANY]: TemplateScope.COMPANY,
+      [TemplateScopeEntity.PERSONAL]: TemplateScope.PERSONAL,
+      [TemplateScopeEntity.SHARED]: TemplateScope.SHARED
+    };
+    return mapping[entityScope];
   }
 }
