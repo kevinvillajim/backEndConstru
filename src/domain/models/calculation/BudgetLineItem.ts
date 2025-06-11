@@ -18,6 +18,7 @@ export enum LineItemType {
   }
   
   export interface BudgetLineItem {
+    laborType: any;
     id: string;
     description: string;
     specifications?: string;

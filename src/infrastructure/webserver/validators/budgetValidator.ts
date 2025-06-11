@@ -290,12 +290,12 @@ export class BudgetValidator {
 
       // Validar configuración de entrega
       body('delivery.recipientEmails')
-        .if(body('delivery.sendByEmail').equals(true))
+        .if(body('delivery.sendByEmail').equals("true"))
         .isArray({ min: 1 })
         .withMessage('Se requiere al menos un email de destino'),
 
       body('delivery.recipientEmails.*')
-        .if(body('delivery.sendByEmail').equals(true))
+        .if(body('delivery.sendByEmail').equals("true"))
         .isEmail()
         .withMessage('Todos los emails de destino deben ser válidos')
     ];
@@ -464,7 +464,7 @@ export class BudgetValidator {
         .withMessage('createNewVersion debe ser un valor booleano'),
 
       body('newVersionName')
-        .if(body('createNewVersion').equals(true))
+        .if(body('createNewVersion').equals("true"))
         .notEmpty()
         .withMessage('El nombre de la nueva versión es obligatorio cuando se crea una nueva versión')
         .isLength({ min: 3, max: 100 })

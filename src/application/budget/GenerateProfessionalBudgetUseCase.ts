@@ -14,7 +14,7 @@ import fs from "fs";
 
 export interface ProfessionalBudgetRequest {
   budgetId: string;
-  format: 'PDF' | 'EXCEL' | 'WORD' | 'ALL';
+  format: 'PDF' | 'HTML' | 'EXCEL' | 'WORD' | 'ALL';
   
   // Personalización de marca
   branding: {
@@ -287,8 +287,8 @@ export class GenerateProfessionalBudgetUseCase {
       throw new Error("No tiene permisos para generar documentos de este presupuesto");
     }
 
-    const lineItems = await this.budgetLineItemRepository.findByBudgetId(budgetId);
-    const professionalCosts = await this.professionalCostRepository.findByBudgetId(budgetId);
+    const lineItems = await this.budgetLineItemRepository.findByBudget(budgetId);
+    const professionalCosts = await this.professionalCostRepository.findByBudget(budgetId);
     const user = await this.userRepository.findById(userId);
 
     return {
@@ -518,7 +518,7 @@ export class GenerateProfessionalBudgetUseCase {
     const totals = new Map<string, number>();
     
     groupedLineItems.forEach((items, category) => {
-      const total = items.reduce((sum, item) => sum + item.totalPrice, 0);
+      const total = items.reduce((sum, item) => sum + item.subtotal, 0);
       totals.set(category, total);
     });
 

@@ -1,5 +1,7 @@
 // src/domain/models/calculation/ProfessionalCost.ts
 
+import { ProfessionalFees } from "./BudgetTemplate";
+
 export enum ProfessionalService {
     ARCHITECTURAL_DESIGN = "architectural_design",
     STRUCTURAL_DESIGN = "structural_design",
@@ -21,11 +23,16 @@ export enum ProfessionalService {
   }
   
   export interface ProfessionalCost {
+    type(type: any, professionalFees: ProfessionalFees): unknown;
+    amount: number;
+    percentage: number;
     id: string;
     calculationBudgetId: string;
     service: ProfessionalService;
     description: string;
     complexityLevel: ComplexityLevel;
+    basedOnAmount?: number;
+    costType: string;
   
     // Cálculo del honorario
     basePercentage: number;

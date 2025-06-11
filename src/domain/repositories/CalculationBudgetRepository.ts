@@ -12,6 +12,13 @@ export interface CalculationBudgetRepository {
     budgets: CalculationBudget[];
     total: number;
   }>;
+  findByUserWithFilters(
+    userId: string,
+    filters: any,
+    options?: PaginationOptions
+  ): Promise<{ budgets: CalculationBudget[]; total: number }>;
+  countByUserAndMonth(userId: string, date: Date): Promise<number>;
+
   findByCalculationResult(calculationResultId: string): Promise<CalculationBudget[]>;
   findVersions(parentBudgetId: string): Promise<CalculationBudget[]>;
   create(budget: CreateCalculationBudgetDTO): Promise<CalculationBudget>;

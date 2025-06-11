@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { validationResult } from "express-validator";
 import { CalculationBudgetController } from "../controllers/CalculationBudgetController";
-import { authMiddleware } from "../middlewares/authMiddleware";
+import {authMiddleware } from "../middlewares/authMiddleware";
 import { BudgetAuthMiddleware } from "../middlewares/budgetAuthMiddleware";
 import { BudgetValidator } from "../validators/budgetValidator";
 

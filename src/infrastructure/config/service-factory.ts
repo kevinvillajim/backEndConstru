@@ -193,6 +193,8 @@ import { BudgetTemplateRepository } from "../../domain/repositories/BudgetTempla
 import { BudgetLineItemRepository } from "../../domain/repositories/BudgetLineItemRepository";
 import { ProfessionalCostRepository } from "../../domain/repositories/ProfessionalCostRepository";
 import { CalculationBudgetRepository } from "../../domain/repositories/CalculationBudgetRepository";
+import { ProjectRepository } from "../../domain/repositories/ProjectRepository";
+import { UserRepository } from "../../domain/repositories/UserRepository";
 
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
@@ -1457,37 +1459,49 @@ export const getMaterialCalculationResultRepository =
 		return materialCalculationResultRepository;
 	};
 
-	export function getCalculationBudgetRepository(): CalculationBudgetRepository {
-		if (!calculationBudgetRepository)
-		  throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		  );
-		return calculationBudgetRepository;
-	  }
-	  
-	  export function getBudgetTemplateRepository(): BudgetTemplateRepository {
-		if (!budgetTemplateRepository)
-		  throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		  );
-		return budgetTemplateRepository;
-	  }
-	  
-	  export function getBudgetLineItemRepository(): BudgetLineItemRepository {
-		if (!budgetLineItemRepository)
-		  throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		  );
-		return budgetLineItemRepository;
-	  }
-	  
-	  export function getProfessionalCostRepository(): ProfessionalCostRepository {
-		if (!professionalCostRepository)
-		  throw new Error(
-			"Services not initialized. Call initializeServices() first."
-		  );
-		return professionalCostRepository;
-	  }
+export function getCalculationBudgetRepository(): CalculationBudgetRepository {
+	if (!calculationBudgetRepository)
+	  throw new Error(
+		"Services not initialized. Call initializeServices() first."
+	  );
+	return calculationBudgetRepository;
+}
+  
+export function getBudgetTemplateRepository(): BudgetTemplateRepository {
+	if (!budgetTemplateRepository)
+	  throw new Error(
+		"Services not initialized. Call initializeServices() first."
+	  );
+	return budgetTemplateRepository;
+ }
+  
+export function getBudgetLineItemRepository(): BudgetLineItemRepository {
+	if (!budgetLineItemRepository)
+	  throw new Error(
+		"Services not initialized. Call initializeServices() first."
+	  );
+	return budgetLineItemRepository;
+ }
+  
+export function getProfessionalCostRepository(): ProfessionalCostRepository {
+	if (!professionalCostRepository)
+	  throw new Error(
+		"Services not initialized. Call initializeServices() first."
+	  );
+	return professionalCostRepository;
+}
+
+export function getProjectRepository(): ProjectRepository {
+	if (!projectRepository) 
+	  throw new Error("Services not initialized. Call initializeServices() first.");
+	return projectRepository;
+}
+
+export function getUserRepository(): UserRepository {
+	if (!userRepository) 
+	  throw new Error("Services not initialized. Call initializeServices() first.");
+	return userRepository;
+  }
 
 // Getters para services
 export const getMaterialCalculationService = (): MaterialCalculationService => {

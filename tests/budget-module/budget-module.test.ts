@@ -161,6 +161,7 @@ describe('Budget Module Tests', () => {
       const invalidTemplate = {
         id: 'test-template-id',
         name: '', // INVÁLIDO: nombre vacío
+        description: 'Invalid template description', // Se agregó la descripción requerida
         projectType: ProjectType.RESIDENTIAL_SINGLE,
         scope: TemplateScope.PERSONAL,
         geographicalZone: 'QUITO',
@@ -241,6 +242,7 @@ describe('Budget Module Tests', () => {
       const mockTemplate = {
         id: 'template-id',
         name: 'Residential Template',
+        description: 'Test Description',
         projectType: ProjectType.RESIDENTIAL_SINGLE,
         scope: TemplateScope.SYSTEM,
         geographicalZone: 'QUITO',
@@ -334,8 +336,6 @@ describe('Budget Module Tests', () => {
       
       // 4. Simular aprobación
       budget.status = CalculationBudgetStatus.APPROVED;
-      budget.approvedBy = 'approver-id';
-      budget.approvedAt = new Date();
 
       // 5. Validación final
       validation = budgetService.validateBudgetCoherence(budget);

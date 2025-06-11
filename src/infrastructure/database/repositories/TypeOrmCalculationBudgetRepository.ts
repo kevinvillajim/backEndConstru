@@ -79,6 +79,76 @@ export class TypeOrmCalculationBudgetRepository implements CalculationBudgetRepo
     return { budgets, total };
   }
 
+  async findByUserWithFilters(
+    userId: string,
+    filters: any,
+    options?: PaginationOptions
+  ): Promise<{ budgets: CalculationBudget[]; total: number }> {
+    const queryBuilder = this.repository.createQueryBuilder("budget")
+      .leftJoinAndSelect("budget.lineItems", "lineItems")
+      .where("budget.userId = :userId", { userId });
+  
+    // Aplicar filtros adicionales
+    if (filters.projectId) {
+      queryBuilder.andWhere("budget.projectId = :projectId", {
+        projectId: filters.projectId
+      });
+    }
+  
+    if (filters.status) {
+      queryBuilder.andWhere("budget.status = :status", {
+        status: filters.status
+      });
+    }
+  
+    if (filters.budgetType) {
+      queryBuilder.andWhere("budget.budgetType = :budgetType", {
+        budgetType: filters.budgetType
+      });
+    }
+  
+    if (filters.search) {
+      queryBuilder.andWhere(
+        "(budget.name ILIKE :search OR budget.description ILIKE :search)",
+        { search: `%${filters.search}%` }
+      );
+    }
+  
+    // Aplicar paginación
+    if (options?.page && options?.limit) {
+      queryBuilder
+        .skip((options.page - 1) * options.limit)
+        .take(options.limit);
+    }
+  
+    if (options?.sortBy) {
+      const order = options.sortOrder === "desc" ? "DESC" : "ASC";
+      queryBuilder.orderBy(`budget.${options.sortBy}`, order);
+    } else {
+      queryBuilder.orderBy("budget.createdAt", "DESC");
+    }
+  
+    const [budgetEntities, total] = await queryBuilder.getManyAndCount();
+    const budgets = budgetEntities.map(entity => this.toDomainModel(entity));
+  
+    return { budgets, total };
+  }
+  
+  async countByUserAndMonth(userId: string, date: Date): Promise<number> {
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+  
+    return await this.repository.count({
+      where: {
+        userId,
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        } as any
+      }
+    });
+  }
+
   async findByCalculationResult(calculationResultId: string): Promise<CalculationBudget[]> {
     const budgets = await this.repository.find({
       where: { calculationResultId },

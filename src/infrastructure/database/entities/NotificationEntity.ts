@@ -26,6 +26,8 @@ export enum NotificationType {
 	ERROR = "error",
 	SUCCESS = "success",
 	SYSTEM = "system",
+	BUDGET_UPDATE = "budget_update",
+	PRICE_ALERT = "price_alert",
 }
 
 export enum NotificationPriority {

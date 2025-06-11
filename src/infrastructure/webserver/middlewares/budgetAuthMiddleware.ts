@@ -292,7 +292,7 @@ export class BudgetAuthMiddleware {
     return (req: RequestWithUser, res: Response, next: NextFunction) => {
       const originalSend = res.send;
 
-      res.send = function(data) {
+      res.send = function(data: any): Response<any, Record<string, any>> {
         // Log después de enviar la respuesta
         if (req.auditInfo) {
           setTimeout(() => {
@@ -319,7 +319,7 @@ export class BudgetAuthMiddleware {
           }, 0);
         }
 
-        originalSend.call(this, data);
+        return originalSend.call(this, data);
       };
 
       next();

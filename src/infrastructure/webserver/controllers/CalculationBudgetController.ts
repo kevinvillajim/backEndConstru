@@ -103,8 +103,8 @@ export class CalculationBudgetController {
       }
 
       // Obtener detalles relacionados
-      const lineItems = await this.budgetLineItemRepository.findByBudgetId(budgetId);
-      const professionalCosts = await this.professionalCostRepository.findByBudgetId(budgetId);
+      const lineItems = await this.budgetLineItemRepository.findByBudget(budgetId);
+      const professionalCosts = await this.professionalCostRepository.findByBudget(budgetId);
 
       // Validar coherencia del presupuesto
       const validation = this.calculationBudgetService.validateBudgetCoherence(budget);
@@ -558,7 +558,7 @@ export class CalculationBudgetController {
       const savedClone = await this.calculationBudgetRepository.create(clonedBudget);
 
       // Clonar líneas de presupuesto
-      const originalLineItems = await this.budgetLineItemRepository.findByBudgetId(budgetId);
+      const originalLineItems = await this.budgetLineItemRepository.findByBudget(budgetId);
       for (const lineItem of originalLineItems) {
         const clonedLineItem = {
           ...lineItem,
@@ -571,7 +571,7 @@ export class CalculationBudgetController {
       }
 
       // Clonar costos profesionales
-      const originalProfessionalCosts = await this.professionalCostRepository.findByBudgetId(budgetId);
+      const originalProfessionalCosts = await this.professionalCostRepository.findByBudget(budgetId);
       for (const cost of originalProfessionalCosts) {
         const clonedCost = {
           ...cost,
@@ -632,7 +632,7 @@ export class CalculationBudgetController {
       }
 
       // Obtener todas las versiones
-      const versions = await this.calculationBudgetRepository.findVersionsByParentId(
+      const versions = await this.calculationBudgetRepository.findVersions(
         budget.parentBudgetId || budgetId
       );
 

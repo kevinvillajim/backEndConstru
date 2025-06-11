@@ -5,7 +5,7 @@ import { MaterialRepository } from "../../domain/repositories/MaterialRepository
 import { NotificationRepository } from "../../domain/repositories/NotificationRepository";
 import { BudgetPricingService, PriceUpdateResult, MaterialPriceChange } from "../../domain/services/BudgetPricingService";
 import { CalculationBudget } from "../../domain/models/calculation/CalculationBudget";
-import { BudgetLineItem } from "../../domain/models/calculation/BudgetLineItem";
+import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 import { NotificationType, NotificationPriority } from "../../infrastructure/database/entities/NotificationEntity";
 import { v4 as uuidv4 } from "uuid";
 
@@ -72,8 +72,8 @@ export class UpdateBudgetPricingUseCase {
     const originalTotal = budget.total;
 
     // 2. Obtener líneas de presupuesto que contienen materiales
-    const lineItems = await this.budgetLineItemRepository.findByBudgetId(request.budgetId);
-    const materialLineItems = lineItems.filter(item => item.itemType === 'MATERIAL' && item.materialId);
+    const lineItems = await this.budgetLineItemRepository.findByBudget(request.budgetId);
+    const materialLineItems = lineItems.filter(item => item.itemType === LineItemType.MATERIAL && item.materialId);
 
     if (materialLineItems.length === 0) {
       throw new Error("No hay materiales en este presupuesto para actualizar precios");
@@ -132,8 +132,8 @@ export class UpdateBudgetPricingUseCase {
   ): Promise<PriceComparisonResult[]> {
 
     const budget = await this.validateAndGetBudget(budgetId, userId);
-    const lineItems = await this.budgetLineItemRepository.findByBudgetId(budgetId);
-    const materialLineItems = lineItems.filter(item => item.itemType === 'MATERIAL' && item.materialId);
+    const lineItems = await this.budgetLineItemRepository.findByBudget(budgetId);
+    const materialLineItems = lineItems.filter(item => item.itemType === LineItemType.MATERIAL && item.materialId);
 
     const comparisons: PriceComparisonResult[] = [];
 
@@ -348,7 +348,7 @@ export class UpdateBudgetPricingUseCase {
 
             // Actualizar línea del presupuesto
             lineItem.unitPrice = newPrice;
-            lineItem.totalPrice = lineItem.quantity * newPrice;
+            lineItem.subtotal = lineItem.quantity * newPrice;
             lineItem.updatedAt = new Date();
             
             // Agregar nota sobre la fuente del precio
@@ -373,8 +373,8 @@ export class UpdateBudgetPricingUseCase {
   ): Promise<CalculationBudget> {
     
     // Recalcular subtotal de materiales
-    const materialItems = updatedLineItems.filter(item => item.itemType === 'MATERIAL');
-    const newMaterialsSubtotal = materialItems.reduce((sum, item) => sum + item.totalPrice, 0);
+    const materialItems = updatedLineItems.filter(item => item.itemType === LineItemType.MATERIAL);
+    const newMaterialsSubtotal = materialItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     // Mantener otros subtotales iguales por ahora
     const newSubtotal = newMaterialsSubtotal + budget.laborSubtotal + 

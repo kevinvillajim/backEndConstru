@@ -8,7 +8,7 @@ import { MaterialRepository } from "../../domain/repositories/MaterialRepository
 import { CalculationBudgetService, BudgetGenerationOptions } from "../../domain/services/CalculationBudgetService";
 import { BudgetTemplateService } from "../../domain/services/BudgetTemplateService";
 import { CalculationBudget, BudgetType, CalculationBudgetStatus } from "../../domain/models/calculation/CalculationBudget";
-import { BudgetLineItem } from "../../domain/models/calculation/BudgetLineItem";
+import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 import { ProfessionalCost } from "../../domain/models/calculation/ProfessionalCost";
 import { v4 as uuidv4 } from "uuid";
 
@@ -318,7 +318,7 @@ export class CreateCalculationBudgetUseCase {
         const lineItem: BudgetLineItem = {
           id: uuidv4(),
           budgetId: budget.id,
-          itemType: 'MATERIAL',
+          itemType: LineItemType.MATERIAL,
           description: customMaterial.description || material?.name || 'Material personalizado',
           materialId: customMaterial.materialId,
           quantity: customMaterial.quantity,
@@ -341,7 +341,7 @@ export class CreateCalculationBudgetUseCase {
         const lineItem: BudgetLineItem = {
           id: uuidv4(),
           budgetId: budget.id,
-          itemType: 'LABOR',
+          itemType: LineItemType.LABOR,
           description: laborCost.description,
           quantity: laborCost.quantity,
           unit: laborCost.unit,

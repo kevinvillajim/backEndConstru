@@ -6,8 +6,8 @@ import { ProfessionalCostRepository } from "../../domain/repositories/Profession
 import { CalculationBudgetService } from "../../domain/services/CalculationBudgetService";
 import { BudgetTemplateService } from "../../domain/services/BudgetTemplateService";
 import { CalculationBudget } from "../../domain/models/calculation/CalculationBudget";
-import { BudgetTemplate } from "../../domain/models/calculation/BudgetTemplate";
-import { BudgetLineItem } from "../../domain/models/calculation/BudgetLineItem";
+import { BudgetTemplate, TemplateScope } from "../../domain/models/calculation/BudgetTemplate";
+import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 import { ProfessionalCost } from "../../domain/models/calculation/ProfessionalCost";
 
 export interface ApplyBudgetTemplateRequest {
@@ -262,7 +262,7 @@ export class ApplyBudgetTemplateUseCase {
     }
 
     // Verificar acceso al template
-    if (template.scope === 'PERSONAL' && template.createdBy !== userId) {
+    if (template.scope === TemplateScope.PERSONAL && template.createdBy !== userId) {
       throw new Error("No tiene acceso a este template personal");
     }
 
@@ -392,26 +392,26 @@ export class ApplyBudgetTemplateUseCase {
       let updatedItem = { ...item };
 
       // Aplicar factores de desperdicio a materiales
-      if (item.itemType === 'MATERIAL' && 
+      if (item.itemType === LineItemType.MATERIAL && 
           request.applyOptions.applyWasteFactors && 
           template.wasteFactors) {
         
         const wasteFactor = this.getApplicableWasteFactor(item, template.wasteFactors);
         if (wasteFactor > 1) {
           updatedItem.quantity = item.quantity * wasteFactor;
-          updatedItem.totalPrice = updatedItem.quantity * updatedItem.unitPrice;
+          updatedItem.subtotal = updatedItem.quantity * updatedItem.unitPrice;
         }
       }
 
       // Aplicar tasas de mano de obra
-      if (item.itemType === 'LABOR' && 
+      if (item.itemType === LineItemType.LABOR && 
           request.applyOptions.applyLaborRates && 
           template.laborRates) {
         
         const newRate = this.getApplicableLaborRate(item, template.laborRates);
         if (newRate > 0) {
           updatedItem.unitPrice = newRate;
-          updatedItem.totalPrice = updatedItem.quantity * newRate;
+          updatedItem.subtotal = updatedItem.quantity * newRate;
         }
       }
 
@@ -444,7 +444,7 @@ export class ApplyBudgetTemplateUseCase {
 
     // Actualizar costos existentes
     for (const cost of professionalCosts) {
-      const templateRate = this.getTemplateFeesRate(cost.type, template.professionalFees);
+      const templateRate = this.getTemplateFeesRate(String(cost.type), template.professionalFees);
       
       if (templateRate > 0) {
         const updatedCost: ProfessionalCost = {
@@ -640,14 +640,14 @@ export class ApplyBudgetTemplateUseCase {
   }
 
   private applyLineItemAdjustments(item: BudgetLineItem, adjustments: any): BudgetLineItem {
-    if (item.itemType === 'MATERIAL' && adjustments.wasteFactorMultiplier) {
+    if (item.itemType === LineItemType.MATERIAL && adjustments.wasteFactorMultiplier) {
       item.quantity *= adjustments.wasteFactorMultiplier;
-      item.totalPrice = item.quantity * item.unitPrice;
+      item.subtotal = item.quantity * item.unitPrice;
     }
 
-    if (item.itemType === 'LABOR' && adjustments.laborRateMultiplier) {
+    if (item.itemType === LineItemType.LABOR && adjustments.laborRateMultiplier) {
       item.unitPrice *= adjustments.laborRateMultiplier;
-      item.totalPrice = item.quantity * item.unitPrice;
+      item.subtotal = item.quantity * item.unitPrice;
     }
 
     return item;

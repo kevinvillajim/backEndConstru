@@ -11,6 +11,9 @@ export class TypeOrmProfessionalCostRepository implements ProfessionalCostReposi
   constructor() {
     this.repository = AppDataSource.getRepository(ProfessionalCostEntity);
   }
+  findByType(calculationBudgetId: string, costType: string): Promise<ProfessionalCost[]> {
+    throw new Error("Method not implemented.");
+  }
 
   async findById(id: string): Promise<ProfessionalCost | null> {
     const professionalCost = await this.repository.findOne({
@@ -30,6 +33,8 @@ export class TypeOrmProfessionalCostRepository implements ProfessionalCostReposi
 
     return professionalCosts.map(cost => this.toDomainModel(cost));
   }
+
+  
 
   async findByService(calculationBudgetId: string, service: ProfessionalService): Promise<ProfessionalCost | null> {
     const professionalCost = await this.repository.findOne({

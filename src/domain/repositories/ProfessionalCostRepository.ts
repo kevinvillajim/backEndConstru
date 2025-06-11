@@ -7,6 +7,8 @@ export interface ProfessionalCostRepository {
   findByService(calculationBudgetId: string, service: ProfessionalService): Promise<ProfessionalCost | null>;
   findByProfessional(professionalId: string): Promise<ProfessionalCost[]>;
   findApproved(calculationBudgetId: string): Promise<ProfessionalCost[]>;
+  findByType(calculationBudgetId: string, costType: string): Promise<ProfessionalCost[]>;
+  
   create(professionalCost: CreateProfessionalCostDTO): Promise<ProfessionalCost>;
   createMany(professionalCosts: CreateProfessionalCostDTO[]): Promise<ProfessionalCost[]>;
   update(id: string, professionalCostData: Partial<ProfessionalCost>): Promise<ProfessionalCost | null>;
