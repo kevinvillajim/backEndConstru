@@ -14,7 +14,7 @@ C:.
 |   progresoDesarrollo.txt
 |   README.md
 |   tsconfig.json
-|               
+|                  
 +---promptsNormativaNEC
 |       parte1.txt
 |       parte10.txt
@@ -93,7 +93,10 @@ C:.
 |   |   |           CalculateMaterialTemplateRankingsUseCase.ts
 |   |   |           CreateMaterialCalculationUseCase.ts
 |   |   |           CreateUserMaterialTemplateUseCase.ts
+|   |   |           GetMaterialAnalyticsUseCase.ts
+|   |   |           GetMaterialTemplatesByTypeUseCase.ts
 |   |   |           GetMaterialTrendingTemplatesUseCase.ts
+|   |   |           SearchMaterialTemplatesUseCase.ts
 |   |   |           TrackMaterialTemplateUsageUseCase.ts
 |   |   |           
 |   |   +---common
@@ -332,7 +335,7 @@ C:.
 |   |   |   |       UserTemplateUsageLogEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
-|   |   |   |       1748666873460-InitialSchema.ts
+|   |   |   |       1749554674810-InitialSchema.ts
 |   |   |   |       
 |   |   |   +---repositories
 |   |   |   |       TypeOrmAccountingTransactionRepository.ts
@@ -345,6 +348,7 @@ C:.
 |   |   |   |       TypeOrmCategoryRepository.ts
 |   |   |   |       TypeOrmGeographicalZoneRepository.ts
 |   |   |   |       TypeOrmInvoiceRepository.ts
+|   |   |   |       TypeOrmMaterialCalculationResultRepository.ts
 |   |   |   |       TypeOrmMaterialCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmMaterialPropertyRepository.ts
 |   |   |   |       TypeOrmMaterialRepository.ts
@@ -367,12 +371,14 @@ C:.
 |   |   |   |       TypeOrmUserCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmUserFavoriteRepository.ts
 |   |   |   |       TypeOrmUserInteractionRepository.ts
+|   |   |   |       TypeOrmUserMaterialCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       TypeOrmUserTemplateUsageLogRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
 |   |   |       |   calculation-templates.ts
 |   |   |       |   material-calculation-templates-seeds.ts
+|   |   |       |   run-seeds.ts
 |   |   |       |   specialized-templates.ts
 |   |   |       |   
 |   |   |       \---nec-seeds
@@ -466,6 +472,7 @@ C:.
 |   |   |   |       TwoFactorAuthController.ts
 |   |   |   |       UserCalculationTemplateController.ts
 |   |   |   |       UserController.ts
+|   |   |   |       UserMaterialTemplateController.ts
 |   |   |   |       
 |   |   |   +---docs
 |   |   |   |   |   swagger.ts
@@ -550,6 +557,7 @@ C:.
 |   |   |           suggestionValidator.ts
 |   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts
+|   |   |           userMaterialTemplateValidator.ts
 |   |   |           userTemplateValidator.ts
 |   |   |           
 |   |   \---websocket
