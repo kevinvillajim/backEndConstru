@@ -101,12 +101,12 @@ export class BudgetPricingService {
           result.updatedCount++;
           
         } catch (error) {
-          result.errors.push(`Error actualizando ${ipcoItem.materialCode}: ${error.message}`);
+          result.errors.push(`Error actualizando ${ipcoItem.materialCode}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
       
     } catch (error) {
-      result.errors.push(`Error conectando con IPCO: ${error.message}`);
+      result.errors.push(`Error conectando con IPCO: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
 
     return result;
@@ -261,7 +261,7 @@ export class BudgetPricingService {
         result.updatedCount++;
 
       } catch (error) {
-        result.errors.push(`Error procesando material ${materialId}: ${error.message}`);
+        result.errors.push(`Error procesando material ${materialId}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 

@@ -12,6 +12,21 @@ export class TypeOrmBudgetTemplateRepository implements BudgetTemplateRepository
   constructor() {
     this.repository = AppDataSource.getRepository(BudgetTemplateEntity);
   }
+  findByProjectType(projectType: ProjectType, geographicalZone?: string): Promise<BudgetTemplate[]> {
+    throw new Error("Method not implemented.");
+  }
+  findByScope(scope: TemplateScope, userId?: string): Promise<BudgetTemplate[]> {
+    throw new Error("Method not implemented.");
+  }
+  findActiveTemplates(filters?: { projectType?: ProjectType; geographicalZone?: string; scope?: TemplateScope; }): Promise<BudgetTemplate[]> {
+    throw new Error("Method not implemented.");
+  }
+  findPopularTemplates(limit?: number): Promise<BudgetTemplate[]> {
+    throw new Error("Method not implemented.");
+  }
+  incrementUsage(id: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 
   async create(template: BudgetTemplate): Promise<BudgetTemplate> {
     const entity = this.toEntity(template);
@@ -133,8 +148,9 @@ export class TypeOrmBudgetTemplateRepository implements BudgetTemplateRepository
     return this.toDomain(savedEntity);
   }
 
-  async delete(id: string): Promise<void> {
-    await this.repository.delete(id);
+  async delete(id: string): Promise<boolean> {
+    const result = await this.repository.delete(id);
+    return result.affected !== undefined && result.affected > 0;
   }
 
   async countPersonalByUser(userId: string): Promise<number> {

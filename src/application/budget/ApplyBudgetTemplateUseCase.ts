@@ -111,8 +111,8 @@ export class ApplyBudgetTemplateUseCase {
     }
 
     // 5. Obtener datos relacionados
-    const lineItems = await this.budgetLineItemRepository.findByBudgetId(targetBudget.id);
-    const professionalCosts = await this.professionalCostRepository.findByBudgetId(targetBudget.id);
+    const lineItems = await this.budgetLineItemRepository.findByBudget(budget.id);
+    const professionalCosts = await this.professionalCostRepository.findByBudget(budget.id);
 
     // 6. Aplicar template al presupuesto
     const updatedBudget = await this.applyTemplateTobudget(targetBudget, template, request);
