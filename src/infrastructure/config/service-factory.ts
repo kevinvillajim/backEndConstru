@@ -31,6 +31,10 @@ import {TypeOrmUserTemplateUsageLogRepository} from "../database/repositories/Ty
 import {TypeOrmTemplateRankingRepository} from "../database/repositories/TypeOrmTemplateRankingRepository";
 import {TypeOrmPromotionRequestRepository} from "../database/repositories/TypeOrmPromotionRequestRepository";
 import { TypeOrmAuthorCreditRepository } from "../database/repositories/TypeOrmAuthorCreditRepository";
+import { TypeOrmCalculationBudgetRepository } from "../database/repositories/TypeOrmCalculationBudgetRepository";
+import { TypeOrmBudgetTemplateRepository } from "../database/repositories/TypeOrmBudgetTemplateRepository";
+import { TypeOrmBudgetLineItemRepository } from "../database/repositories/TypeOrmBudgetLineItemRepository";
+import { TypeOrmProfessionalCostRepository } from "../database/repositories/TypeOrmProfessionalCostRepository";
 
 
 // ============= SERVICIOS DE DOMINIO =============
@@ -177,6 +181,10 @@ import {GetMaterialAnalyticsUseCase} from "../../application/calculation/materia
 import {TypeOrmMaterialCalculationResultRepository} from "../database/repositories/TypeOrmMaterialCalculationResultRepository";
 import {TypeOrmUserMaterialCalculationTemplateRepository} from "../database/repositories/TypeOrmUserMaterialCalculationTemplateRepository";
 import {UserMaterialTemplateController} from "../webserver/controllers/UserMaterialTemplateController";
+import { BudgetTemplateRepository } from "../../domain/repositories/BudgetTemplateRepository";
+import { BudgetLineItemRepository } from "../../domain/repositories/BudgetLineItemRepository";
+import { ProfessionalCostRepository } from "../../domain/repositories/ProfessionalCostRepository";
+import { CalculationBudgetRepository } from "../../domain/repositories/CalculationBudgetRepository";
 
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
@@ -210,6 +218,10 @@ let userTemplateUsageLogRepository: TypeOrmUserTemplateUsageLogRepository;
 let templateRankingRepository: TypeOrmTemplateRankingRepository;
 let promotionRequestRepository: TypeOrmPromotionRequestRepository;
 let authorCreditRepository: TypeOrmAuthorCreditRepository;
+let calculationBudgetRepository: TypeOrmCalculationBudgetRepository;
+let budgetTemplateRepository: TypeOrmBudgetTemplateRepository;
+let budgetLineItemRepository: TypeOrmBudgetLineItemRepository;
+let professionalCostRepository: TypeOrmProfessionalCostRepository;
 
 // ============= VARIABLES GLOBALES DE SERVICIOS =============
 let authService: AuthService;
@@ -396,8 +408,11 @@ export function initializeServices() {
 		materialTemplateUsageLogRepository =
 			new TypeOrmMaterialTemplateUsageLogRepository();
 		materialTemplateRankingRepository =
-			new TypeOrmMaterialTemplateRankingRepository();
-
+		new TypeOrmMaterialTemplateRankingRepository();
+		calculationBudgetRepository = new TypeOrmCalculationBudgetRepository();
+		budgetTemplateRepository = new TypeOrmBudgetTemplateRepository();
+		budgetLineItemRepository = new TypeOrmBudgetLineItemRepository();
+		professionalCostRepository = new TypeOrmProfessionalCostRepository();
 
 		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
@@ -1370,6 +1385,38 @@ export const getMaterialCalculationResultRepository =
 		}
 		return materialCalculationResultRepository;
 	};
+
+	export function getCalculationBudgetRepository(): CalculationBudgetRepository {
+		if (!calculationBudgetRepository)
+		  throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		  );
+		return calculationBudgetRepository;
+	  }
+	  
+	  export function getBudgetTemplateRepository(): BudgetTemplateRepository {
+		if (!budgetTemplateRepository)
+		  throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		  );
+		return budgetTemplateRepository;
+	  }
+	  
+	  export function getBudgetLineItemRepository(): BudgetLineItemRepository {
+		if (!budgetLineItemRepository)
+		  throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		  );
+		return budgetLineItemRepository;
+	  }
+	  
+	  export function getProfessionalCostRepository(): ProfessionalCostRepository {
+		if (!professionalCostRepository)
+		  throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		  );
+		return professionalCostRepository;
+	  }
 
 // Getters para services
 export const getMaterialCalculationService = (): MaterialCalculationService => {
