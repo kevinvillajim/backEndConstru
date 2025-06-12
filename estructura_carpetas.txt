@@ -185,13 +185,23 @@ C:.
 |   |   |   |       CalculationBudget.ts
 |   |   |   |       CalculationParameter.ts
 |   |   |   |       CalculationResult.ts
+|   |   |   |       CalculationSchedule.ts
 |   |   |   |       CalculationTemplate.ts
+|   |   |   |       Equipment.ts
 |   |   |   |       GeographicalZone.ts
 |   |   |   |       MaterialCalculationResult.ts
 |   |   |   |       MaterialCalculationTemplate.ts
 |   |   |   |       ProfessionalCost.ts
+|   |   |   |       ProgressCalculator.ts
+|   |   |   |       ProgressTracking.ts
+|   |   |   |       ResourceAssignment.ts
+|   |   |   |       ScheduleActivity.ts
+|   |   |   |       ScheduleOptimizer.ts
+|   |   |   |       ScheduleTemplate.ts
 |   |   |   |       UserCalculationTemplate.ts
 |   |   |   |       UserMaterialCalculationTemplate.ts
+|   |   |   |       WeatherFactor.ts
+|   |   |   |       Workforce.ts
 |   |   |   |       
 |   |   |   +---common
 |   |   |   |       PaginationOptions.ts
@@ -241,8 +251,10 @@ C:.
 |   |   |       CalculationComparisonRepository.ts
 |   |   |       CalculationParameterRepository.ts
 |   |   |       CalculationResultRepository.ts
+|   |   |       CalculationScheduleRepository.ts
 |   |   |       CalculationTemplateRepository.ts
 |   |   |       CategoryRepository.ts
+|   |   |       EquipmentRepository.ts
 |   |   |       GeographicalZoneRepository.ts
 |   |   |       InvoiceRepository.ts
 |   |   |       MaterialCalculationResultRepository.ts
@@ -257,10 +269,14 @@ C:.
 |   |   |       OrderRepository.ts
 |   |   |       PhaseRepository.ts
 |   |   |       ProfessionalCostRepository.ts
+|   |   |       ProgressTrackingRepository.ts
 |   |   |       ProjectBudgetRepository.ts
 |   |   |       ProjectRepository.ts
 |   |   |       PromotionRequestRepository.ts
 |   |   |       RefreshTokenRepository.ts
+|   |   |       ResourceAssignmentRepository.ts
+|   |   |       ScheduleActivityRepository.ts
+|   |   |       ScheduleTemplateRepository.ts
 |   |   |       TaskRepository.ts
 |   |   |       TemplateRankingRepository.ts
 |   |   |       TemplateRatingRepository.ts
@@ -273,6 +289,8 @@ C:.
 |   |   |       UserRecommendationRepository.ts
 |   |   |       UserRepository.ts
 |   |   |       UserTemplateUsageLogRepository.ts
+|   |   |       WeatherFactorRepository.ts
+|   |   |       WorkforceRepository.ts
 |   |   |       
 |   |   \---services
 |   |           AccountingService.ts
@@ -307,6 +325,7 @@ C:.
 |   |   |   |   
 |   |   |   +---entities
 |   |   |   |       AccountingTransactionEntity.ts
+|   |   |   |       ActivityProgressEntity.ts
 |   |   |   |       AuthorCreditEntity.ts
 |   |   |   |       BudgetItemEntity.ts
 |   |   |   |       BudgetLineItemEntity.ts
@@ -319,8 +338,10 @@ C:.
 |   |   |   |       CalculationParameterEntity.ts
 |   |   |   |       CalculationRecommendationEntity.ts
 |   |   |   |       CalculationResultEntity.ts
+|   |   |   |       CalculationScheduleEntity.ts
 |   |   |   |       CalculationTemplateEntity.ts
 |   |   |   |       CategoryEntity.ts
+|   |   |   |       EquipmentEntity.ts
 |   |   |   |       GeographicalZoneEntity.ts
 |   |   |   |       InvoiceEntity.ts
 |   |   |   |       InvoiceItemEntity.ts
@@ -339,12 +360,17 @@ C:.
 |   |   |   |       OrderItemEntity.ts
 |   |   |   |       PhaseEntity.ts
 |   |   |   |       ProfessionalCostEntity.ts
+|   |   |   |       ProgressTrackingEntity.ts
 |   |   |   |       ProjectBudgetEntity.ts
 |   |   |   |       ProjectDocumentEntity.ts
 |   |   |   |       ProjectEntity.ts
 |   |   |   |       ProjectTeamMemberEntity.ts
 |   |   |   |       PromotionRequestEntity.ts
 |   |   |   |       RefreshTokenEntity.ts
+|   |   |   |       ResourceAssignmentEntity.ts
+|   |   |   |       ScheduleActivityEntity.ts
+|   |   |   |       ScheduleActivityTemplateEntity.ts
+|   |   |   |       ScheduleTemplateEntity.ts
 |   |   |   |       TaskEntity.ts
 |   |   |   |       TemplateRankingEntity.ts
 |   |   |   |       TemplateRatingEntity.ts
@@ -359,6 +385,8 @@ C:.
 |   |   |   |       UserRecommendationEntity.ts
 |   |   |   |       UserTemplateUsageEntity.ts
 |   |   |   |       UserTemplateUsageLogEntity.ts
+|   |   |   |       WeatherFactorEntity.ts
+|   |   |   |       WorkforceEntity.ts
 |   |   |   |       
 |   |   |   +---migrations
 |   |   |   |       1749620889533-InitialSchema.ts
@@ -373,8 +401,10 @@ C:.
 |   |   |   |       TypeOrmCalculationComparisonRepository.ts
 |   |   |   |       TypeOrmCalculationParameterRepository.ts
 |   |   |   |       TypeOrmCalculationResultRepository.ts
+|   |   |   |       TypeOrmCalculationScheduleRepository.ts
 |   |   |   |       TypeOrmCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmCategoryRepository.ts
+|   |   |   |       TypeOrmEquipmentRepository.ts
 |   |   |   |       TypeOrmGeographicalZoneRepository.ts
 |   |   |   |       TypeOrmInvoiceRepository.ts
 |   |   |   |       TypeOrmMaterialCalculationResultRepository.ts
@@ -389,10 +419,14 @@ C:.
 |   |   |   |       TypeOrmOrderRepository.ts
 |   |   |   |       TypeOrmPhaseRepository.ts
 |   |   |   |       TypeOrmProfessionalCostRepository.ts
+|   |   |   |       TypeOrmProgressTrackingRepository.ts
 |   |   |   |       TypeOrmProjectBudgetRepository.ts
 |   |   |   |       TypeOrmProjectRepository.ts
 |   |   |   |       TypeOrmPromotionRequestRepository.ts
 |   |   |   |       TypeOrmRefreshTokenRepository.ts
+|   |   |   |       TypeOrmResourceAssignmentRepository.ts
+|   |   |   |       TypeOrmScheduleActivityRepository.ts
+|   |   |   |       TypeOrmScheduleTemplateRepository.ts
 |   |   |   |       TypeOrmTaskRepository.ts
 |   |   |   |       TypeOrmTemplateRankingRepository.ts
 |   |   |   |       TypeOrmTemplateRatingRepository.ts
@@ -404,6 +438,8 @@ C:.
 |   |   |   |       TypeOrmUserMaterialCalculationTemplateRepository.ts
 |   |   |   |       TypeOrmUserRepository.ts
 |   |   |   |       TypeOrmUserTemplateUsageLogRepository.ts
+|   |   |   |       TypeOrmWeatherFactorRepository.ts
+|   |   |   |       TypeOrmWorkforceRepository.ts
 |   |   |   |       
 |   |   |   \---seeds
 |   |   |       |   calculation-templates.ts
