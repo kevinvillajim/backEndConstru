@@ -1,6 +1,6 @@
 // src/infrastructure/database/repositories/TypeOrmEquipmentRepository.ts
 import { Repository, Between } from 'typeorm';
-import { EquipmentEntity } from '../entities/EquipmentEntity';
+import { EquipmentEntity, EquipmentType, EquipmentCondition } from '../entities/EquipmentEntity';
 import { EquipmentRepository } from '../../../domain/repositories/EquipmentRepository';
 import { AppDataSource } from '../data-source';
 
@@ -20,19 +20,18 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
 
   async findByType(equipmentType: string): Promise<EquipmentEntity[]> {
     return await this.repository.find({
-      where: { equipmentType },
+      where: { type: equipmentType as EquipmentType }, // Fix: cast to enum
       order: { name: 'ASC' }
     });
   }
 
   async findAvailable(dateRange: { start: Date; end: Date }, equipmentType?: string): Promise<EquipmentEntity[]> {
     const where: any = {
-      isAvailable: true,
-      condition: 'out_of_service' // NOT equal to
+      status: 'available' // Use string that matches enum value
     };
 
     if (equipmentType) {
-      where.equipmentType = equipmentType;
+      where.type = equipmentType as EquipmentType;
     }
 
     const equipmentList = await this.repository.find({
@@ -48,8 +47,8 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
 
       // Check for time conflicts
       const hasConflict = equipment.assignments.some(assignment => {
-        return assignment.plannedStartDate < dateRange.end && 
-               assignment.plannedEndDate > dateRange.start &&
+        return assignment.startDate < dateRange.end && 
+               assignment.endDate > dateRange.start &&
                assignment.status !== 'cancelled';
       });
 
@@ -59,14 +58,14 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
 
   async findByGeographicalZone(zone: string): Promise<EquipmentEntity[]> {
     return await this.repository.find({
-      where: { geographicalZone: zone },
+      where: { location: zone }, // Fix: use location field instead of geographicalZone
       order: { name: 'ASC' }
     });
   }
 
   async findByCondition(condition: string): Promise<EquipmentEntity[]> {
     return await this.repository.find({
-      where: { condition },
+      where: { condition: condition as EquipmentCondition }, // Fix: cast to enum
       order: { name: 'ASC' }
     });
   }
@@ -90,15 +89,15 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
     let query = this.repository.createQueryBuilder('equipment');
 
     if (criteria.type) {
-      query = query.andWhere('equipment.equipmentType = :type', { type: criteria.type });
+      query = query.andWhere('equipment.type = :type', { type: criteria.type });
     }
 
     if (criteria.zone) {
-      query = query.andWhere('equipment.geographicalZone = :zone', { zone: criteria.zone });
+      query = query.andWhere('equipment.location LIKE :zone', { zone: `%${criteria.zone}%` });
     }
 
     if (criteria.maxDailyCost) {
-      query = query.andWhere('equipment.dailyRentalCost <= :maxCost', { maxCost: criteria.maxDailyCost });
+      query = query.andWhere('equipment.hourlyRate * 8 <= :maxCost', { maxCost: criteria.maxDailyCost });
     }
 
     if (criteria.minCondition) {

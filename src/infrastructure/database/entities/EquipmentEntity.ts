@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ResourceAssignmentEntity } from './ResourceAssignmentEntity';
+import { UserEntity } from './UserEntity';
 
 export enum EquipmentType {
   EXCAVATOR = 'excavator',
@@ -32,6 +33,16 @@ export enum EquipmentCondition {
   CRITICAL = 'critical'
 }
 
+export enum GeographicalZone {
+  QUITO = 'quito',
+  GUAYAQUIL = 'guayaquil',
+  CUENCA = 'cuenca',
+  COSTA = 'costa',
+  SIERRA = 'sierra',
+  ORIENTE = 'oriente',
+  INSULAR = 'insular'
+}
+
 @Entity('equipment')
 export class EquipmentEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -46,14 +57,30 @@ export class EquipmentEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   manufacturer: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  brand: string;
+
   @Column({ type: 'varchar', length: 50, nullable: true })
   serialNumber: string;
 
+  @Column({ type: 'integer', nullable: true })
+  manufacturingYear: number;
+
+  // PROPIEDAD AGREGADA - Esta se estaba usando en el repositorio
   @Column({
     type: 'enum',
     enum: EquipmentType
   })
-  type: EquipmentType;
+  equipmentType: EquipmentType;
+
+  // Alias para compatibilidad con código existente
+  get type(): EquipmentType {
+    return this.equipmentType;
+  }
+
+  set type(value: EquipmentType) {
+    this.equipmentType = value;
+  }
 
   @Column({
     type: 'enum',
@@ -69,8 +96,32 @@ export class EquipmentEntity {
   })
   condition: EquipmentCondition;
 
+  // PROPIEDAD AGREGADA - Disponibilidad
+  @Column({ type: 'boolean', default: true })
+  isAvailable: boolean;
+
+  @Column({ type: 'date', nullable: true })
+  availableFrom: Date;
+
+  @Column({ type: 'date', nullable: true })
+  availableUntil: Date;
+
+  // Costos
   @Column('decimal', { precision: 8, scale: 2 })
   hourlyRate: number;
+
+  // PROPIEDADES AGREGADAS - Costos adicionales
+  @Column('decimal', { precision: 8, scale: 2 })
+  dailyRentalCost: number;
+
+  @Column('decimal', { precision: 8, scale: 2 })
+  hourlyOperatingCost: number;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  mobilizationCost: number;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  demobilizationCost: number;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   purchasePrice: number;
@@ -99,14 +150,90 @@ export class EquipmentEntity {
   @Column({ type: 'varchar', length: 200, nullable: true })
   location: string;
 
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  currentLocation: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   operator: string;
 
-  @Column('text', { nullable: true })
-  specifications: string;
+  // PROPIEDAD AGREGADA - Zona geográfica
+  @Column({
+    type: 'enum',
+    enum: GeographicalZone
+  })
+  geographicalZone: GeographicalZone;
+
+  // PROPIEDADES AGREGADAS - Especificaciones detalladas
+  @Column({ type: 'json', nullable: true })
+  specifications: {
+    capacity: {
+      value: number;
+      unit: string;
+    };
+    dimensions: {
+      length: number;
+      width: number;
+      height: number;
+      weight: number;
+    };
+    performance: {
+      maxReach: number;
+      operatingSpeed: number;
+      fuelConsumption: number;
+    };
+    requirements: {
+      operatorRequired: boolean;
+      powerType: string;
+      specialPermits: string[];
+    };
+  };
+
+  // PROPIEDADES AGREGADAS - Mantenimiento
+  @Column({ type: 'json', nullable: true })
+  maintenanceSchedule: {
+    lastMaintenance: Date;
+    nextMaintenance: Date;
+    maintenanceType: string;
+    maintenanceInterval: number;
+    hoursUntilMaintenance: number;
+  };
+
+  @Column({ type: 'json', nullable: true })
+  maintenanceHistory: {
+    date: Date;
+    type: string;
+    description: string;
+    cost: number;
+    performedBy: string;
+  }[];
+
+  // PROPIEDADES AGREGADAS - Certificaciones y seguridad
+  @Column({ type: 'json', nullable: true })
+  certifications: {
+    certificationType: string;
+    issueDate: Date;
+    expiryDate: Date;
+    certifyingBody: string;
+  }[];
+
+  @Column({ type: 'json', nullable: true })
+  safetyFeatures: string[];
+
+  @Column({ type: 'date', nullable: true })
+  lastSafetyInspection: Date;
+
+  @Column({ type: 'date', nullable: true })
+  nextSafetyInspection: Date;
 
   @Column('text', { nullable: true })
   notes: string;
+
+  // PROPIEDADES AGREGADAS - Propiedad y campos personalizados
+  @Column({ type: 'uuid', nullable: true })
+  ownerId: string;
+
+  @Column({ type: 'json', nullable: true })
+  customFields: Record<string, any>;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -117,6 +244,10 @@ export class EquipmentEntity {
   // Relaciones
   @OneToMany(() => ResourceAssignmentEntity, assignment => assignment.equipment)
   assignments: ResourceAssignmentEntity[];
+
+  @ManyToOne(() => UserEntity, user => user.id, { nullable: true })
+  @JoinColumn({ name: 'ownerId' })
+  owner: UserEntity;
 
   // Métodos de utilidad
   calculateTotalOperatingCost(hours: number): number {
@@ -133,12 +264,12 @@ export class EquipmentEntity {
     return totalCost;
   }
 
-  isAvailable(): boolean {
-    return this.status === EquipmentStatus.AVAILABLE;
+  isEquipmentAvailable(): boolean {
+    return this.status === EquipmentStatus.AVAILABLE && this.isAvailable;
   }
 
   canOperate(requestedHours: number): boolean {
-    if (!this.isAvailable()) {
+    if (!this.isEquipmentAvailable()) {
       return false;
     }
     
@@ -192,11 +323,22 @@ export class EquipmentEntity {
     } else if (this.condition === EquipmentCondition.FAIR) {
       this.condition = EquipmentCondition.GOOD;
     }
+
+    // Actualizar cronograma de mantenimiento
+    if (this.maintenanceSchedule) {
+      this.maintenanceSchedule.lastMaintenance = new Date();
+      if (this.maintenanceSchedule.maintenanceInterval) {
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + this.maintenanceSchedule.maintenanceInterval);
+        this.maintenanceSchedule.nextMaintenance = nextDate;
+        this.maintenanceSchedule.hoursUntilMaintenance = this.maintenanceSchedule.maintenanceInterval * 8;
+      }
+    }
   }
 
   getActiveAssignments(): ResourceAssignmentEntity[] {
     return this.assignments?.filter(assignment => 
-      assignment.status === 'active' || assignment.status === 'pending'
+      assignment.status === 'active' || assignment.status === 'assigned'
     ) || [];
   }
 
@@ -213,5 +355,43 @@ export class EquipmentEntity {
     
     const maxAvailableHours = this.maxOperatingHoursPerDay || 24;
     return Math.min(100, (totalAssignedHours / maxAvailableHours) * 100);
+  }
+
+  // MÉTODOS ADICIONALES para compatibilidad con el sistema
+  getDailyOperatingCost(): number {
+    const dailyHours = this.maxOperatingHoursPerDay || 8;
+    return this.calculateTotalOperatingCost(dailyHours);
+  }
+
+  isInMaintenanceWindow(): boolean {
+    if (!this.maintenanceSchedule?.nextMaintenance) return false;
+    
+    const now = new Date();
+    const nextMaintenance = new Date(this.maintenanceSchedule.nextMaintenance);
+    const daysUntilMaintenance = Math.ceil((nextMaintenance.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return daysUntilMaintenance <= 7; // Dentro de la ventana de 7 días
+  }
+
+  getMaintenanceStatus(): string {
+    if (this.status === EquipmentStatus.MAINTENANCE) return 'in_maintenance';
+    if (this.needsMaintenance()) return 'needs_maintenance';
+    if (this.isInMaintenanceWindow()) return 'maintenance_due_soon';
+    return 'maintenance_ok';
+  }
+
+  getCapacityInfo(): string {
+    if (this.specifications?.capacity) {
+      return `${this.specifications.capacity.value} ${this.specifications.capacity.unit}`;
+    }
+    return 'N/A';
+  }
+
+  requiresOperator(): boolean {
+    return this.specifications?.requirements?.operatorRequired || false;
+  }
+
+  getSpecialPermits(): string[] {
+    return this.specifications?.requirements?.specialPermits || [];
   }
 }

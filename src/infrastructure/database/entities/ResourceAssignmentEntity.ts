@@ -13,9 +13,11 @@ export enum ResourceType {
 
 export enum AssignmentStatus {
   PENDING = 'pending',
+  ASSIGNED = 'assigned',
   ACTIVE = 'active',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  ON_HOLD = 'on_hold'
 }
 
 @Entity('resource_assignments')
@@ -35,6 +37,35 @@ export class ResourceAssignmentEntity {
   @Column('uuid')
   activityId: string;
 
+  // Fechas de asignación planificadas - PROPIEDADES AGREGADAS
+  @Column({ type: 'date' })
+  assignmentDate: Date;
+
+  @Column({ type: 'date' })
+  plannedStartDate: Date;
+
+  @Column({ type: 'date' })
+  plannedEndDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  actualStartDate?: Date;
+
+  @Column({ type: 'date', nullable: true })
+  actualEndDate?: Date;
+
+  // Asignación y costos - PROPIEDADES AGREGADAS
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 100 })
+  allocationPercentage: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 8 })
+  dailyHours: number;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  role?: string;
+
+  @Column({ type: 'text', nullable: true })
+  responsibilities?: string;
+
   @Column('decimal', { precision: 10, scale: 2 })
   quantity: number;
 
@@ -46,6 +77,23 @@ export class ResourceAssignmentEntity {
 
   @Column('decimal', { precision: 12, scale: 2, nullable: true })
   totalCost: number;
+
+  // Costos planificados y reales - PROPIEDADES AGREGADAS
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+  plannedCost: number;
+
+  @Column({ type: 'decimal', precision: 15, scale: 2, default: 0 })
+  actualCost: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  negotiatedRate?: number;
+
+  // Productividad y rendimiento - PROPIEDADES AGREGADAS
+  @Column({ type: 'decimal', precision: 3, scale: 2, default: 1.0 })
+  productivityFactor: number;
+
+  @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true })
+  performanceRating?: number;
 
   @Column({
     type: 'enum',
@@ -66,6 +114,16 @@ export class ResourceAssignmentEntity {
   @Column('text', { nullable: true })
   notes: string;
 
+  // Referencias a workforce y equipment - PROPIEDADES AGREGADAS
+  @Column({ type: 'uuid', nullable: true })
+  workforceId?: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  equipmentId?: string;
+
+  @Column({ type: 'json', nullable: true })
+  customFields?: Record<string, any>;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -73,7 +131,7 @@ export class ResourceAssignmentEntity {
   updatedAt: Date;
 
   // Relaciones
-  @ManyToOne(() => ScheduleActivityEntity, (activity: ScheduleActivityEntity) => activity.assignments, {
+  @ManyToOne(() => ScheduleActivityEntity, (activity: ScheduleActivityEntity) => activity.resourceAssignments, {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'activityId' })
@@ -83,14 +141,14 @@ export class ResourceAssignmentEntity {
     nullable: true,
     onDelete: 'CASCADE'
   })
-  @JoinColumn({ name: 'resourceId' })
+  @JoinColumn({ name: 'workforceId' })
   workforce: WorkforceEntity;
 
   @ManyToOne(() => EquipmentEntity, (equipment: EquipmentEntity) => equipment.assignments, {
     nullable: true,
     onDelete: 'CASCADE' 
   })
-  @JoinColumn({ name: 'resourceId' })
+  @JoinColumn({ name: 'equipmentId' })
   equipment: EquipmentEntity;
 
   // Métodos de utilidad
@@ -108,10 +166,14 @@ export class ResourceAssignmentEntity {
       if (percentage === 100) {
         this.status = AssignmentStatus.COMPLETED;
         this.endDate = new Date();
+        this.actualEndDate = new Date();
       } else if (percentage > 0 && this.status === AssignmentStatus.PENDING) {
         this.status = AssignmentStatus.ACTIVE;
         if (!this.startDate) {
           this.startDate = new Date();
+        }
+        if (!this.actualStartDate) {
+          this.actualStartDate = new Date();
         }
       }
     }
@@ -126,9 +188,53 @@ export class ResourceAssignmentEntity {
   }
 
   getDuration(): number {
-    if (this.startDate && this.endDate) {
-      return Math.abs(this.endDate.getTime() - this.startDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (this.actualStartDate && this.actualEndDate) {
+      return Math.abs(this.actualEndDate.getTime() - this.actualStartDate.getTime()) / (1000 * 60 * 60 * 24);
+    }
+    if (this.plannedStartDate && this.plannedEndDate) {
+      return Math.abs(this.plannedEndDate.getTime() - this.plannedStartDate.getTime()) / (1000 * 60 * 60 * 24);
     }
     return 0;
+  }
+
+  // MÉTODOS ADICIONALES para compatibilidad con el sistema
+  getPlannedDuration(): number {
+    if (this.plannedStartDate && this.plannedEndDate) {
+      return Math.abs(this.plannedEndDate.getTime() - this.plannedStartDate.getTime()) / (1000 * 60 * 60 * 24);
+    }
+    return 0;
+  }
+
+  getActualDuration(): number {
+    if (this.actualStartDate && this.actualEndDate) {
+      return Math.abs(this.actualEndDate.getTime() - this.actualStartDate.getTime()) / (1000 * 60 * 60 * 24);
+    }
+    return 0;
+  }
+
+  getEfficiency(): number {
+    const planned = this.getPlannedDuration();
+    const actual = this.getActualDuration();
+    
+    if (actual === 0) return 1;
+    return planned / actual;
+  }
+
+  canBeModified(): boolean {
+    return this.status === AssignmentStatus.PENDING || this.status === AssignmentStatus.ASSIGNED;
+  }
+
+  isOverallocated(): boolean {
+    return this.allocationPercentage > 100;
+  }
+
+  getResourceName(): string {
+    if (this.workforce) {
+      return this.workforce.name;
+    }
+    if (this.equipment) {
+      return this.equipment.name;
+    }
+    return 'Unknown Resource';
   }
 }

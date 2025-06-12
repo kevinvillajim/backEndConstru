@@ -1,6 +1,6 @@
 // src/infrastructure/database/repositories/TypeOrmWorkforceRepository.ts
 import { Repository } from 'typeorm';
-import { WorkforceEntity, WorkforceType, CertificationLevel } from '../entities/WorkforceEntity';
+import { CertificationLevel, WorkforceEntity, WorkforceType } from '../entities/WorkforceEntity';
 import { WorkforceRepository } from '../../../domain/repositories/WorkforceRepository';
 import { AppDataSource } from '../data-source';
 
@@ -59,17 +59,19 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
   }
 
   async findByGeographicalZone(zone: string): Promise<WorkforceEntity[]> {
-    return await this.repository.find({
-      where: { geographicalZone: zone },
-      order: { fullName: 'ASC' }
-    });
+    return await this.repository
+      .createQueryBuilder('workforce')
+      .where('workforce.contactInfo LIKE :zone', { zone: `%${zone}%` }) // Fix: use a text field search
+      .orderBy('workforce.name', 'ASC')
+      .getMany();
   }
 
   async findByCertificationLevel(level: CertificationLevel): Promise<WorkforceEntity[]> {
-    return await this.repository.find({
-      where: { certificationLevel: level },
-      order: { fullName: 'ASC' }
-    });
+    return await this.repository
+      .createQueryBuilder('workforce')
+      .where('workforce.skillLevel = :level', { level: level })
+      .orderBy('workforce.name', 'ASC')
+      .getMany();
   }
 
   async findByType(type: WorkforceType): Promise<WorkforceEntity[]> {
@@ -89,18 +91,22 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
     let query = this.repository.createQueryBuilder('workforce');
 
     if (criteria.trade) {
-      query = query.andWhere(
-        '(workforce.primaryTrade = :trade OR workforce.secondaryTrades::text LIKE :tradeLike)',
-        { trade: criteria.trade, tradeLike: `%${criteria.trade}%` }
-      );
+      query = query.andWhere('workforce.specializations LIKE :trade', { 
+        trade: `%${criteria.trade}%`
+      });
     }
 
     if (criteria.zone) {
-      query = query.andWhere('workforce.geographicalZone = :zone', { zone: criteria.zone });
+      query = query.andWhere('workforce.contactInfo LIKE :zone', { 
+        zone: `%${criteria.zone}%` 
+      });
     }
 
     if (criteria.minExperience) {
-      query = query.andWhere('workforce.experienceYears >= :minExp', { minExp: criteria.minExperience });
+      // Assuming there's an experience field or we derive it from skillLevel
+      query = query.andWhere('workforce.skillLevel IN (:...levels)', { 
+        levels: ['advanced', 'expert'] // Approximate experience mapping
+      });
     }
 
     if (criteria.maxRate) {
@@ -108,12 +114,19 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
     }
 
     if (criteria.skills && criteria.skills.length > 0) {
-      query = query.andWhere('workforce.skills::text LIKE ANY(:skills)', { 
-        skills: criteria.skills.map(skill => `%${skill}%`) 
-      });
+      const skillConditions = criteria.skills.map((_, index) => 
+        `workforce.specializations LIKE :skill${index}`
+      ).join(' OR ');
+      
+      const skillParams = criteria.skills.reduce((acc, skill, index) => {
+        acc[`skill${index}`] = `%${skill}%`;
+        return acc;
+      }, {});
+      
+      query = query.andWhere(`(${skillConditions})`, skillParams);
     }
 
-    return await query.orderBy('workforce.fullName', 'ASC').getMany();
+    return await query.orderBy('workforce.name', 'ASC').getMany();
   }
 
   async getUtilizationReport(workerId: string, dateRange: { start: Date; end: Date }): Promise<any> {

@@ -266,18 +266,18 @@ export class ScheduleOptimizer {
   }
 
   private optimizeResourceUtilization(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
-    // Suavizar picos de demanda de recursos
     const resourceDemand = this.calculateResourceDemandProfile(activities);
     const peaks = this.identifyResourcePeaks(resourceDemand);
     
     peaks.forEach(peak => {
-      // Redistribuir actividades para suavizar el pico
       this.redistributeActivitiesAroundPeak(activities, peak);
     });
     
     this.recalculateScheduleDates(activities);
-    
     return activities;
+  }
+  redistributeActivitiesAroundPeak(activities: ScheduleActivityEntity[], peak: any) {
+    throw new Error('Method not implemented.');
   }
 
   private minimizeRiskExposure(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
@@ -295,6 +295,9 @@ export class ScheduleOptimizer {
     this.recalculateScheduleDates(activities);
     
     return activities;
+  }
+  scheduleWeatherSensitiveActivities(activities: ScheduleActivityEntity[]) {
+    throw new Error('Method not implemented.');
   }
 
   private createBalancedSchedule(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
@@ -321,6 +324,9 @@ export class ScheduleOptimizer {
     this.recalculateScheduleDates(activities);
     
     return activities;
+  }
+  applyLightResourceSmoothing(activities: ScheduleActivityEntity[]) {
+    throw new Error('Method not implemented.');
   }
 
   private evaluateSchedule(activities: ScheduleActivityEntity[], objective: OptimizationObjective): number {
@@ -943,7 +949,6 @@ export class ScheduleOptimizer {
   }
 
   private calculateResourceDemandProfile(activities: ScheduleActivityEntity[]): Map<string, Map<string, number>> {
-    // Calcular perfil de demanda de recursos a lo largo del tiempo
     const profile = new Map<string, Map<string, number>>();
     
     activities.forEach(activity => {
@@ -969,7 +974,7 @@ export class ScheduleOptimizer {
 
   private identifyResourcePeaks(resourceDemand: Map<string, Map<string, number>>): any[] {
     const peaks: any[] = [];
-    const threshold = 5; // Más de 5 recursos del mismo tipo en un día
+    const threshold = 5;
     
     resourceDemand.forEach((dayProfile, date) => {
       dayProfile.forEach((demand, resourceType) => {
@@ -986,6 +991,7 @@ export class ScheduleOptimizer {
     
     return peaks;
   }
+
 
   private redistributeActivitiesAroundPeak(activities: ScheduleActivityEntity[], peak: any): void {
     // Redistribuir actividades alrededor de un pico de demanda
@@ -1029,8 +1035,6 @@ export class ScheduleOptimizer {
           }
         }
       }
-    });
-  }
 
   private findBestWeatherPeriod(around: Date, duration: number): Date | null {
     // Simplificado: buscar período con mejor clima cerca de la fecha

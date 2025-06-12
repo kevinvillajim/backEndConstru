@@ -1,6 +1,6 @@
 // ===== TypeOrmResourceAssignmentRepository.ts =====
 import { Repository, Between, LessThan, MoreThan, In } from 'typeorm';
-import { ResourceAssignmentEntity } from '../entities/ResourceAssignmentEntity';
+import { ResourceAssignmentEntity, AssignmentStatus, ResourceType } from '../entities/ResourceAssignmentEntity';
 import { ResourceAssignmentRepository } from '../../../domain/repositories/ResourceAssignmentRepository';
 import { AppDataSource } from '../data-source';
 
@@ -48,18 +48,19 @@ export class TypeOrmResourceAssignmentRepository implements ResourceAssignmentRe
     dateRange: { start: Date; end: Date }
   ): Promise<ResourceAssignmentEntity[]> {
     const whereClause = resourceType === 'workforce' 
-      ? { workforceId: resourceId }
-      : { equipmentId: resourceId };
+      ? { resourceId: resourceId }
+      : { resourceId: resourceId };
 
     return await this.repository.find({
       where: {
         ...whereClause,
-        plannedStartDate: LessThan(dateRange.end),
-        plannedEndDate: MoreThan(dateRange.start),
-        status: In(['assigned', 'active'])
+        resourceType: resourceType as ResourceType,
+        startDate: LessThan(dateRange.end),
+        endDate: MoreThan(dateRange.start),
+        status: In([AssignmentStatus.PENDING, AssignmentStatus.ACTIVE]) // Fix: use enum values
       },
       relations: ['activity'],
-      order: { plannedStartDate: 'ASC' }
+      order: { startDate: 'ASC' }
     });
   }
 
@@ -68,12 +69,12 @@ export class TypeOrmResourceAssignmentRepository implements ResourceAssignmentRe
     
     return await this.repository.find({
       where: {
-        status: 'active',
-        plannedStartDate: LessThan(today),
-        plannedEndDate: MoreThan(today)
+        status: AssignmentStatus.ACTIVE, // Fix: use enum value
+        startDate: LessThan(today),
+        endDate: MoreThan(today)
       },
       relations: ['activity', 'workforce', 'equipment'],
-      order: { plannedStartDate: 'ASC' }
+      order: { startDate: 'ASC' }
     });
   }
 
@@ -117,7 +118,9 @@ export class TypeOrmResourceAssignmentRepository implements ResourceAssignmentRe
   }
 
   async updateStatus(assignmentId: string, status: string): Promise<boolean> {
-    const result = await this.repository.update(assignmentId, { status });
+    const result = await this.repository.update(assignmentId, { 
+      status: status as AssignmentStatus // Fix: cast to enum
+    });
     return result.affected > 0;
   }
 
