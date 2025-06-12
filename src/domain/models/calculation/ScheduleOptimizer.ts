@@ -276,9 +276,6 @@ export class ScheduleOptimizer {
     this.recalculateScheduleDates(activities);
     return activities;
   }
-  redistributeActivitiesAroundPeak(activities: ScheduleActivityEntity[], peak: any) {
-    throw new Error('Method not implemented.');
-  }
 
   private minimizeRiskExposure(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
     // Añadir buffers en actividades críticas
@@ -295,9 +292,6 @@ export class ScheduleOptimizer {
     this.recalculateScheduleDates(activities);
     
     return activities;
-  }
-  scheduleWeatherSensitiveActivities(activities: ScheduleActivityEntity[]) {
-    throw new Error('Method not implemented.');
   }
 
   private createBalancedSchedule(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
@@ -324,9 +318,6 @@ export class ScheduleOptimizer {
     this.recalculateScheduleDates(activities);
     
     return activities;
-  }
-  applyLightResourceSmoothing(activities: ScheduleActivityEntity[]) {
-    throw new Error('Method not implemented.');
   }
 
   private evaluateSchedule(activities: ScheduleActivityEntity[], objective: OptimizationObjective): number {
@@ -476,32 +467,6 @@ export class ScheduleOptimizer {
       groups[trade].push(activity);
       return groups;
     }, {});
-  }
-
-  private calculateTradeProductivity(activities: ScheduleActivityEntity[]): any {
-    const productivities = activities.map(activity => {
-      const planned = activity.workQuantities?.plannedQuantity || 1;
-      const completed = activity.workQuantities?.completedQuantity || 0;
-      const progress = activity.progressPercentage / 100;
-      const expected = planned * progress;
-      
-      return expected > 0 ? completed / expected : 1;
-    });
-    
-    const averageProductivity = productivities.reduce((sum, p) => sum + p, 0) / productivities.length;
-    const bestProductivity = Math.max(...productivities);
-    const worstProductivity = Math.min(...productivities);
-    
-    return {
-      trade: activities[0].primaryTrade,
-      averageProductivity,
-      bestDay: { date: new Date(), productivity: bestProductivity }, // Simplificado
-      worstDay: { date: new Date(), productivity: worstProductivity }, // Simplificado
-      trend: this.calculateTradeTrend(activities)
-    };
-  }
-  calculateTradeTrend(activities: ScheduleActivityEntity[]) {
-    throw new Error('Method not implemented.');
   }
 
   private findParallelCandidatesInTrade(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
@@ -992,7 +957,6 @@ export class ScheduleOptimizer {
     return peaks;
   }
 
-
   private redistributeActivitiesAroundPeak(activities: ScheduleActivityEntity[], peak: any): void {
     // Redistribuir actividades alrededor de un pico de demanda
     const affectedActivities = activities.filter(activity => 
@@ -1035,6 +999,8 @@ export class ScheduleOptimizer {
           }
         }
       }
+    });
+  }
 
   private findBestWeatherPeriod(around: Date, duration: number): Date | null {
     // Simplificado: buscar período con mejor clima cerca de la fecha
@@ -1054,9 +1020,12 @@ export class ScheduleOptimizer {
   private applyLightResourceSmoothing(activities: ScheduleActivityEntity[]): void {
     // Suavizado ligero de recursos
     const resourceProfile = this.generateResourceProfile(activities);
-    const minorPeaks = this.identifyResourcePeaks(resourceProfile).filter(peak => peak.excess <= 2);
+    const minorPeaks = this.identifyResourcePeaks(this.calculateResourceDemandProfile(activities));
     
-    minorPeaks.forEach(peak => {
+    // Filtrar solo picos menores
+    const lightPeaks = minorPeaks.filter(peak => peak.excess <= 2);
+    
+    lightPeaks.forEach(peak => {
       const affectedActivities = activities.filter(activity => 
         activity.primaryTrade === peak.resourceType &&
         activity.plannedStartDate <= peak.date &&
