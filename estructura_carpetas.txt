@@ -59,529 +59,545 @@ C:.
 |       parte9.txt
 |       terminados.txt
 |       
-\---src
-    |   bootstrap.ts
-    |   check-container.ts
-    |   index.ts
-    |   
-    +---application
-    |   +---accounting
-    |   |       SyncBudgetWithAccountingUseCase.ts
-    |   |       
-    |   +---budget
-    |   |       AddLaborAndIndirectCostsUseCase.ts
-    |   |       CompareBudgetVersionsUseCase.ts
-    |   |       CreateBudgetVersionUseCase.ts
-    |   |       GetProjectBudgetsUseCase.ts
-    |   |       
-    |   +---calculation
-    |   |   |   CalculateTemplateRankingsUseCase.ts
-    |   |   |   CompareCalculationsUseCase.ts
-    |   |   |   CreateCalculationTemplateUseCase.ts
-    |   |   |   CreatePromotionRequestUseCase.ts
-    |   |   |   CreateSuggestionUseCase.ts
-    |   |   |   ExecuteCalculationUseCase.ts
-    |   |   |   ExportCalculationTemplateUseCase.ts
-    |   |   |   FavoriteTemplateUseCase.ts
-    |   |   |   GenerateBudgetFromCalculationUseCase.ts
-    |   |   |   GetAdminDashboardDataUseCase.ts
-    |   |   |   GetGlobalTemplateStatsUseCase.ts
-    |   |   |   GetSavedComparisonsUseCase.ts
-    |   |   |   GetSuggestionsUseCase.ts
-    |   |   |   GetTemplateAnalyticsUseCase.ts
-    |   |   |   GetTemplateRecommendationsUseCase.ts
-    |   |   |   GetTrendingTemplatesUseCase.ts
-    |   |   |   GetUserFavoritesUseCase.ts
-    |   |   |   ImportCalculationTemplateUseCase.ts
-    |   |   |   PromoteTemplateToVerifiedUseCase.ts
-    |   |   |   RateTemplateUseCase.ts
-    |   |   |   ReviewPromotionRequestUseCase.ts
-    |   |   |   SaveCalculationResultUseCase.ts
-    |   |   |   TrackTemplateUsageUseCase.ts
-    |   |   |   UpdateSuggestionStatusUseCase.ts
-    |   |   |   
-    |   |   \---material
-    |   |           CalculateMaterialTemplateRankingsUseCase.ts
-    |   |           CreateMaterialCalculationUseCase.ts
-    |   |           CreateUserMaterialTemplateUseCase.ts
-    |   |           GetMaterialAnalyticsUseCase.ts
-    |   |           GetMaterialTemplatesByTypeUseCase.ts
-    |   |           GetMaterialTrendingTemplatesUseCase.ts
-    |   |           SearchMaterialTemplatesUseCase.ts
-    |   |           TrackMaterialTemplateUsageUseCase.ts
-    |   |           
-    |   +---invoice
-    |   |       SendInvoiceByEmailUseCase.ts
-    |   |       SyncInvoiceWithSriUseCase.ts
-    |   |       UpdateInvoicePaymentUseCase.ts
-    |   |       
-    |   +---material
-    |   |       BulkUpdateMaterialPricesUseCase.ts
-    |   |       CompareMaterialPricesUseCase.ts
-    |   |       ImportMaterialsFromSupplierUseCase.ts
-    |   |       ManageMaterialPropertiesUseCase.ts
-    |   |       
-    |   +---order
-    |   |       CreateOrderFromMaterialRequestsUseCase.ts
-    |   |       
-    |   +---project
-    |   |       ApproveMaterialRequestUseCase.ts
-    |   |       AssignTaskUseCase.ts
-    |   |       CreateMaterialRequestUseCase.ts
-    |   |       EnhancedProjectDashboardUseCase.ts
-    |   |       GenerateProgressReportUseCase.ts
-    |   |       GenerateProjectScheduleUseCase.ts
-    |   |       GetProjectDashboardDataUseCase.ts
-    |   |       GetProjectMetricsUseCase.ts
-    |   |       PredictProjectDelaysUseCase.ts
-    |   |       UpdateTaskProgressUseCase.ts
-    |   |       
-    |   +---recommendation
-    |   |       GetAdvancedRecommendationsUseCase.ts
-    |   |       
-    |   +---user
-    |   |       UserRecommendationService.ts
-    |   |       UserService.ts
-    |   |       
-    |   \---user-templates
-    |           ChangeTemplateStatusUseCase.ts
-    |           CreateTemplateFromResultUseCase.ts
-    |           CreateUserTemplateUseCase.ts
-    |           DeleteUserTemplateUseCase.ts
-    |           DuplicateOfficialTemplateUseCase.ts
-    |           GetPublicUserTemplatesUseCase.ts
-    |           GetUserTemplateByIdUseCase.ts
-    |           GetUserTemplateStatsUseCase.ts
-    |           GetUserTemplatesUseCase.ts
-    |           ShareUserTemplateUseCase.ts
-    |           UpdateUserTemplateUseCase.ts
-    |           
-    +---domain
-    |   +---dtos
-    |   |   \---user
-    |   |           LoginUserDTO.ts
-    |   |           RegisterUserDTO.ts
-    |   |           UpdateUserAddressDTO.ts
-    |   |           UpdateUserPersonalInfoDTO.ts
-    |   |           UpdateUserPreferencesDTO.ts
-    |   |           UpdateUserProfessionalInfoDTO.ts
-    |   |           
-    |   +---exception
-    |   |       AuthenticationError.ts
-    |   |       
-    |   +---models
-    |   |   |   RankingCalculationResult.ts
-    |   |   |   
-    |   |   +---auth
-    |   |   |       RefreshToken.ts
-    |   |   |       
-    |   |   +---calculation
-    |   |   |       BudgetLineItem.ts
-    |   |   |       BudgetTemplate.ts
-    |   |   |       CalculationBudget.ts
-    |   |   |       CalculationParameter.ts
-    |   |   |       CalculationResult.ts
-    |   |   |       CalculationTemplate.ts
-    |   |   |       GeographicalZone.ts
-    |   |   |       MaterialCalculationResult.ts
-    |   |   |       MaterialCalculationTemplate.ts
-    |   |   |       ProfessionalCost.ts
-    |   |   |       UserCalculationTemplate.ts
-    |   |   |       UserMaterialCalculationTemplate.ts
-    |   |   |       
-    |   |   +---common
-    |   |   |       PaginationOptions.ts
-    |   |   |       ValidationResult.ts
-    |   |   |       
-    |   |   +---invoice
-    |   |   |       Invoice.ts
-    |   |   |       InvoiceItem.ts
-    |   |   |       
-    |   |   +---material
-    |   |   |       Category.ts
-    |   |   |       Material.ts
-    |   |   |       MaterialPropertyDefinition.ts
-    |   |   |       MaterialPropertyValue.ts
-    |   |   |       
-    |   |   +---order
-    |   |   |       Order.ts
-    |   |   |       OrderItem.ts
-    |   |   |       
-    |   |   +---project
-    |   |   |       BudgetItem.ts
-    |   |   |       MaterialRequest.ts
-    |   |   |       Phase.ts
-    |   |   |       Project.ts
-    |   |   |       ProjectBudget.ts
-    |   |   |       Task.ts
-    |   |   |       
-    |   |   +---tracking
-    |   |   |       AuthorCredit.ts
-    |   |   |       PromotionRequest.ts
-    |   |   |       TemplateRanking.ts
-    |   |   |       UsageLog.ts
-    |   |   |       
-    |   |   \---user
-    |   |           User.ts
-    |   |           UserBehaviorPattern.ts
-    |   |           UserInteraction.ts
-    |   |           UserRecommendation.ts
-    |   |           
-    |   +---repositories
-    |   |       AccountingTransactionRepository.ts
-    |   |       AuthorCreditRepository.ts
-    |   |       BudgetItemRepository.ts
-    |   |       BudgetLineItemRepository.ts
-    |   |       BudgetTemplateRepository.ts
-    |   |       CalculationBudgetRepository.ts
-    |   |       CalculationComparisonRepository.ts
-    |   |       CalculationParameterRepository.ts
-    |   |       CalculationResultRepository.ts
-    |   |       CalculationTemplateRepository.ts
-    |   |       CategoryRepository.ts
-    |   |       GeographicalZoneRepository.ts
-    |   |       InvoiceRepository.ts
-    |   |       MaterialCalculationResultRepository.ts
-    |   |       MaterialCalculationTemplateRepository.ts
-    |   |       MaterialPropertyRepository.ts
-    |   |       MaterialRepository.ts
-    |   |       MaterialRequestRepository.ts
-    |   |       MaterialTemplateRankingRepository.ts
-    |   |       MaterialTemplateUsageLogRepository.ts
-    |   |       NotificationRepository.ts
-    |   |       OrderItemRepository.ts
-    |   |       OrderRepository.ts
-    |   |       PhaseRepository.ts
-    |   |       ProfessionalCostRepository.ts
-    |   |       ProjectBudgetRepository.ts
-    |   |       ProjectRepository.ts
-    |   |       PromotionRequestRepository.ts
-    |   |       RefreshTokenRepository.ts
-    |   |       TaskRepository.ts
-    |   |       TemplateRankingRepository.ts
-    |   |       TemplateRatingRepository.ts
-    |   |       TemplateSuggestionRepository.ts
-    |   |       TrendingCalculationRepository.ts
-    |   |       UserCalculationTemplateRepository.ts
-    |   |       UserFavoriteRepository.ts
-    |   |       UserInteractionRepository.ts
-    |   |       UserMaterialCalculationTemplateRepository.ts
-    |   |       UserRecommendationRepository.ts
-    |   |       UserRepository.ts
-    |   |       UserTemplateUsageLogRepository.ts
-    |   |       
-    |   \---services
-    |           AccountingService.ts
-    |           AdvancedRecommendationService.ts
-    |           AuthService.ts
-    |           CalculationService.ts
-    |           EmailService.ts
-    |           MaterialCalculationService.ts
-    |           MaterialTemplateValidationService.ts
-    |           NotificationService.ts
-    |           ProjectMetricsService.ts
-    |           PushNotificationService.ts
-    |           RecommendationService.ts
-    |           SriService.ts
-    |           SupplierIntegrationService.ts
-    |           TemplateValidationService.ts
-    |           TwoFactorAuthService.ts
-    |           UserPatternAnalysisService.ts
-    |           
-    +---infrastructure
-    |   +---config
-    |   |       container.ts
-    |   |       service-factory.ts
-    |   |       trackingConfig.ts
-    |   |       
-    |   +---database
-    |   |   |   data-source.ts
-    |   |   |   database.service.ts
-    |   |   |   
-    |   |   +---entities
-    |   |   |       AccountingTransactionEntity.ts
-    |   |   |       AuthorCreditEntity.ts
-    |   |   |       BudgetItemEntity.ts
-    |   |   |       BudgetLineItemEntity.ts
-    |   |   |       BudgetTemplateEntity.ts
-    |   |   |       CalculationBudgetEntity.ts
-    |   |   |       CalculationComparisonEntity.ts
-    |   |   |       CalculationFeedbackEntity.ts
-    |   |   |       CalculationGuideEntity.ts
-    |   |   |       CalculationImprovementEntity.ts
-    |   |   |       CalculationParameterEntity.ts
-    |   |   |       CalculationRecommendationEntity.ts
-    |   |   |       CalculationResultEntity.ts
-    |   |   |       CalculationTemplateEntity.ts
-    |   |   |       CategoryEntity.ts
-    |   |   |       GeographicalZoneEntity.ts
-    |   |   |       InvoiceEntity.ts
-    |   |   |       InvoiceItemEntity.ts
-    |   |   |       MaterialCalculationResultEntity.ts
-    |   |   |       MaterialCalculationTemplateEntity.ts
-    |   |   |       MaterialEntity.ts
-    |   |   |       MaterialParameterEntity.ts
-    |   |   |       MaterialPriceHistoryEntity.ts
-    |   |   |       MaterialPropertyDefinitionEntity.ts
-    |   |   |       MaterialPropertyValueEntity.ts
-    |   |   |       MaterialRequestEntity.ts
-    |   |   |       MaterialTemplateRankingEntity.ts
-    |   |   |       MaterialTemplateUsageLogEntity.ts
-    |   |   |       NotificationEntity.ts
-    |   |   |       OrderEntity.ts
-    |   |   |       OrderItemEntity.ts
-    |   |   |       PhaseEntity.ts
-    |   |   |       ProfessionalCostEntity.ts
-    |   |   |       ProjectBudgetEntity.ts
-    |   |   |       ProjectDocumentEntity.ts
-    |   |   |       ProjectEntity.ts
-    |   |   |       ProjectTeamMemberEntity.ts
-    |   |   |       PromotionRequestEntity.ts
-    |   |   |       RefreshTokenEntity.ts
-    |   |   |       TaskEntity.ts
-    |   |   |       TemplateRankingEntity.ts
-    |   |   |       TemplateRatingEntity.ts
-    |   |   |       TemplateSuggestionEntity.ts
-    |   |   |       TrendingCalculationEntity.ts
-    |   |   |       UserAddressEntity.ts
-    |   |   |       UserCalculationTemplateEntity.ts
-    |   |   |       UserEntity.ts
-    |   |   |       UserFavoriteEntity.ts
-    |   |   |       UserInteractionEntity.ts
-    |   |   |       UserMaterialCalculationTemplateEntity.ts
-    |   |   |       UserRecommendationEntity.ts
-    |   |   |       UserTemplateUsageEntity.ts
-    |   |   |       UserTemplateUsageLogEntity.ts
-    |   |   |       
-    |   |   +---migrations
-    |   |   |       1749620889533-InitialSchema.ts
-    |   |   |       
-    |   |   +---repositories
-    |   |   |       TypeOrmAccountingTransactionRepository.ts
-    |   |   |       TypeOrmAuthorCreditRepository.ts
-    |   |   |       TypeOrmBudgetItemRepository.ts
-    |   |   |       TypeOrmBudgetLineItemRepository.ts
-    |   |   |       TypeOrmBudgetTemplateRepository.ts
-    |   |   |       TypeOrmCalculationBudgetRepository.ts
-    |   |   |       TypeOrmCalculationComparisonRepository.ts
-    |   |   |       TypeOrmCalculationParameterRepository.ts
-    |   |   |       TypeOrmCalculationResultRepository.ts
-    |   |   |       TypeOrmCalculationTemplateRepository.ts
-    |   |   |       TypeOrmCategoryRepository.ts
-    |   |   |       TypeOrmGeographicalZoneRepository.ts
-    |   |   |       TypeOrmInvoiceRepository.ts
-    |   |   |       TypeOrmMaterialCalculationResultRepository.ts
-    |   |   |       TypeOrmMaterialCalculationTemplateRepository.ts
-    |   |   |       TypeOrmMaterialPropertyRepository.ts
-    |   |   |       TypeOrmMaterialRepository.ts
-    |   |   |       TypeOrmMaterialRequestRepository.ts
-    |   |   |       TypeOrmMaterialTemplateRankingRepository.ts
-    |   |   |       TypeOrmMaterialTemplateUsageLogRepository.ts
-    |   |   |       TypeOrmNotificationRepository.ts
-    |   |   |       TypeOrmOrderItemRepository.ts
-    |   |   |       TypeOrmOrderRepository.ts
-    |   |   |       TypeOrmPhaseRepository.ts
-    |   |   |       TypeOrmProfessionalCostRepository.ts
-    |   |   |       TypeOrmProjectBudgetRepository.ts
-    |   |   |       TypeOrmProjectRepository.ts
-    |   |   |       TypeOrmPromotionRequestRepository.ts
-    |   |   |       TypeOrmRefreshTokenRepository.ts
-    |   |   |       TypeOrmTaskRepository.ts
-    |   |   |       TypeOrmTemplateRankingRepository.ts
-    |   |   |       TypeOrmTemplateRatingRepository.ts
-    |   |   |       TypeOrmTemplateSuggestionRepository.ts
-    |   |   |       TypeOrmTrendingCalculationRepository.ts
-    |   |   |       TypeOrmUserCalculationTemplateRepository.ts
-    |   |   |       TypeOrmUserFavoriteRepository.ts
-    |   |   |       TypeOrmUserInteractionRepository.ts
-    |   |   |       TypeOrmUserMaterialCalculationTemplateRepository.ts
-    |   |   |       TypeOrmUserRepository.ts
-    |   |   |       TypeOrmUserTemplateUsageLogRepository.ts
-    |   |   |       
-    |   |   \---seeds
-    |   |       |   calculation-templates.ts
-    |   |       |   material-calculation-templates-seeds.ts
-    |   |       |   run-seeds.ts
-    |   |       |   specialized-templates.ts
-    |   |       |   
-    |   |       \---nec-seeds
-    |   |               index.ts
-    |   |               nec-accesibilidad-universal-seeds.ts
-    |   |               nec-cargas-no-sismicas-seeds.ts
-    |   |               nec-climatizacion-seeds.ts
-    |   |               nec-contra-incendios-seeds.ts
-    |   |               nec-diseno-sismico-seeds.ts
-    |   |               nec-eficiencia-energetica-seeds.ts
-    |   |               nec-energias-renovables-seeds.ts
-    |   |               nec-estructuras-acero-seeds.ts
-    |   |               nec-estructuras-guadua-seeds.ts
-    |   |               nec-estructuras-madera-seeds.ts
-    |   |               nec-geotecnia-cimentaciones-seeds.ts
-    |   |               nec-hormigon-armado-seeds.ts
-    |   |               nec-instalaciones-electricas-seeds.ts
-    |   |               nec-mamposteria-seeds.ts
-    |   |               nec-telecomunicaciones-seeds.ts
-    |   |               nec-vidrios-seeds.ts
-    |   |               nec-viviendas-dos-pisos-seeds.ts
-    |   |               
-    |   +---external
-    |   |   \---supplier
-    |   |           ExampleSupplierAdapter.ts
-    |   |           
-    |   +---jobs
-    |   |       EnhancedRankingCalculationJob.ts
-    |   |       MaterialRankingCalculationJob.ts
-    |   |       RankingCalculationJob.ts
-    |   |       
-    |   +---services
-    |   |   |   EmailServiceImpl.ts
-    |   |   |   MaterialTemplateValidationServiceImpl.ts
-    |   |   |   NotificationServiceImpl.ts
-    |   |   |   PdfGenerationService.ts
-    |   |   |   PushNotificationServiceImpl.ts
-    |   |   |   
-    |   |   +---accounting
-    |   |   |       AccountingServiceFactory.ts
-    |   |   |       
-    |   |   +---sri
-    |   |   |       SriServiceFactory.ts
-    |   |   |       SriTestAdapter.ts
-    |   |   |       
-    |   |   \---supplier
-    |   |           ConcreteSupplierIntegrationService.ts
-    |   |           
-    |   +---webserver
-    |   |   +---controllers
-    |   |   |       AccountingController.ts
-    |   |   |       AdminPromotionController.ts
-    |   |   |       AdvancedRecommendationController.ts
-    |   |   |       AuthController.ts
-    |   |   |       BudgetController.ts
-    |   |   |       CalculationComparisonController.ts
-    |   |   |       CalculationController.ts
-    |   |   |       CalculationTemplateController.ts
-    |   |   |       EnhancedProjectDashboardController.ts
-    |   |   |       GlobalStatsController.ts
-    |   |   |       InvoiceController.ts
-    |   |   |       MaterialCalculationController.ts
-    |   |   |       MaterialCalculationTemplateController.ts
-    |   |   |       MaterialController.ts
-    |   |   |       MaterialPropertyController.ts
-    |   |   |       MaterialRequestController.ts
-    |   |   |       MaterialTrendingController.ts
-    |   |   |       NotificationController.ts
-    |   |   |       OrderController.ts
-    |   |   |       PhaseController.ts
-    |   |   |       ProgressReportController.ts
-    |   |   |       ProjectDashboardController.ts
-    |   |   |       ProjectMetricsController.ts
-    |   |   |       ProjectPredictionController.ts
-    |   |   |       ProjectScheduleController.ts
-    |   |   |       SupplierIntegrationController.ts
-    |   |   |       TaskController.ts
-    |   |   |       TemplateAnalyticsController.ts
-    |   |   |       TemplateFavoriteController.ts
-    |   |   |       TemplateImportExportController.ts
-    |   |   |       TemplateRatingController.ts
-    |   |   |       TemplateSuggestionController.ts
-    |   |   |       TemplateTrackingController.ts
-    |   |   |       TrendingController.ts
-    |   |   |       TwoFactorAuthController.ts
-    |   |   |       UserCalculationTemplateController.ts
-    |   |   |       UserController.ts
-    |   |   |       UserMaterialTemplateController.ts
-    |   |   |       
-    |   |   +---docs
-    |   |   |   |   swagger.ts
-    |   |   |   |   
-    |   |   |   \---routes
-    |   |   |           accountingRoutes.documented.ts
-    |   |   |           adminPromotionRoutes.ts
-    |   |   |           advancedRecommendationRoutes.documented.ts
-    |   |   |           authRoutes.documented.ts
-    |   |   |           budgetRoutes.documented.ts
-    |   |   |           calculationRoutes.documented.ts
-    |   |   |           invoiceRoutes.documented.ts
-    |   |   |           materialPropertyRoutes.documented.ts
-    |   |   |           materialRequestRoutes.documented.ts
-    |   |   |           materialRoutes.documented.ts
-    |   |   |           notificationRoutes.documented.ts
-    |   |   |           orderRoutes.documented.ts
-    |   |   |           phaseRoutes.documented.ts
-    |   |   |           progressReportRoutes.documented.ts
-    |   |   |           projectDashboardRoutes.documented.ts
-    |   |   |           projectMetricsRoutes.documented.ts
-    |   |   |           projectScheduleRoutes.documented.ts
-    |   |   |           supplierIntegrationRoutes.documented.ts
-    |   |   |           taskRoutes.documented.ts
-    |   |   |           templateAnalyticsRoutes.ts
-    |   |   |           templateImportExportRoutes.documented.ts
-    |   |   |           userTemplateRoutes.documented.ts
-    |   |   |           
-    |   |   +---middlewares
-    |   |   |       adminAuthMiddleware.ts
-    |   |   |       authMiddleware.ts
-    |   |   |       corsMiddleware.ts
-    |   |   |       enhancedTrackingMiddleware.ts
-    |   |   |       mirrorCorsMiddleware.ts
-    |   |   |       permissiveCorsMiddleware.ts
-    |   |   |       securityHeadersMiddleware.ts
-    |   |   |       trackingMiddleware.ts
-    |   |   |       validationMiddleware.ts
-    |   |   |       
-    |   |   +---routes
-    |   |   |       accountingRoutes.ts
-    |   |   |       adminPromotionRoutes.ts
-    |   |   |       advancedRecommendationRoutes.ts
-    |   |   |       authRoutes.ts
-    |   |   |       budgetRoutes.ts
-    |   |   |       calculationRoutes.ts
-    |   |   |       enhancedProjectDashboardRoutes.ts
-    |   |   |       invoiceRoutes.ts
-    |   |   |       materialCalculationRoutes.ts
-    |   |   |       materialPropertyRoutes.ts
-    |   |   |       materialRequestRoutes.ts
-    |   |   |       materialRoutes.ts
-    |   |   |       notificationRoutes.ts
-    |   |   |       orderRoutes.ts
-    |   |   |       progressReportRoutes.ts
-    |   |   |       projectDashboardRoutes.ts
-    |   |   |       projectMetricsRoutes.ts
-    |   |   |       projectPredictionRoutes.ts
-    |   |   |       projectScheduleRoutes.ts
-    |   |   |       supplierIntegrationRoutes.ts
-    |   |   |       templateAnalyticsRoutes.ts
-    |   |   |       templateImportExportRoutes.ts
-    |   |   |       twoFactorAuthRoutes.ts
-    |   |   |       userMaterialTemplateRoutes.ts
-    |   |   |       userRoutes.ts
-    |   |   |       userTemplateRoutes.ts
-    |   |   |       
-    |   |   +---utils
-    |   |   |       errorHandler.ts
-    |   |   |       queryUtils.ts
-    |   |   |       
-    |   |   \---validators
-    |   |           analyticsValidator.ts
-    |   |           authValidator.ts
-    |   |           budgetValidator.ts
-    |   |           calculationValidator.ts
-    |   |           materialCalculationValidator.ts
-    |   |           materialRequestValidator.ts
-    |   |           materialValidator.ts
-    |   |           projectScheduleValidator.ts
-    |   |           promotionValidator.ts
-    |   |           suggestionValidator.ts
-    |   |           templateImportValidator.ts
-    |   |           templateValidator.ts
-    |   |           userMaterialTemplateValidator.ts
-    |   |           userTemplateValidator.ts
-    |   |           
-    |   \---websocket
-    |           RealtimeAnalyticsService.ts
-    |           WebSocketService.ts
-    |           
-    \---types
-        \---express
-                index.d.ts
-                
++---src
+|   |   bootstrap.ts
+|   |   check-container.ts
+|   |   index.ts
+|   |   
+|   +---application
+|   |   +---accounting
+|   |   |       SyncBudgetWithAccountingUseCase.ts
+|   |   |       
+|   |   +---budget
+|   |   |       AddLaborAndIndirectCostsUseCase.ts
+|   |   |       ApplyBudgetTemplateUseCase.ts
+|   |   |       CompareBudgetVersionsUseCase.ts
+|   |   |       CreateBudgetVersionUseCase.ts
+|   |   |       CreateCalculationBudgetUseCase.ts
+|   |   |       GenerateProfessionalBudgetUseCase.ts
+|   |   |       GetProjectBudgetsUseCase.ts
+|   |   |       UpdateBudgetPricingUseCase.ts
+|   |   |       
+|   |   +---calculation
+|   |   |   |   CalculateTemplateRankingsUseCase.ts
+|   |   |   |   CompareCalculationsUseCase.ts
+|   |   |   |   CreateCalculationTemplateUseCase.ts
+|   |   |   |   CreatePromotionRequestUseCase.ts
+|   |   |   |   CreateSuggestionUseCase.ts
+|   |   |   |   ExecuteCalculationUseCase.ts
+|   |   |   |   ExportCalculationTemplateUseCase.ts
+|   |   |   |   FavoriteTemplateUseCase.ts
+|   |   |   |   GenerateBudgetFromCalculationUseCase.ts
+|   |   |   |   GetAdminDashboardDataUseCase.ts
+|   |   |   |   GetGlobalTemplateStatsUseCase.ts
+|   |   |   |   GetSavedComparisonsUseCase.ts
+|   |   |   |   GetSuggestionsUseCase.ts
+|   |   |   |   GetTemplateAnalyticsUseCase.ts
+|   |   |   |   GetTemplateRecommendationsUseCase.ts
+|   |   |   |   GetTrendingTemplatesUseCase.ts
+|   |   |   |   GetUserFavoritesUseCase.ts
+|   |   |   |   ImportCalculationTemplateUseCase.ts
+|   |   |   |   PromoteTemplateToVerifiedUseCase.ts
+|   |   |   |   RateTemplateUseCase.ts
+|   |   |   |   ReviewPromotionRequestUseCase.ts
+|   |   |   |   SaveCalculationResultUseCase.ts
+|   |   |   |   TrackTemplateUsageUseCase.ts
+|   |   |   |   UpdateSuggestionStatusUseCase.ts
+|   |   |   |   
+|   |   |   \---material
+|   |   |           CalculateMaterialTemplateRankingsUseCase.ts
+|   |   |           CreateMaterialCalculationUseCase.ts
+|   |   |           CreateUserMaterialTemplateUseCase.ts
+|   |   |           GetMaterialAnalyticsUseCase.ts
+|   |   |           GetMaterialTemplatesByTypeUseCase.ts
+|   |   |           GetMaterialTrendingTemplatesUseCase.ts
+|   |   |           SearchMaterialTemplatesUseCase.ts
+|   |   |           TrackMaterialTemplateUsageUseCase.ts
+|   |   |           
+|   |   +---invoice
+|   |   |       SendInvoiceByEmailUseCase.ts
+|   |   |       SyncInvoiceWithSriUseCase.ts
+|   |   |       UpdateInvoicePaymentUseCase.ts
+|   |   |       
+|   |   +---material
+|   |   |       BulkUpdateMaterialPricesUseCase.ts
+|   |   |       CompareMaterialPricesUseCase.ts
+|   |   |       ImportMaterialsFromSupplierUseCase.ts
+|   |   |       ManageMaterialPropertiesUseCase.ts
+|   |   |       
+|   |   +---order
+|   |   |       CreateOrderFromMaterialRequestsUseCase.ts
+|   |   |       
+|   |   +---project
+|   |   |       ApproveMaterialRequestUseCase.ts
+|   |   |       AssignTaskUseCase.ts
+|   |   |       CreateMaterialRequestUseCase.ts
+|   |   |       EnhancedProjectDashboardUseCase.ts
+|   |   |       GenerateProgressReportUseCase.ts
+|   |   |       GenerateProjectScheduleUseCase.ts
+|   |   |       GetProjectDashboardDataUseCase.ts
+|   |   |       GetProjectMetricsUseCase.ts
+|   |   |       PredictProjectDelaysUseCase.ts
+|   |   |       UpdateTaskProgressUseCase.ts
+|   |   |       
+|   |   +---recommendation
+|   |   |       GetAdvancedRecommendationsUseCase.ts
+|   |   |       
+|   |   +---user
+|   |   |       UserRecommendationService.ts
+|   |   |       UserService.ts
+|   |   |       
+|   |   \---user-templates
+|   |           ChangeTemplateStatusUseCase.ts
+|   |           CreateTemplateFromResultUseCase.ts
+|   |           CreateUserTemplateUseCase.ts
+|   |           DeleteUserTemplateUseCase.ts
+|   |           DuplicateOfficialTemplateUseCase.ts
+|   |           GetPublicUserTemplatesUseCase.ts
+|   |           GetUserTemplateByIdUseCase.ts
+|   |           GetUserTemplateStatsUseCase.ts
+|   |           GetUserTemplatesUseCase.ts
+|   |           ShareUserTemplateUseCase.ts
+|   |           UpdateUserTemplateUseCase.ts
+|   |           
+|   +---domain
+|   |   +---dtos
+|   |   |   \---user
+|   |   |           LoginUserDTO.ts
+|   |   |           RegisterUserDTO.ts
+|   |   |           UpdateUserAddressDTO.ts
+|   |   |           UpdateUserPersonalInfoDTO.ts
+|   |   |           UpdateUserPreferencesDTO.ts
+|   |   |           UpdateUserProfessionalInfoDTO.ts
+|   |   |           
+|   |   +---exception
+|   |   |       AuthenticationError.ts
+|   |   |       
+|   |   +---models
+|   |   |   |   RankingCalculationResult.ts
+|   |   |   |   
+|   |   |   +---auth
+|   |   |   |       RefreshToken.ts
+|   |   |   |       
+|   |   |   +---calculation
+|   |   |   |       BudgetLineItem.ts
+|   |   |   |       BudgetTemplate.ts
+|   |   |   |       CalculationBudget.ts
+|   |   |   |       CalculationParameter.ts
+|   |   |   |       CalculationResult.ts
+|   |   |   |       CalculationTemplate.ts
+|   |   |   |       GeographicalZone.ts
+|   |   |   |       MaterialCalculationResult.ts
+|   |   |   |       MaterialCalculationTemplate.ts
+|   |   |   |       ProfessionalCost.ts
+|   |   |   |       UserCalculationTemplate.ts
+|   |   |   |       UserMaterialCalculationTemplate.ts
+|   |   |   |       
+|   |   |   +---common
+|   |   |   |       PaginationOptions.ts
+|   |   |   |       ValidationResult.ts
+|   |   |   |       
+|   |   |   +---invoice
+|   |   |   |       Invoice.ts
+|   |   |   |       InvoiceItem.ts
+|   |   |   |       
+|   |   |   +---material
+|   |   |   |       Category.ts
+|   |   |   |       Material.ts
+|   |   |   |       MaterialPropertyDefinition.ts
+|   |   |   |       MaterialPropertyValue.ts
+|   |   |   |       
+|   |   |   +---order
+|   |   |   |       Order.ts
+|   |   |   |       OrderItem.ts
+|   |   |   |       
+|   |   |   +---project
+|   |   |   |       BudgetItem.ts
+|   |   |   |       MaterialRequest.ts
+|   |   |   |       Phase.ts
+|   |   |   |       Project.ts
+|   |   |   |       ProjectBudget.ts
+|   |   |   |       Task.ts
+|   |   |   |       
+|   |   |   +---tracking
+|   |   |   |       AuthorCredit.ts
+|   |   |   |       PromotionRequest.ts
+|   |   |   |       TemplateRanking.ts
+|   |   |   |       UsageLog.ts
+|   |   |   |       
+|   |   |   \---user
+|   |   |           User.ts
+|   |   |           UserBehaviorPattern.ts
+|   |   |           UserInteraction.ts
+|   |   |           UserRecommendation.ts
+|   |   |           
+|   |   +---repositories
+|   |   |       AccountingTransactionRepository.ts
+|   |   |       AuthorCreditRepository.ts
+|   |   |       BudgetItemRepository.ts
+|   |   |       BudgetLineItemRepository.ts
+|   |   |       BudgetTemplateRepository.ts
+|   |   |       CalculationBudgetRepository.ts
+|   |   |       CalculationComparisonRepository.ts
+|   |   |       CalculationParameterRepository.ts
+|   |   |       CalculationResultRepository.ts
+|   |   |       CalculationTemplateRepository.ts
+|   |   |       CategoryRepository.ts
+|   |   |       GeographicalZoneRepository.ts
+|   |   |       InvoiceRepository.ts
+|   |   |       MaterialCalculationResultRepository.ts
+|   |   |       MaterialCalculationTemplateRepository.ts
+|   |   |       MaterialPropertyRepository.ts
+|   |   |       MaterialRepository.ts
+|   |   |       MaterialRequestRepository.ts
+|   |   |       MaterialTemplateRankingRepository.ts
+|   |   |       MaterialTemplateUsageLogRepository.ts
+|   |   |       NotificationRepository.ts
+|   |   |       OrderItemRepository.ts
+|   |   |       OrderRepository.ts
+|   |   |       PhaseRepository.ts
+|   |   |       ProfessionalCostRepository.ts
+|   |   |       ProjectBudgetRepository.ts
+|   |   |       ProjectRepository.ts
+|   |   |       PromotionRequestRepository.ts
+|   |   |       RefreshTokenRepository.ts
+|   |   |       TaskRepository.ts
+|   |   |       TemplateRankingRepository.ts
+|   |   |       TemplateRatingRepository.ts
+|   |   |       TemplateSuggestionRepository.ts
+|   |   |       TrendingCalculationRepository.ts
+|   |   |       UserCalculationTemplateRepository.ts
+|   |   |       UserFavoriteRepository.ts
+|   |   |       UserInteractionRepository.ts
+|   |   |       UserMaterialCalculationTemplateRepository.ts
+|   |   |       UserRecommendationRepository.ts
+|   |   |       UserRepository.ts
+|   |   |       UserTemplateUsageLogRepository.ts
+|   |   |       
+|   |   \---services
+|   |           AccountingService.ts
+|   |           AdvancedRecommendationService.ts
+|   |           AuthService.ts
+|   |           BudgetPricingService.ts
+|   |           BudgetTemplateService.ts
+|   |           CalculationBudgetService.ts
+|   |           CalculationService.ts
+|   |           EmailService.ts
+|   |           MaterialCalculationService.ts
+|   |           MaterialTemplateValidationService.ts
+|   |           NotificationService.ts
+|   |           ProjectMetricsService.ts
+|   |           PushNotificationService.ts
+|   |           RecommendationService.ts
+|   |           SriService.ts
+|   |           SupplierIntegrationService.ts
+|   |           TemplateValidationService.ts
+|   |           TwoFactorAuthService.ts
+|   |           UserPatternAnalysisService.ts
+|   |           
+|   +---infrastructure
+|   |   +---config
+|   |   |       container.ts
+|   |   |       service-factory.ts
+|   |   |       trackingConfig.ts
+|   |   |       
+|   |   +---database
+|   |   |   |   data-source.ts
+|   |   |   |   database.service.ts
+|   |   |   |   
+|   |   |   +---entities
+|   |   |   |       AccountingTransactionEntity.ts
+|   |   |   |       AuthorCreditEntity.ts
+|   |   |   |       BudgetItemEntity.ts
+|   |   |   |       BudgetLineItemEntity.ts
+|   |   |   |       BudgetTemplateEntity.ts
+|   |   |   |       CalculationBudgetEntity.ts
+|   |   |   |       CalculationComparisonEntity.ts
+|   |   |   |       CalculationFeedbackEntity.ts
+|   |   |   |       CalculationGuideEntity.ts
+|   |   |   |       CalculationImprovementEntity.ts
+|   |   |   |       CalculationParameterEntity.ts
+|   |   |   |       CalculationRecommendationEntity.ts
+|   |   |   |       CalculationResultEntity.ts
+|   |   |   |       CalculationTemplateEntity.ts
+|   |   |   |       CategoryEntity.ts
+|   |   |   |       GeographicalZoneEntity.ts
+|   |   |   |       InvoiceEntity.ts
+|   |   |   |       InvoiceItemEntity.ts
+|   |   |   |       MaterialCalculationResultEntity.ts
+|   |   |   |       MaterialCalculationTemplateEntity.ts
+|   |   |   |       MaterialEntity.ts
+|   |   |   |       MaterialParameterEntity.ts
+|   |   |   |       MaterialPriceHistoryEntity.ts
+|   |   |   |       MaterialPropertyDefinitionEntity.ts
+|   |   |   |       MaterialPropertyValueEntity.ts
+|   |   |   |       MaterialRequestEntity.ts
+|   |   |   |       MaterialTemplateRankingEntity.ts
+|   |   |   |       MaterialTemplateUsageLogEntity.ts
+|   |   |   |       NotificationEntity.ts
+|   |   |   |       OrderEntity.ts
+|   |   |   |       OrderItemEntity.ts
+|   |   |   |       PhaseEntity.ts
+|   |   |   |       ProfessionalCostEntity.ts
+|   |   |   |       ProjectBudgetEntity.ts
+|   |   |   |       ProjectDocumentEntity.ts
+|   |   |   |       ProjectEntity.ts
+|   |   |   |       ProjectTeamMemberEntity.ts
+|   |   |   |       PromotionRequestEntity.ts
+|   |   |   |       RefreshTokenEntity.ts
+|   |   |   |       TaskEntity.ts
+|   |   |   |       TemplateRankingEntity.ts
+|   |   |   |       TemplateRatingEntity.ts
+|   |   |   |       TemplateSuggestionEntity.ts
+|   |   |   |       TrendingCalculationEntity.ts
+|   |   |   |       UserAddressEntity.ts
+|   |   |   |       UserCalculationTemplateEntity.ts
+|   |   |   |       UserEntity.ts
+|   |   |   |       UserFavoriteEntity.ts
+|   |   |   |       UserInteractionEntity.ts
+|   |   |   |       UserMaterialCalculationTemplateEntity.ts
+|   |   |   |       UserRecommendationEntity.ts
+|   |   |   |       UserTemplateUsageEntity.ts
+|   |   |   |       UserTemplateUsageLogEntity.ts
+|   |   |   |       
+|   |   |   +---migrations
+|   |   |   |       1749620889533-InitialSchema.ts
+|   |   |   |       
+|   |   |   +---repositories
+|   |   |   |       TypeOrmAccountingTransactionRepository.ts
+|   |   |   |       TypeOrmAuthorCreditRepository.ts
+|   |   |   |       TypeOrmBudgetItemRepository.ts
+|   |   |   |       TypeOrmBudgetLineItemRepository.ts
+|   |   |   |       TypeOrmBudgetTemplateRepository.ts
+|   |   |   |       TypeOrmCalculationBudgetRepository.ts
+|   |   |   |       TypeOrmCalculationComparisonRepository.ts
+|   |   |   |       TypeOrmCalculationParameterRepository.ts
+|   |   |   |       TypeOrmCalculationResultRepository.ts
+|   |   |   |       TypeOrmCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmCategoryRepository.ts
+|   |   |   |       TypeOrmGeographicalZoneRepository.ts
+|   |   |   |       TypeOrmInvoiceRepository.ts
+|   |   |   |       TypeOrmMaterialCalculationResultRepository.ts
+|   |   |   |       TypeOrmMaterialCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmMaterialPropertyRepository.ts
+|   |   |   |       TypeOrmMaterialRepository.ts
+|   |   |   |       TypeOrmMaterialRequestRepository.ts
+|   |   |   |       TypeOrmMaterialTemplateRankingRepository.ts
+|   |   |   |       TypeOrmMaterialTemplateUsageLogRepository.ts
+|   |   |   |       TypeOrmNotificationRepository.ts
+|   |   |   |       TypeOrmOrderItemRepository.ts
+|   |   |   |       TypeOrmOrderRepository.ts
+|   |   |   |       TypeOrmPhaseRepository.ts
+|   |   |   |       TypeOrmProfessionalCostRepository.ts
+|   |   |   |       TypeOrmProjectBudgetRepository.ts
+|   |   |   |       TypeOrmProjectRepository.ts
+|   |   |   |       TypeOrmPromotionRequestRepository.ts
+|   |   |   |       TypeOrmRefreshTokenRepository.ts
+|   |   |   |       TypeOrmTaskRepository.ts
+|   |   |   |       TypeOrmTemplateRankingRepository.ts
+|   |   |   |       TypeOrmTemplateRatingRepository.ts
+|   |   |   |       TypeOrmTemplateSuggestionRepository.ts
+|   |   |   |       TypeOrmTrendingCalculationRepository.ts
+|   |   |   |       TypeOrmUserCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmUserFavoriteRepository.ts
+|   |   |   |       TypeOrmUserInteractionRepository.ts
+|   |   |   |       TypeOrmUserMaterialCalculationTemplateRepository.ts
+|   |   |   |       TypeOrmUserRepository.ts
+|   |   |   |       TypeOrmUserTemplateUsageLogRepository.ts
+|   |   |   |       
+|   |   |   \---seeds
+|   |   |       |   calculation-templates.ts
+|   |   |       |   material-calculation-templates-seeds.ts
+|   |   |       |   run-seeds.ts
+|   |   |       |   specialized-templates.ts
+|   |   |       |   
+|   |   |       \---nec-seeds
+|   |   |               index.ts
+|   |   |               nec-accesibilidad-universal-seeds.ts
+|   |   |               nec-cargas-no-sismicas-seeds.ts
+|   |   |               nec-climatizacion-seeds.ts
+|   |   |               nec-contra-incendios-seeds.ts
+|   |   |               nec-diseno-sismico-seeds.ts
+|   |   |               nec-eficiencia-energetica-seeds.ts
+|   |   |               nec-energias-renovables-seeds.ts
+|   |   |               nec-estructuras-acero-seeds.ts
+|   |   |               nec-estructuras-guadua-seeds.ts
+|   |   |               nec-estructuras-madera-seeds.ts
+|   |   |               nec-geotecnia-cimentaciones-seeds.ts
+|   |   |               nec-hormigon-armado-seeds.ts
+|   |   |               nec-instalaciones-electricas-seeds.ts
+|   |   |               nec-mamposteria-seeds.ts
+|   |   |               nec-telecomunicaciones-seeds.ts
+|   |   |               nec-vidrios-seeds.ts
+|   |   |               nec-viviendas-dos-pisos-seeds.ts
+|   |   |               
+|   |   +---external
+|   |   |   \---supplier
+|   |   |           ExampleSupplierAdapter.ts
+|   |   |           
+|   |   +---jobs
+|   |   |       EnhancedRankingCalculationJob.ts
+|   |   |       MaterialRankingCalculationJob.ts
+|   |   |       RankingCalculationJob.ts
+|   |   |       
+|   |   +---services
+|   |   |   |   EmailServiceImpl.ts
+|   |   |   |   MaterialTemplateValidationServiceImpl.ts
+|   |   |   |   NotificationServiceImpl.ts
+|   |   |   |   PdfGenerationService.ts
+|   |   |   |   PushNotificationServiceImpl.ts
+|   |   |   |   
+|   |   |   +---accounting
+|   |   |   |       AccountingServiceFactory.ts
+|   |   |   |       
+|   |   |   +---sri
+|   |   |   |       SriServiceFactory.ts
+|   |   |   |       SriTestAdapter.ts
+|   |   |   |       
+|   |   |   \---supplier
+|   |   |           ConcreteSupplierIntegrationService.ts
+|   |   |           
+|   |   +---webserver
+|   |   |   +---controllers
+|   |   |   |       AccountingController.ts
+|   |   |   |       AdminPromotionController.ts
+|   |   |   |       AdvancedRecommendationController.ts
+|   |   |   |       AuthController.ts
+|   |   |   |       BudgetController.ts
+|   |   |   |       BudgetTemplateController.ts
+|   |   |   |       CalculationBudgetController.ts
+|   |   |   |       CalculationComparisonController.ts
+|   |   |   |       CalculationController.ts
+|   |   |   |       CalculationTemplateController.ts
+|   |   |   |       EnhancedProjectDashboardController.ts
+|   |   |   |       GlobalStatsController.ts
+|   |   |   |       InvoiceController.ts
+|   |   |   |       MaterialCalculationController.ts
+|   |   |   |       MaterialCalculationTemplateController.ts
+|   |   |   |       MaterialController.ts
+|   |   |   |       MaterialPropertyController.ts
+|   |   |   |       MaterialRequestController.ts
+|   |   |   |       MaterialTrendingController.ts
+|   |   |   |       NotificationController.ts
+|   |   |   |       OrderController.ts
+|   |   |   |       PhaseController.ts
+|   |   |   |       ProgressReportController.ts
+|   |   |   |       ProjectDashboardController.ts
+|   |   |   |       ProjectMetricsController.ts
+|   |   |   |       ProjectPredictionController.ts
+|   |   |   |       ProjectScheduleController.ts
+|   |   |   |       SupplierIntegrationController.ts
+|   |   |   |       TaskController.ts
+|   |   |   |       TemplateAnalyticsController.ts
+|   |   |   |       TemplateFavoriteController.ts
+|   |   |   |       TemplateImportExportController.ts
+|   |   |   |       TemplateRatingController.ts
+|   |   |   |       TemplateSuggestionController.ts
+|   |   |   |       TemplateTrackingController.ts
+|   |   |   |       TrendingController.ts
+|   |   |   |       TwoFactorAuthController.ts
+|   |   |   |       UserCalculationTemplateController.ts
+|   |   |   |       UserController.ts
+|   |   |   |       UserMaterialTemplateController.ts
+|   |   |   |       
+|   |   |   +---docs
+|   |   |   |   |   swagger.ts
+|   |   |   |   |   
+|   |   |   |   \---routes
+|   |   |   |           accountingRoutes.documented.ts
+|   |   |   |           adminPromotionRoutes.ts
+|   |   |   |           advancedRecommendationRoutes.documented.ts
+|   |   |   |           authRoutes.documented.ts
+|   |   |   |           budgetRoutes.documented.ts
+|   |   |   |           calculationRoutes.documented.ts
+|   |   |   |           invoiceRoutes.documented.ts
+|   |   |   |           materialPropertyRoutes.documented.ts
+|   |   |   |           materialRequestRoutes.documented.ts
+|   |   |   |           materialRoutes.documented.ts
+|   |   |   |           notificationRoutes.documented.ts
+|   |   |   |           orderRoutes.documented.ts
+|   |   |   |           phaseRoutes.documented.ts
+|   |   |   |           progressReportRoutes.documented.ts
+|   |   |   |           projectDashboardRoutes.documented.ts
+|   |   |   |           projectMetricsRoutes.documented.ts
+|   |   |   |           projectScheduleRoutes.documented.ts
+|   |   |   |           supplierIntegrationRoutes.documented.ts
+|   |   |   |           taskRoutes.documented.ts
+|   |   |   |           templateAnalyticsRoutes.ts
+|   |   |   |           templateImportExportRoutes.documented.ts
+|   |   |   |           userTemplateRoutes.documented.ts
+|   |   |   |           
+|   |   |   +---middlewares
+|   |   |   |       adminAuthMiddleware.ts
+|   |   |   |       authMiddleware.ts
+|   |   |   |       budgetAuthMiddleware.ts
+|   |   |   |       corsMiddleware.ts
+|   |   |   |       enhancedTrackingMiddleware.ts
+|   |   |   |       mirrorCorsMiddleware.ts
+|   |   |   |       permissiveCorsMiddleware.ts
+|   |   |   |       securityHeadersMiddleware.ts
+|   |   |   |       trackingMiddleware.ts
+|   |   |   |       validationMiddleware.ts
+|   |   |   |       
+|   |   |   +---routes
+|   |   |   |       accountingRoutes.ts
+|   |   |   |       adminPromotionRoutes.ts
+|   |   |   |       advancedRecommendationRoutes.ts
+|   |   |   |       authRoutes.ts
+|   |   |   |       budgetRoutes.ts
+|   |   |   |       budgetTemplateRoutes.ts
+|   |   |   |       calculationBudgetRoutes.ts
+|   |   |   |       calculationRoutes.ts
+|   |   |   |       enhancedProjectDashboardRoutes.ts
+|   |   |   |       invoiceRoutes.ts
+|   |   |   |       materialCalculationRoutes.ts
+|   |   |   |       materialPropertyRoutes.ts
+|   |   |   |       materialRequestRoutes.ts
+|   |   |   |       materialRoutes.ts
+|   |   |   |       notificationRoutes.ts
+|   |   |   |       orderRoutes.ts
+|   |   |   |       progressReportRoutes.ts
+|   |   |   |       projectDashboardRoutes.ts
+|   |   |   |       projectMetricsRoutes.ts
+|   |   |   |       projectPredictionRoutes.ts
+|   |   |   |       projectScheduleRoutes.ts
+|   |   |   |       supplierIntegrationRoutes.ts
+|   |   |   |       templateAnalyticsRoutes.ts
+|   |   |   |       templateImportExportRoutes.ts
+|   |   |   |       twoFactorAuthRoutes.ts
+|   |   |   |       userMaterialTemplateRoutes.ts
+|   |   |   |       userRoutes.ts
+|   |   |   |       userTemplateRoutes.ts
+|   |   |   |       
+|   |   |   +---utils
+|   |   |   |       errorHandler.ts
+|   |   |   |       queryUtils.ts
+|   |   |   |       
+|   |   |   \---validators
+|   |   |           analyticsValidator.ts
+|   |   |           authValidator.ts
+|   |   |           budgetValidator.ts
+|   |   |           calculationValidator.ts
+|   |   |           materialCalculationValidator.ts
+|   |   |           materialRequestValidator.ts
+|   |   |           materialValidator.ts
+|   |   |           projectScheduleValidator.ts
+|   |   |           promotionValidator.ts
+|   |   |           suggestionValidator.ts
+|   |   |           templateImportValidator.ts
+|   |   |           templateValidator.ts
+|   |   |           userMaterialTemplateValidator.ts
+|   |   |           userTemplateValidator.ts
+|   |   |           
+|   |   \---websocket
+|   |           RealtimeAnalyticsService.ts
+|   |           WebSocketService.ts
+|   |           
+|   \---types
+|       \---express
+|               index.d.ts
+|               
+\---tests
+    \---budget-module
+            budget-module.test.ts
+            

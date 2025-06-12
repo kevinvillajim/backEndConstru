@@ -35,6 +35,11 @@ import { TypeOrmCalculationBudgetRepository } from "../database/repositories/Typ
 import { TypeOrmBudgetTemplateRepository } from "../database/repositories/TypeOrmBudgetTemplateRepository";
 import { TypeOrmBudgetLineItemRepository } from "../database/repositories/TypeOrmBudgetLineItemRepository";
 import { TypeOrmProfessionalCostRepository } from "../database/repositories/TypeOrmProfessionalCostRepository";
+import { TypeOrmCalculationScheduleRepository } from "../database/repositories/TypeOrmCalculationScheduleRepository";
+import { TypeOrmScheduleTemplateRepository } from "../database/repositories/TypeOrmScheduleTemplateRepository";
+import { TypeOrmScheduleActivityRepository } from "../database/repositories/TypeOrmScheduleActivityRepository";
+import { TypeOrmResourceAssignmentRepository } from "../database/repositories/TypeOrmResourceAssignmentRepository";
+import { TypeOrmProgressTrackingRepository } from "../database/repositories/TypeOrmProgressTrackingRepository";
 
 
 // ============= SERVICIOS DE DOMINIO =============
@@ -232,6 +237,11 @@ let calculationBudgetRepository: TypeOrmCalculationBudgetRepository;
 let budgetTemplateRepository: TypeOrmBudgetTemplateRepository;
 let budgetLineItemRepository: TypeOrmBudgetLineItemRepository;
 let professionalCostRepository: TypeOrmProfessionalCostRepository;
+let calculationScheduleRepository: TypeOrmCalculationScheduleRepository;
+let scheduleTemplateRepository: TypeOrmScheduleTemplateRepository;
+let scheduleActivityRepository: TypeOrmScheduleActivityRepository;
+let resourceAssignmentRepository: TypeOrmResourceAssignmentRepository;
+let progressTrackingRepository: TypeOrmProgressTrackingRepository;
 
 // ============= VARIABLES GLOBALES DE SERVICIOS =============
 let authService: AuthService;
@@ -432,6 +442,11 @@ export function initializeServices() {
 		budgetTemplateRepository = new TypeOrmBudgetTemplateRepository();
 		budgetLineItemRepository = new TypeOrmBudgetLineItemRepository();
 		professionalCostRepository = new TypeOrmProfessionalCostRepository();
+		calculationScheduleRepository = new TypeOrmCalculationScheduleRepository();
+		scheduleTemplateRepository = new TypeOrmScheduleTemplateRepository();
+		scheduleActivityRepository = new TypeOrmScheduleActivityRepository();
+		resourceAssignmentRepository = new TypeOrmResourceAssignmentRepository();
+		progressTrackingRepository = new TypeOrmProgressTrackingRepository();
 
 		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
@@ -1502,6 +1517,47 @@ export function getUserRepository(): UserRepository {
 	  throw new Error("Services not initialized. Call initializeServices() first.");
 	return userRepository;
   }
+
+  export function getCalculationScheduleRepository() {
+	if (!calculationScheduleRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return calculationScheduleRepository;
+}
+
+export function getScheduleTemplateRepository() {
+	if (!scheduleTemplateRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return scheduleTemplateRepository;
+}
+
+export function getScheduleActivityRepository() {
+	if (!scheduleActivityRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return scheduleActivityRepository;
+}
+
+export function getResourceAssignmentRepository() {
+	if (!resourceAssignmentRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return resourceAssignmentRepository;
+}
+
+export function getProgressTrackingRepository() {
+	if (!progressTrackingRepository)
+		throw new Error(
+			"Services not initialized. Call initializeServices() first."
+		);
+	return progressTrackingRepository;
+}
+
 
 // Getters para services
 export const getMaterialCalculationService = (): MaterialCalculationService => {
