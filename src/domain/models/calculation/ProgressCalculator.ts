@@ -649,6 +649,75 @@ export class ProgressCalculator {
     return 'stable';
   }
 
+  /**
+   * Método helper para validar y convertir unknown a ScheduleActivityEntity[]
+   */
+  private validateAndConvertToActivityArray(data: unknown): ScheduleActivityEntity[] {
+    // Verificar si data es un array
+    if (!Array.isArray(data)) {
+      console.warn('Expected array but received:', typeof data);
+      return [];
+    }
+
+    // Filtrar y validar cada elemento del array
+    const validActivities: ScheduleActivityEntity[] = [];
+    
+    for (const item of data) {
+      if (this.isValidScheduleActivityEntity(item)) {
+        validActivities.push(item as ScheduleActivityEntity);
+      } else {
+        console.warn('Invalid ScheduleActivityEntity found:', item);
+      }
+    }
+
+    return validActivities;
+  }
+
+  /**
+   * Type guard para verificar si un objeto es ScheduleActivityEntity
+   */
+  private isValidScheduleActivityEntity(obj: any): obj is ScheduleActivityEntity {
+    return obj &&
+           typeof obj === 'object' &&
+           typeof obj.id === 'string' &&
+           typeof obj.name === 'string' &&
+           obj.hasOwnProperty('startDate') &&
+           obj.hasOwnProperty('endDate') &&
+           obj.hasOwnProperty('status');
+  }
+
+  /**
+   * Método seguro para parsear datos de actividades
+   */
+  private parseActivityData(rawData: unknown): ScheduleActivityEntity[] {
+    try {
+      // Si rawData es string, intentar parsearlo como JSON
+      if (typeof rawData === 'string') {
+        const parsed = JSON.parse(rawData);
+        return this.validateAndConvertToActivityArray(parsed);
+      }
+      
+      // Si es un objeto, verificar si tiene la estructura esperada
+      if (typeof rawData === 'object' && rawData !== null) {
+        // Si es un objeto con una propiedad que contiene el array
+        if ('activities' in rawData) {
+          return this.validateAndConvertToActivityArray((rawData as any).activities);
+        }
+        
+        // Si es directamente un array
+        if (Array.isArray(rawData)) {
+          return this.validateAndConvertToActivityArray(rawData);
+        }
+      }
+      
+      console.warn('Unable to parse activity data:', rawData);
+      return [];
+    } catch (error) {
+      console.error('Error parsing activity data:', error);
+      return [];
+    }
+  }
+
   private analyzeProductivityByTrade(): any[] {
     const tradeAnalysis = [];
     const tradeGroups = this.groupActivitiesByTrade();

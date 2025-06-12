@@ -11,7 +11,7 @@ import {
   } from 'typeorm';
   import { UserEntity } from './UserEntity';
   import { ScheduleActivityTemplateEntity } from './ScheduleActivityTemplateEntity';
-  
+    
   export enum TemplateScope {
     SYSTEM = 'system',
     COMPANY = 'company', 
