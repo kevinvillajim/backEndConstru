@@ -1,10 +1,15 @@
 // ===== TypeOrmScheduleActivityRepository.ts =====
-import { Repository, Between, In } from 'typeorm';
-import { ScheduleActivityEntity, ActivityStatus, ConstructionTrade } from '../entities/ScheduleActivityEntity';
+import { Repository, Between, In, LessThan, MoreThan } from 'typeorm';
+import { ScheduleActivityEntity, ActivityStatus, ConstructionTrade } from '../../../domain/models/calculation/ScheduleActivity';
 import { ScheduleActivityRepository } from '../../../domain/repositories/ScheduleActivityRepository';
+import { AppDataSource } from '../data-source';
 
 export class TypeOrmScheduleActivityRepository implements ScheduleActivityRepository {
-  constructor(private repository: Repository<ScheduleActivityEntity>) {}
+  private repository: Repository<ScheduleActivityEntity>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(ScheduleActivityEntity);
+  }
 
   async findById(id: string): Promise<ScheduleActivityEntity | null> {
     return await this.repository.findOne({

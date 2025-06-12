@@ -12,46 +12,7 @@ import {
   import { CalculationScheduleEntity } from './CalculationScheduleEntity';
   import { ResourceAssignmentEntity } from './ResourceAssignmentEntity';
   import { ActivityProgressEntity } from './ActivityProgressEntity';
-  
-  export enum ActivityStatus {
-    NOT_STARTED = 'not_started',
-    IN_PROGRESS = 'in_progress',
-    ON_HOLD = 'on_hold',
-    COMPLETED = 'completed',
-    CANCELLED = 'cancelled',
-    DELAYED = 'delayed',
-    REWORK_REQUIRED = 'rework_required'
-  }
-  
-  export enum ActivityType {
-    CONSTRUCTION = 'construction',
-    INSTALLATION = 'installation',
-    INSPECTION = 'inspection',
-    DELIVERY = 'delivery',
-    APPROVAL = 'approval',
-    MILESTONE = 'milestone',
-    BUFFER = 'buffer'
-  }
-  
-  export enum ActivityPriority {
-    LOW = 'low',
-    NORMAL = 'normal',
-    HIGH = 'high',
-    CRITICAL = 'critical'
-  }
-  
-  export enum ConstructionTrade {
-    EXCAVATION = 'excavation',
-    CONCRETE = 'concrete',
-    MASONRY = 'masonry',
-    STEEL = 'steel',
-    CARPENTRY = 'carpentry',
-    ELECTRICAL = 'electrical',
-    PLUMBING = 'plumbing',
-    PAINTING = 'painting',
-    FINISHING = 'finishing',
-    LANDSCAPING = 'landscaping'
-  }
+  import {ActivityStatus, ActivityType, ActivityPriority, ConstructionTrade} from '../../../domain/models/calculation/ScheduleActivity';
   
   @Entity('schedule_activities')
   @Index(['scheduleId', 'status'])

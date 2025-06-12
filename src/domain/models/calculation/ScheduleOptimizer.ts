@@ -397,13 +397,13 @@ export class ScheduleOptimizer {
     
     // Calcular varianza en utilización (menor varianza = mejor score)
     const utilizationValues = profile.map(day => {
-      const totalUtilization = Object.values(day.resources).reduce((sum, resource) => 
-        sum + resource.utilization, 0);
-      return totalUtilization / Object.keys(day.resources).length;
+      const totalUtilization = Object.values(day.resources).reduce((sum, resource: any) => 
+        sum + (resource.utilization || 0), 0);
+      return Number(totalUtilization) / Math.max(1, Object.keys(day.resources).length);
     });
     
-    const average = utilizationValues.reduce((sum, val) => sum + val, 0) / utilizationValues.length;
-    const variance = utilizationValues.reduce((sum, val) => sum + Math.pow(val - average, 2), 0) / utilizationValues.length;
+    const average = utilizationValues.reduce((sum, val) => sum + val, 0) / Math.max(1, utilizationValues.length);
+    const variance = utilizationValues.reduce((sum, val) => sum + Math.pow(val - average, 2), 0) / Math.max(1, utilizationValues.length);
     
     // Convertir varianza en score (menor varianza = mayor score)
     return Math.max(0, 100 - variance);
@@ -443,7 +443,7 @@ export class ScheduleOptimizer {
   }
 
   private findParallelizationOpportunities(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[][] {
-    const opportunities = [];
+    const opportunities: ScheduleActivityEntity[][] = [];
     
     // Buscar actividades que pueden ejecutarse en paralelo
     const groupsByTrade = this.groupActivitiesByTrade(activities);
@@ -461,8 +461,8 @@ export class ScheduleOptimizer {
     return opportunities;
   }
 
-  private groupActivitiesByTrade(activities: ScheduleActivityEntity[]): any {
-    return activities.reduce((groups, activity) => {
+  private groupActivitiesByTrade(activities: ScheduleActivityEntity[]): Record<string, ScheduleActivityEntity[]> {
+    return activities.reduce((groups: Record<string, ScheduleActivityEntity[]>, activity) => {
       const trade = activity.primaryTrade;
       if (!groups[trade]) {
         groups[trade] = [];
@@ -470,6 +470,32 @@ export class ScheduleOptimizer {
       groups[trade].push(activity);
       return groups;
     }, {});
+  }
+
+  private calculateTradeProductivity(activities: ScheduleActivityEntity[]): any {
+    const productivities = activities.map(activity => {
+      const planned = activity.workQuantities?.plannedQuantity || 1;
+      const completed = activity.workQuantities?.completedQuantity || 0;
+      const progress = activity.progressPercentage / 100;
+      const expected = planned * progress;
+      
+      return expected > 0 ? completed / expected : 1;
+    });
+    
+    const averageProductivity = productivities.reduce((sum, p) => sum + p, 0) / productivities.length;
+    const bestProductivity = Math.max(...productivities);
+    const worstProductivity = Math.min(...productivities);
+    
+    return {
+      trade: activities[0].primaryTrade,
+      averageProductivity,
+      bestDay: { date: new Date(), productivity: bestProductivity }, // Simplificado
+      worstDay: { date: new Date(), productivity: worstProductivity }, // Simplificado
+      trend: this.calculateTradeTrend(activities)
+    };
+  }
+  calculateTradeTrend(activities: ScheduleActivityEntity[]) {
+    throw new Error('Method not implemented.');
   }
 
   private findParallelCandidatesInTrade(activities: ScheduleActivityEntity[]): ScheduleActivityEntity[] {
@@ -916,9 +942,9 @@ export class ScheduleOptimizer {
     });
   }
 
-  private calculateResourceDemandProfile(activities: ScheduleActivityEntity[]): any {
+  private calculateResourceDemandProfile(activities: ScheduleActivityEntity[]): Map<string, Map<string, number>> {
     // Calcular perfil de demanda de recursos a lo largo del tiempo
-    const profile = new Map();
+    const profile = new Map<string, Map<string, number>>();
     
     activities.forEach(activity => {
       const startTime = activity.plannedStartDate.getTime();
@@ -929,10 +955,10 @@ export class ScheduleOptimizer {
         const dateKey = new Date(time).toISOString().split('T')[0];
         
         if (!profile.has(dateKey)) {
-          profile.set(dateKey, new Map());
+          profile.set(dateKey, new Map<string, number>());
         }
         
-        const dayProfile = profile.get(dateKey);
+        const dayProfile = profile.get(dateKey)!;
         const currentDemand = dayProfile.get(resourceType) || 0;
         dayProfile.set(resourceType, currentDemand + 1);
       }
@@ -942,7 +968,7 @@ export class ScheduleOptimizer {
   }
 
   private identifyResourcePeaks(resourceDemand: Map<string, Map<string, number>>): any[] {
-    const peaks = [];
+    const peaks: any[] = [];
     const threshold = 5; // Más de 5 recursos del mismo tipo en un día
     
     resourceDemand.forEach((dayProfile, date) => {

@@ -1,10 +1,15 @@
 // ===== TypeOrmProgressTrackingRepository.ts =====
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, MoreThan } from 'typeorm';
 import { ProgressTrackingEntity, ProgressReportType } from '../entities/ProgressTrackingEntity';
 import { ProgressTrackingRepository } from '../../../domain/repositories/ProgressTrackingRepository';
+import { AppDataSource } from '../data-source';
 
 export class TypeOrmProgressTrackingRepository implements ProgressTrackingRepository {
-  constructor(private repository: Repository<ProgressTrackingEntity>) {}
+  private repository: Repository<ProgressTrackingEntity>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(ProgressTrackingEntity);
+  }
 
   async findById(id: string): Promise<ProgressTrackingEntity | null> {
     return await this.repository.findOne({

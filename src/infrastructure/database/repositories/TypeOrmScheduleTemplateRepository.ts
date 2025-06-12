@@ -1,10 +1,15 @@
 // ===== TypeOrmScheduleTemplateRepository.ts =====
-import { Repository, Like, In } from 'typeorm';
+import { Repository, Like, In, MoreThan } from 'typeorm';
 import { ScheduleTemplateEntity, TemplateScope } from '../entities/ScheduleTemplateEntity';
 import { ScheduleTemplateRepository } from '../../../domain/repositories/ScheduleTemplateRepository';
+import { AppDataSource } from '../data-source';
 
 export class TypeOrmScheduleTemplateRepository implements ScheduleTemplateRepository {
-  constructor(private repository: Repository<ScheduleTemplateEntity>) {}
+  private repository: Repository<ScheduleTemplateEntity>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(ScheduleTemplateEntity);
+  }
 
   async findById(id: string): Promise<ScheduleTemplateEntity | null> {
     return await this.repository.findOne({

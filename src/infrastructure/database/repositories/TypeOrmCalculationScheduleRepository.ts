@@ -3,9 +3,14 @@ import { Repository, Between, MoreThan, LessThan, In } from 'typeorm';
 import { CalculationScheduleEntity, ScheduleStatus, ConstructionType, GeographicalZone } from '../entities/CalculationScheduleEntity';
 import { CalculationScheduleRepository } from '../../../domain/repositories/CalculationScheduleRepository';
 import { PaginationOptions } from '../../../domain/models/common/PaginationOptions';
+import { AppDataSource } from '../data-source';
 
 export class TypeOrmCalculationScheduleRepository implements CalculationScheduleRepository {
-  constructor(private repository: Repository<CalculationScheduleEntity>) {}
+  private repository: Repository<CalculationScheduleEntity>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(CalculationScheduleEntity);
+  }
 
   async findById(id: string): Promise<CalculationScheduleEntity | null> {
     return await this.repository.findOne({

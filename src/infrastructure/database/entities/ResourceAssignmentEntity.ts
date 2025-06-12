@@ -1,6 +1,5 @@
   // ===== ResourceAssignmentEntity.ts =====
 
-
 import { 
     Entity, 
     PrimaryGeneratedColumn, 
@@ -12,8 +11,6 @@ import {
     JoinColumn,
     Index 
   } from 'typeorm';
-  import { UserEntity } from './UserEntity';
-  import { ResourceAssignmentEntity } from './ResourceAssignmentEntity';
 
 @Entity('resource_assignments')
 @Index(['activityId', 'assignmentDate'])

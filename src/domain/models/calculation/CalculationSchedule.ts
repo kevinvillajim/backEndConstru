@@ -2,6 +2,73 @@
 import { ScheduleActivityEntity } from '../../../infrastructure/database/entities/ScheduleActivityEntity';
 import { CalculationBudgetEntity } from '../../../infrastructure/database/entities/CalculationBudgetEntity';
 import { WeatherFactorEntity } from '../../../infrastructure/database/entities/WeatherFactorEntity';
+import { ActivityPriority } from './ScheduleActivity';
+
+// Export enums for repository use
+export enum ScheduleStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  ON_HOLD = 'on_hold',
+  DELAYED = 'delayed',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled'
+}
+
+export enum ConstructionType {
+  RESIDENTIAL_SINGLE = 'residential_single',
+  RESIDENTIAL_MULTI = 'residential_multi',
+  COMMERCIAL_SMALL = 'commercial_small',
+  COMMERCIAL_LARGE = 'commercial_large',
+  INDUSTRIAL = 'industrial',
+  INFRASTRUCTURE = 'infrastructure',
+  RENOVATION = 'renovation',
+  SPECIALIZED = 'specialized'
+}
+
+export enum GeographicalZone {
+  QUITO = 'quito',
+  GUAYAQUIL = 'guayaquil',
+  CUENCA = 'cuenca',
+  COSTA = 'costa',
+  SIERRA = 'sierra',
+  ORIENTE = 'oriente',
+  INSULAR = 'insular'
+}
+
+// Domain model interface
+export interface CalculationScheduleEntity {
+  id: string;
+  name: string;
+  description?: string;
+  status: ScheduleStatus;
+  constructionType: ConstructionType;
+  geographicalZone: GeographicalZone;
+  projectId: string;
+  calculationBudgetId?: string;
+  plannedStartDate: Date;
+  plannedEndDate: Date;
+  actualStartDate?: Date;
+  actualEndDate?: Date;
+  progressPercentage: number;
+  totalPlannedDuration: number;
+  totalActualDuration: number;
+  climateFactors?: any;
+  laborFactors?: any;
+  resourceConstraints?: any;
+  alertSettings?: any;
+  totalScheduleCost: number;
+  actualSpentCost: number;
+  costVariancePercentage: number;
+  baseTemplateId?: string;
+  isOptimized: boolean;
+  optimizationParameters?: any;
+  criticalPath?: string[];
+  necCompliance?: any;
+  customFields?: Record<string, any>;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface ScheduleGenerationOptions {
   optimizeFor: 'time' | 'cost' | 'quality' | 'balanced';
@@ -278,7 +345,7 @@ export class CalculationSchedule {
     activities.forEach(activity => {
       if (activity.isCriticalPath) {
         // Buscar oportunidades de paralelización en ruta crítica
-        activity.priority = 'CRITICAL';
+        activity.priority = ActivityPriority.CRITICAL;
       }
     });
 

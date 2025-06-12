@@ -1,10 +1,15 @@
 // ===== TypeOrmResourceAssignmentRepository.ts =====
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, LessThan, MoreThan, In } from 'typeorm';
 import { ResourceAssignmentEntity } from '../entities/ResourceAssignmentEntity';
 import { ResourceAssignmentRepository } from '../../../domain/repositories/ResourceAssignmentRepository';
+import { AppDataSource } from '../data-source';
 
 export class TypeOrmResourceAssignmentRepository implements ResourceAssignmentRepository {
-  constructor(private repository: Repository<ResourceAssignmentEntity>) {}
+  private repository: Repository<ResourceAssignmentEntity>;
+
+  constructor() {
+    this.repository = AppDataSource.getRepository(ResourceAssignmentEntity);
+  }
 
   async findById(id: string): Promise<ResourceAssignmentEntity | null> {
     return await this.repository.findOne({
