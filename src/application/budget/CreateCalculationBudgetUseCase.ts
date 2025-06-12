@@ -8,8 +8,8 @@ import { MaterialRepository } from "../../domain/repositories/MaterialRepository
 import { CalculationBudgetService, BudgetGenerationOptions } from "../../domain/services/CalculationBudgetService";
 import { BudgetTemplateService } from "../../domain/services/BudgetTemplateService";
 import { CalculationBudget, BudgetType, CalculationBudgetStatus } from "../../domain/models/calculation/CalculationBudget";
-import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
-import { ProfessionalCost } from "../../domain/models/calculation/ProfessionalCost";
+import { BudgetLineItem, LineItemType, LineItemSource } from "../../domain/models/calculation/BudgetLineItem";
+import { ProfessionalCost, ProfessionalService, ComplexityLevel } from "../../domain/models/calculation/ProfessionalCost";
 import { v4 as uuidv4 } from "uuid";
 
 export interface CreateCalculationBudgetRequest {
@@ -225,7 +225,8 @@ export class CreateCalculationBudgetUseCase {
     if (request.customMaterials) {
       for (const customMaterial of request.customMaterials) {
         const material = await this.materialRepository.findById(customMaterial.materialId);
-        const unitPrice = customMaterial.unitPrice || material?.currentPrice || 0;
+        // Usar propiedades correctas del modelo Material o valores por defecto
+        const unitPrice = customMaterial.unitPrice || (material as any)?.price || (material as any)?.unitPrice || 0;
         materialsSubtotal += customMaterial.quantity * unitPrice;
       }
     }
@@ -314,23 +315,43 @@ export class CreateCalculationBudgetUseCase {
     if (request.customMaterials) {
       for (const customMaterial of request.customMaterials) {
         const material = await this.materialRepository.findById(customMaterial.materialId);
+        // Usar propiedades correctas del modelo Material o valores por defecto
+        const unitPrice = customMaterial.unitPrice || (material as any)?.price || (material as any)?.unitPrice || 0;
+        const subtotal = customMaterial.quantity * unitPrice;
         
-        const lineItem: BudgetLineItem = {
-          id: uuidv4(),
-          budgetId: budget.id,
-          itemType: LineItemType.MATERIAL,
+        const lineItemData: Omit<BudgetLineItem, 'id' | 'createdAt' | 'updatedAt'> = {
           description: customMaterial.description || material?.name || 'Material personalizado',
+          itemType: LineItemType.MATERIAL,
+          source: LineItemSource.MANUAL,
+          calculationBudgetId: budget.id,
           materialId: customMaterial.materialId,
           quantity: customMaterial.quantity,
-          unit: material?.unit || 'unidad',
-          unitPrice: customMaterial.unitPrice || material?.currentPrice || 0,
-          totalPrice: customMaterial.quantity * (customMaterial.unitPrice || material?.currentPrice || 0),
-          category: material?.category?.name || 'Materiales',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          unitOfMeasure: (material as any)?.unitOfMeasure || (material as any)?.unit || 'unidad',
+          unitPrice: unitPrice,
+          wastePercentage: 5, // 5% por defecto
+          finalQuantity: customMaterial.quantity * 1.05, // Con desperdicio
+          subtotal: subtotal,
+          category: (material as any)?.categoryName || 'Materiales',
+          regionalFactor: 1.0,
+          difficultyFactor: 1.0,
+          priceValidityDays: 30,
+          displayOrder: lineItems.length + 1,
+          isOptional: false,
+          isAlternate: false,
+          // Removed laborType as it is not part of the type definition
+          specifications: undefined,
+          sourceCalculationId: undefined,
+          calculationParameterKey: undefined,
+          subcategory: undefined,
+          chapter: undefined,
+          costCode: undefined,
+          necReference: undefined,
+          priceDate: undefined,
+          priceSource: undefined,
+          metadata: undefined
         };
 
-        const savedLineItem = await this.budgetLineItemRepository.create(lineItem);
+        const savedLineItem = await this.budgetLineItemRepository.create(lineItemData);
         lineItems.push(savedLineItem);
       }
     }
@@ -338,22 +359,41 @@ export class CreateCalculationBudgetUseCase {
     // Crear líneas desde mano de obra personalizada
     if (request.customLaborCosts) {
       for (const laborCost of request.customLaborCosts) {
-        const lineItem: BudgetLineItem = {
-          id: uuidv4(),
-          budgetId: budget.id,
-          itemType: LineItemType.LABOR,
+        const subtotal = laborCost.quantity * laborCost.rate;
+        
+        const lineItemData: Omit<BudgetLineItem, 'id' | 'createdAt' | 'updatedAt'> = {
           description: laborCost.description,
+          itemType: LineItemType.LABOR,
+          source: LineItemSource.MANUAL,
+          calculationBudgetId: budget.id,
           quantity: laborCost.quantity,
-          unit: laborCost.unit,
+          unitOfMeasure: laborCost.unit,
           unitPrice: laborCost.rate,
-          totalPrice: laborCost.quantity * laborCost.rate,
+          wastePercentage: 0, // Sin desperdicio para mano de obra
+          finalQuantity: laborCost.quantity,
+          subtotal: subtotal,
           category: 'Mano de Obra',
-          laborType: laborCost.type,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          regionalFactor: 1.0,
+          difficultyFactor: 1.0,
+          priceValidityDays: 30,
+          displayOrder: lineItems.length + 1,
+          isOptional: false,
+          isAlternate: false,
+          // Removed laborType as it is not part of the type definition
+          specifications: undefined,
+          materialId: undefined,
+          sourceCalculationId: undefined,
+          calculationParameterKey: undefined,
+          subcategory: undefined,
+          chapter: undefined,
+          costCode: undefined,
+          necReference: undefined,
+          priceDate: undefined,
+          priceSource: undefined,
+          metadata: undefined
         };
 
-        const savedLineItem = await this.budgetLineItemRepository.create(lineItem);
+        const savedLineItem = await this.budgetLineItemRepository.create(lineItemData);
         lineItems.push(savedLineItem);
       }
     }
@@ -379,60 +419,123 @@ export class CreateCalculationBudgetUseCase {
     // Honorarios arquitectónicos
     if (fees?.architectural || !template) {
       const rate = fees?.architectural || 0.06; // 6% por defecto
-      const cost: ProfessionalCost = {
-        id: uuidv4(),
-        budgetId: budget.id,
-        type: 'ARCHITECTURAL',
+      const amount = baseCost * rate;
+      
+      const costData: Omit<ProfessionalCost, 'id' | 'createdAt' | 'updatedAt'> = {
+        calculationBudgetId: budget.id,
+        service: ProfessionalService.ARCHITECTURAL_DESIGN,
         description: 'Honorarios profesionales - Diseño arquitectónico',
+        complexityLevel: ComplexityLevel.INTERMEDIATE,
+        costType: 'ARCHITECTURAL',
+        basePercentage: rate * 100,
+        fixedAmount: 0,
+        complexityMultiplier: 1.0,
+        calculatedAmount: amount,
+        amount: amount,
         percentage: rate * 100,
-        amount: baseCost * rate,
         basedOnAmount: baseCost,
-        isPercentage: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        type: 'ARCHITECTURAL',
+        ecuadorianRegulation: {
+          collegeProfessional: 'Colegio de Arquitectos del Ecuador',
+          minimumPercentage: 4,
+          maximumPercentage: 8,
+          regulationReference: 'CAE-REG-001'
+        },
+        includesTaxes: false,
+        taxPercentage: 0,
+        isApproved: false,
+        hourlyRate: undefined,
+        estimatedHours: undefined,
+        professionalId: undefined,
+        professionalName: undefined,
+        professionalRegistration: undefined,
+        professionalSpeciality: undefined,
+        approvalDate: undefined
       };
 
-      const savedCost = await this.professionalCostRepository.create(cost);
+      const savedCost = await this.professionalCostRepository.create(costData);
       professionalCosts.push(savedCost);
     }
 
     // Honorarios estructurales
     if (fees?.structural || !template) {
       const rate = fees?.structural || 0.03; // 3% por defecto
-      const cost: ProfessionalCost = {
-        id: uuidv4(),
-        budgetId: budget.id,
-        type: 'STRUCTURAL',
+      const amount = baseCost * rate;
+      
+      const costData: Omit<ProfessionalCost, 'id' | 'createdAt' | 'updatedAt'> = {
+        calculationBudgetId: budget.id,
+        service: ProfessionalService.STRUCTURAL_DESIGN,
         description: 'Honorarios profesionales - Diseño estructural',
+        complexityLevel: ComplexityLevel.INTERMEDIATE,
+        costType: 'STRUCTURAL',
+        basePercentage: rate * 100,
+        fixedAmount: 0,
+        complexityMultiplier: 1.0,
+        calculatedAmount: amount,
+        amount: amount,
         percentage: rate * 100,
-        amount: baseCost * rate,
         basedOnAmount: baseCost,
-        isPercentage: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        type: 'STRUCTURAL',
+        ecuadorianRegulation: {
+          collegeProfessional: 'Colegio de Ingenieros Civiles del Ecuador',
+          minimumPercentage: 2,
+          maximumPercentage: 5,
+          regulationReference: 'CICE-REG-002'
+        },
+        includesTaxes: false,
+        taxPercentage: 0,
+        isApproved: false,
+        hourlyRate: undefined,
+        estimatedHours: undefined,
+        professionalId: undefined,
+        professionalName: undefined,
+        professionalRegistration: undefined,
+        professionalSpeciality: undefined,
+        approvalDate: undefined
       };
 
-      const savedCost = await this.professionalCostRepository.create(cost);
+      const savedCost = await this.professionalCostRepository.create(costData);
       professionalCosts.push(savedCost);
     }
 
     // Supervisión de obra
     if (fees?.supervision || !template) {
       const rate = fees?.supervision || 0.03; // 3% por defecto
-      const cost: ProfessionalCost = {
-        id: uuidv4(),
-        budgetId: budget.id,
-        type: 'SUPERVISION',
+      const amount = baseCost * rate;
+      
+      const costData: Omit<ProfessionalCost, 'id' | 'createdAt' | 'updatedAt'> = {
+        calculationBudgetId: budget.id,
+        service: ProfessionalService.CONSTRUCTION_SUPERVISION,
         description: 'Honorarios profesionales - Supervisión de obra',
+        complexityLevel: ComplexityLevel.INTERMEDIATE,
+        costType: 'SUPERVISION',
+        basePercentage: rate * 100,
+        fixedAmount: 0,
+        complexityMultiplier: 1.0,
+        calculatedAmount: amount,
+        amount: amount,
         percentage: rate * 100,
-        amount: baseCost * rate,
         basedOnAmount: baseCost,
-        isPercentage: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        type: 'SUPERVISION',
+        ecuadorianRegulation: {
+          collegeProfessional: 'Colegio de Arquitectos del Ecuador',
+          minimumPercentage: 2,
+          maximumPercentage: 5,
+          regulationReference: 'CAE-REG-003'
+        },
+        includesTaxes: false,
+        taxPercentage: 0,
+        isApproved: false,
+        hourlyRate: undefined,
+        estimatedHours: undefined,
+        professionalId: undefined,
+        professionalName: undefined,
+        professionalRegistration: undefined,
+        professionalSpeciality: undefined,
+        approvalDate: undefined
       };
 
-      const savedCost = await this.professionalCostRepository.create(cost);
+      const savedCost = await this.professionalCostRepository.create(costData);
       professionalCosts.push(savedCost);
     }
 

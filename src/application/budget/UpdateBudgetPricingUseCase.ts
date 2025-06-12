@@ -4,7 +4,7 @@ import { BudgetLineItemRepository } from "../../domain/repositories/BudgetLineIt
 import { MaterialRepository } from "../../domain/repositories/MaterialRepository";
 import { NotificationRepository } from "../../domain/repositories/NotificationRepository";
 import { BudgetPricingService, PriceUpdateResult, MaterialPriceChange } from "../../domain/services/BudgetPricingService";
-import { CalculationBudget } from "../../domain/models/calculation/CalculationBudget";
+import { CalculationBudget, BudgetCustomization } from "../../domain/models/calculation/CalculationBudget";
 import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 import { NotificationType, NotificationPriority } from "../../infrastructure/database/entities/NotificationEntity";
 import { v4 as uuidv4 } from "uuid";
@@ -50,6 +50,15 @@ export interface PriceComparisonResult {
   }>;
   recommendation: 'KEEP_CURRENT' | 'UPDATE_TO_LOWEST' | 'UPDATE_TO_MOST_RELIABLE' | 'NEEDS_REVIEW';
   estimatedSavings?: number;
+}
+
+// Interface extendida para customización con propiedades adicionales
+interface ExtendedBudgetCustomization extends BudgetCustomization {
+  automaticPriceUpdates?: {
+    enabled: boolean;
+    frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+    lastUpdate: Date;
+  };
 }
 
 export class UpdateBudgetPricingUseCase {
@@ -196,8 +205,8 @@ export class UpdateBudgetPricingUseCase {
     const budget = await this.validateAndGetBudget(budgetId, userId);
     
     // Implementar lógica de programación
-    // Por ahora solo guardamos la preferencia en el presupuesto
-    budget.customization = {
+    // Usamos customización extendida
+    const extendedCustomization: ExtendedBudgetCustomization = {
       ...budget.customization,
       automaticPriceUpdates: {
         enabled: true,
@@ -206,6 +215,7 @@ export class UpdateBudgetPricingUseCase {
       }
     };
 
+    budget.customization = extendedCustomization;
     await this.calculationBudgetRepository.update(budget.id, budget);
   }
 
@@ -351,8 +361,11 @@ export class UpdateBudgetPricingUseCase {
             lineItem.subtotal = lineItem.quantity * newPrice;
             lineItem.updatedAt = new Date();
             
-            // Agregar nota sobre la fuente del precio
-            lineItem.notes = `Precio actualizado desde ${priceSource} el ${new Date().toLocaleDateString()}`;
+            // Agregar nota en metadata sobre la fuente del precio
+            lineItem.metadata = {
+              ...lineItem.metadata,
+              notes: `Precio actualizado desde ${priceSource} el ${new Date().toLocaleDateString()}`
+            };
 
             await this.budgetLineItemRepository.update(lineItem.id, lineItem);
             result.updatedCount++;
@@ -360,7 +373,8 @@ export class UpdateBudgetPricingUseCase {
         }
 
       } catch (error) {
-        result.errors.push(`Error actualizando precio de ${lineItem.materialId}: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        result.errors.push(`Error actualizando precio de ${lineItem.materialId}: ${errorMessage}`);
       }
     }
 
@@ -430,6 +444,10 @@ export class UpdateBudgetPricingUseCase {
           message: `Se actualizaron ${priceUpdateResult.updatedCount} materiales en "${budget.name}". ` +
                   `Impacto total: ${totalImpact.difference >= 0 ? '+' : ''}$${totalImpact.difference.toFixed(2)} ` +
                   `(${totalImpact.percentageChange >= 0 ? '+' : ''}${totalImpact.percentageChange.toFixed(1)}%)`,
+          content: `Se actualizaron ${priceUpdateResult.updatedCount} materiales en el presupuesto "${budget.name}". ` +
+                  `El impacto total fue de ${totalImpact.difference >= 0 ? '+' : ''}$${totalImpact.difference.toFixed(2)} ` +
+                  `(${totalImpact.percentageChange >= 0 ? '+' : ''}${totalImpact.percentageChange.toFixed(1)}%). ` +
+                  `Revise los cambios y considere notificar a su cliente si es necesario.`,
           priority: Math.abs(totalImpact.percentageChange) > 10 ? 
                    NotificationPriority.HIGH : NotificationPriority.MEDIUM,
           data: {
@@ -438,6 +456,9 @@ export class UpdateBudgetPricingUseCase {
             totalImpact
           },
           isRead: false,
+          emailSent: false,
+          pushSent: false,
+          smsSent: false,
           createdAt: new Date()
         };
 
@@ -457,6 +478,11 @@ export class UpdateBudgetPricingUseCase {
                     `${significantChange.changeType === 'INCREASE' ? 'Aumento' : 'Disminución'} ` +
                     `del ${Math.abs(significantChange.changePercentage).toFixed(1)}% ` +
                     `($${significantChange.oldPrice.toFixed(2)} → $${significantChange.newPrice.toFixed(2)})`,
+            content: `Se detectó un cambio significativo en el precio del material ${significantChange.materialName}. ` +
+                    `El precio ${significantChange.changeType === 'INCREASE' ? 'aumentó' : 'disminuyó'} ` +
+                    `un ${Math.abs(significantChange.changePercentage).toFixed(1)}% ` +
+                    `desde $${significantChange.oldPrice.toFixed(2)} hasta $${significantChange.newPrice.toFixed(2)}. ` +
+                    `Considere revisar la competitividad de su presupuesto.`,
             priority: NotificationPriority.HIGH,
             data: {
               budgetId: budget.id,
@@ -464,6 +490,9 @@ export class UpdateBudgetPricingUseCase {
               priceChange: significantChange
             },
             isRead: false,
+            emailSent: false,
+            pushSent: false,
+            smsSent: false,
             createdAt: new Date()
           };
 

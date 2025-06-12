@@ -83,7 +83,7 @@ export class CalculationBudgetService {
     // 10. Crear el presupuesto
     const budget: CalculationBudget = {
       id: budgetId,
-      name: `Presupuesto - ${calculationResult.templateName || 'Sin plantilla'}`,
+      name: `Presupuesto - ${calculationResult.name || calculationResult.calculationTemplateId || 'Sin plantilla'}`,
       description: `Generado automáticamente desde cálculo: ${calculationResult.id}`,
       status: CalculationBudgetStatus.DRAFT,
       budgetType: options.budgetType,

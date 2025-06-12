@@ -23,7 +23,7 @@ export enum ProfessionalService {
   }
   
   export interface ProfessionalCost {
-    type(type: any, professionalFees: ProfessionalFees): unknown;
+    type: any;
     amount: number;
     percentage: number;
     id: string;

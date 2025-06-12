@@ -444,7 +444,7 @@ export class ApplyBudgetTemplateUseCase {
 
     // Actualizar costos existentes
     for (const cost of professionalCosts) {
-      const templateRate = this.getTemplateFeesRate(String(cost.type), template.professionalFees);
+      const templateRate = this.getTemplateFeesRate(String(cost.costType), template.professionalFees);
       
       if (templateRate > 0) {
         const updatedCost: ProfessionalCost = {
@@ -627,8 +627,9 @@ export class ApplyBudgetTemplateUseCase {
   }
 
   private getApplicableLaborRate(item: BudgetLineItem, laborRates: any): number {
-    // Determinar tasa de mano de obra aplicable
-    const laborType = item.laborType?.toLowerCase() || '';
+    // Determinar tasa de mano de obra aplicable usando acceso seguro a la propiedad
+    const itemAny = item as any;
+    const laborType = (itemAny.laborType?.toLowerCase() || '');
     
     if (laborType.includes('maestro')) return laborRates.masterBuilder || 0;
     if (laborType.includes('albañil')) return laborRates.builder || 0;

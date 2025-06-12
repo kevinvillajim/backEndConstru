@@ -164,8 +164,61 @@ export class TypeOrmCalculationResultRepository
 
 		if (!result) return null;
 
+		// Preparar datos para actualización con conversión de tipos apropiada
+		const updateData: any = {};
+
+		// Copiar campos string directamente
+		if (resultData.calculationTemplateId !== undefined) {
+			updateData.calculationTemplateId = resultData.calculationTemplateId;
+		}
+		if (resultData.projectId !== undefined) {
+			updateData.projectId = resultData.projectId;
+		}
+		if (resultData.userId !== undefined) {
+			updateData.userId = resultData.userId;
+		}
+		if (resultData.name !== undefined) {
+			updateData.name = resultData.name;
+		}
+		if (resultData.notes !== undefined) {
+			updateData.notes = resultData.notes;
+		}
+		if (resultData.errorMessage !== undefined) {
+			updateData.errorMessage = resultData.errorMessage;
+		}
+
+		// Convertir campos JSON - mantener como objetos
+		if (resultData.inputParameters !== undefined) {
+			updateData.inputParameters = resultData.inputParameters || {};
+		}
+		if (resultData.results !== undefined) {
+			updateData.results = resultData.results || {};
+		}
+
+		// Convertir campos booleanos
+		if (resultData.isSaved !== undefined) {
+			updateData.isSaved = this.ensureBoolean(resultData.isSaved);
+		}
+		if (resultData.wasSuccessful !== undefined) {
+			updateData.wasSuccessful = this.ensureBoolean(resultData.wasSuccessful);
+		}
+		if (resultData.usedInProject !== undefined) {
+			updateData.usedInProject = this.ensureBoolean(resultData.usedInProject);
+		}
+		if (resultData.ledToMaterialOrder !== undefined) {
+			updateData.ledToMaterialOrder = this.ensureBoolean(resultData.ledToMaterialOrder);
+		}
+		if (resultData.ledToBudget !== undefined) {
+			updateData.ledToBudget = this.ensureBoolean(resultData.ledToBudget);
+		}
+
+		// Convertir campos numéricos
+		if (resultData.executionTimeMs !== undefined) {
+			updateData.executionTimeMs = this.ensureNumber(resultData.executionTimeMs);
+		}
+
 		// Actualizar campos
-		Object.assign(result, resultData);
+		Object.assign(result, updateData);
 
 		const updatedResult = await this.repository.save(result);
 		return this.toDomainModel(updatedResult);
@@ -178,8 +231,9 @@ export class TypeOrmCalculationResultRepository
 			calculationTemplateId: entity.calculationTemplateId,
 			projectId: entity.projectId,
 			userId: entity.userId,
-			inputParameters: entity.inputParameters,
-			results: entity.results,
+			// Mantener como objetos para el modelo de dominio
+			inputParameters: entity.inputParameters || {},
+			results: entity.results || {},
 			isSaved: entity.isSaved,
 			name: entity.name,
 			notes: entity.notes,
@@ -197,22 +251,51 @@ export class TypeOrmCalculationResultRepository
 	private toEntity(model: CreateCalculationResultDTO): CalculationResultEntity {
 		const entity = new CalculationResultEntity();
 
-		// Copiar campos
+		// Copiar campos básicos
 		entity.calculationTemplateId = model.calculationTemplateId;
 		entity.projectId = model.projectId;
 		entity.userId = model.userId;
-		entity.inputParameters = model.inputParameters;
-		entity.results = model.results;
-		entity.isSaved = model.isSaved;
 		entity.name = model.name;
 		entity.notes = model.notes;
-		entity.executionTimeMs = model.executionTimeMs;
-		entity.wasSuccessful = model.wasSuccessful;
 		entity.errorMessage = model.errorMessage;
-		entity.usedInProject = model.usedInProject;
-		entity.ledToMaterialOrder = model.ledToMaterialOrder;
-		entity.ledToBudget = model.ledToBudget;
+
+		// Los campos JSON se mantienen como objetos
+		entity.inputParameters = model.inputParameters || {};
+		entity.results = model.results || {};
+
+		// Convertir campos booleanos y numéricos de forma segura
+		entity.isSaved = this.ensureBoolean(model.isSaved);
+		entity.executionTimeMs = this.ensureNumber(model.executionTimeMs);
+		entity.wasSuccessful = this.ensureBoolean(model.wasSuccessful);
+		entity.usedInProject = this.ensureBoolean(model.usedInProject);
+		entity.ledToMaterialOrder = this.ensureBoolean(model.ledToMaterialOrder);
+		entity.ledToBudget = this.ensureBoolean(model.ledToBudget);
 
 		return entity;
+	}
+
+	// Métodos auxiliares para conversión segura de tipos
+	private ensureBoolean(value: any): boolean {
+		if (typeof value === 'boolean') {
+			return value;
+		}
+		if (typeof value === 'string') {
+			return value.toLowerCase() === 'true' || value === '1';
+		}
+		if (typeof value === 'number') {
+			return value !== 0;
+		}
+		return false;
+	}
+
+	private ensureNumber(value: any): number {
+		if (typeof value === 'number') {
+			return value;
+		}
+		if (typeof value === 'string') {
+			const parsed = parseFloat(value);
+			return isNaN(parsed) ? 0 : parsed;
+		}
+		return 0;
 	}
 }

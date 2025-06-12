@@ -635,3 +635,6 @@ export class BudgetValidator {
     }
   };
 }
+
+// ✅ Exportar la función que se necesita en budgetRoutes.ts
+export const validateBudgetStatusUpdate = BudgetValidator.updateBudgetStatus();

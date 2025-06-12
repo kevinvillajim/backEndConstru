@@ -1,6 +1,5 @@
 // src/domain/models/calculation/CalculationResult.ts
 export type CalculationResult = {
-    [x: string]: string;
 	id: string;
 	calculationTemplateId: string;
 	projectId?: string;

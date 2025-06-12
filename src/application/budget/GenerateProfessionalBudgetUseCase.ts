@@ -9,6 +9,7 @@ import { CalculationBudget } from "../../domain/models/calculation/CalculationBu
 import { BudgetLineItem } from "../../domain/models/calculation/BudgetLineItem";
 import { ProfessionalCost } from "../../domain/models/calculation/ProfessionalCost";
 import { User } from "../../domain/models/user/User";
+import { ProjectBudget } from "../../domain/models/project/ProjectBudget";
 import path from "path";
 import fs from "fs";
 
@@ -208,10 +209,18 @@ export class GenerateProfessionalBudgetUseCase {
     const previewPath = path.join(previewDir, previewFilename);
 
     if (format === 'PDF') {
-      await this.pdfGenerationService.generateBudgetPdf(budgetData.budget, {
+      // Convertir CalculationBudget a ProjectBudget para el servicio PDF
+      const projectBudget = this.convertToProjectBudget(budgetData.budget);
+      await this.pdfGenerationService.generateBudgetPdf(projectBudget, {
         outputPath: previewPath,
-        companyInfo: documentData.companyInfo,
-        clientInfo: documentData.clientInfo
+        companyInfo: {
+          name: documentData.companyInfo.name,
+          address: documentData.companyInfo.contact.address || '',
+          phone: documentData.companyInfo.contact.phone || '',
+          email: documentData.companyInfo.contact.email || '',
+          ruc: ''
+        },
+        includeDetails: documentData.documentSettings.includeCalculationDetails || false
       });
     } else {
       // Generar HTML para vista previa
@@ -415,14 +424,19 @@ export class GenerateProfessionalBudgetUseCase {
   }
 
   private async generatePDFDocument(documentData: any, outputPath: string): Promise<void> {
-    // Usar el servicio de PDF existente
-    await this.pdfGenerationService.generateBudgetPdf(documentData.budget, {
+    // Convertir CalculationBudget a ProjectBudget para el servicio PDF
+    const projectBudget = this.convertToProjectBudget(documentData.budget);
+    
+    await this.pdfGenerationService.generateBudgetPdf(projectBudget, {
       outputPath,
-      companyInfo: documentData.companyInfo,
-      clientInfo: documentData.clientInfo,
-      includeDetails: documentData.documentSettings.includeCalculationDetails,
-      documentNumber: documentData.documentNumber,
-      validUntil: documentData.validUntil
+      companyInfo: {
+        name: documentData.companyInfo.name,
+        address: documentData.companyInfo.contact.address || '',
+        phone: documentData.companyInfo.contact.phone || '',
+        email: documentData.companyInfo.contact.email || '',
+        ruc: documentData.clientInfo.ruc || ''
+      },
+      includeDetails: documentData.documentSettings.includeCalculationDetails || false
     });
   }
 
@@ -454,9 +468,11 @@ export class GenerateProfessionalBudgetUseCase {
 
     for (const email of deliveryConfig.recipientEmails) {
       try {
+        // Preparar attachments leyendo el contenido de los archivos
         const attachments = generatedFiles.map(file => ({
           filename: file.filename,
-          path: file.path
+          content: fs.readFileSync(file.path),
+          contentType: this.getContentType(file.format)
         }));
 
         const subject = deliveryConfig.emailSubject || 
@@ -468,7 +484,7 @@ export class GenerateProfessionalBudgetUseCase {
         await this.emailService.sendEmail({
           to: email,
           subject,
-          htmlContent: message,
+          html: message,
           attachments
         });
 
@@ -594,6 +610,34 @@ export class GenerateProfessionalBudgetUseCase {
 
   private generateSecureToken(): string {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
+  private convertToProjectBudget(calculationBudget: CalculationBudget): ProjectBudget {
+    return {
+      id: calculationBudget.id,
+      name: calculationBudget.name,
+      description: calculationBudget.description,
+      status: 'DRAFT' as any, // Mapear status apropiadamente
+      version: calculationBudget.version,
+      subtotal: calculationBudget.subtotal,
+      taxPercentage: calculationBudget.taxPercentage,
+      tax: calculationBudget.taxAmount, // Mapear taxAmount a tax
+      total: calculationBudget.total,
+      projectId: calculationBudget.projectId,
+      createdAt: calculationBudget.createdAt,
+      updatedAt: calculationBudget.updatedAt
+    };
+  }
+
+  private getContentType(format: string): string {
+    const contentTypes: { [key: string]: string } = {
+      'PDF': 'application/pdf',
+      'EXCEL': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'WORD': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'HTML': 'text/html'
+    };
+    
+    return contentTypes[format] || 'application/octet-stream';
   }
 
   // Plantillas predeterminadas

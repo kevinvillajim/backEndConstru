@@ -262,6 +262,7 @@ export class TypeOrmCalculationBudgetRepository implements CalculationBudgetRepo
         specifications: item.specifications,
         itemType: item.itemType,
         source: item.source,
+        laborType: item.laborType, // ⭐ AGREGAR ESTA LÍNEA QUE FALTA
         calculationBudgetId: item.calculationBudgetId,
         sourceCalculationId: item.sourceCalculationId,
         calculationParameterKey: item.calculationParameterKey,
