@@ -29,6 +29,8 @@ export interface CalculationBudget {
 
   // Relaciones
   projectId: string;
+  projectType: string; // AGREGAR esta línea
+  customFields?: Record<string, any>;
   userId: string;
   calculationResultId?: string;
   budgetTemplateId?: string;

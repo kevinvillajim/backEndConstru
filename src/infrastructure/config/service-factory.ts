@@ -62,6 +62,8 @@ import { BudgetTemplateService } from "../../domain/services/BudgetTemplateServi
 import { BudgetScheduleIntegrationService } from '../../domain/services/BudgetScheduleIntegrationService';
 import { CalculationScheduleService } from '../../domain/services/CalculationScheduleService';
 import { ExternalIntegrationService } from '../../domain/services/ExternalIntegrationService';
+import { ResourceOptimizationService } from "../../domain/services/ResourceOptimizationService";
+import { WeatherImpactService } from "../../domain/services/WeatherImpactService";
 
 
 // ============= SERVICIOS DE INFRAESTRUCTURA =============
@@ -282,9 +284,14 @@ let emailService: EmailServiceImpl;
 let pushNotificationService: PushNotificationServiceImpl;
 let pdfGenerationService: PdfGenerationService;
 let realtimeAnalyticsService: RealtimeAnalyticsService;
-let calculationBudgetService: CalculationBudgetService | null = null;
-let budgetPricingService: BudgetPricingService | null = null;
-let budgetTemplateService: BudgetTemplateService | null = null;
+let calculationBudgetService: CalculationBudgetService;
+let budgetPricingService: BudgetPricingService;
+let budgetTemplateService: BudgetTemplateService;
+let budgetScheduleIntegrationService: BudgetScheduleIntegrationService;
+let calculationScheduleService: CalculationScheduleService;
+let externalIntegrationService: ExternalIntegrationService;
+let resourceOptimizationService: ResourceOptimizationService;
+let weatherImpactService: WeatherImpactService;
 
 
 // ============= VARIABLES GLOBALES DE CASOS DE USO =============
@@ -315,10 +322,15 @@ let shareUserTemplateUseCase: ShareUserTemplateUseCase;
 let changeTemplateStatusUseCase: ChangeTemplateStatusUseCase;
 let getPublicUserTemplatesUseCase: GetPublicUserTemplatesUseCase;
 let getUserTemplateStatsUseCase: GetUserTemplateStatsUseCase;
-let createCalculationBudgetUseCase: CreateCalculationBudgetUseCase | null = null;
-let updateBudgetPricingUseCase: UpdateBudgetPricingUseCase | null = null;
-let generateProfessionalBudgetUseCase: GenerateProfessionalBudgetUseCase | null = null;
-let applyBudgetTemplateUseCase: ApplyBudgetTemplateUseCase | null = null;
+let createCalculationBudgetUseCase: CreateCalculationBudgetUseCase;
+let updateBudgetPricingUseCase: UpdateBudgetPricingUseCase;
+let generateProfessionalBudgetUseCase: GenerateProfessionalBudgetUseCase;
+let applyBudgetTemplateUseCase: ApplyBudgetTemplateUseCase;
+let generateScheduleFromBudgetUseCase: GenerateScheduleFromBudgetUseCase;
+let optimizeProjectScheduleUseCase: OptimizeProjectScheduleUseCase;
+let trackDailyProgressUseCase: TrackDailyProgressUseCase;
+let generateScheduleReportsUseCase: GenerateScheduleReportsUseCase;
+let predictProjectDelaysScheduleUseCase: PredictProjectDelaysScheduleUseCase;
 
 // ============= OTROS CASOS DE USO =============
 let generateProjectScheduleUseCase: GenerateProjectScheduleUseCase;
@@ -350,6 +362,9 @@ let reviewPromotionRequestUseCase: ReviewPromotionRequestUseCase;
 let promoteTemplateToVerifiedUseCase: PromoteTemplateToVerifiedUseCase;
 let getTemplateAnalyticsUseCase: GetTemplateAnalyticsUseCase;
 let getGlobalTemplateStatsUseCase: GetGlobalTemplateStatsUseCase;
+let calculationScheduleController: CalculationScheduleController;
+let scheduleAnalyticsController: ScheduleAnalyticsController;
+let resourceManagementController: ResourceManagementController;
 
 
 // ============= VARIABLES GLOBALES DE CONTROLADORES =============
@@ -418,6 +433,9 @@ let calculateMaterialTemplateRankingsUseCase: CalculateMaterialTemplateRankingsU
 
 // ============= VARIABLES GLOBALES DE JOBS =============
 let enhancedRankingJob: EnhancedRankingCalculationJob;
+let scheduleUpdateJob: ScheduleUpdateJob;
+let performanceAnalysisJob: PerformanceAnalysisJob;
+let weatherUpdateJob: WeatherUpdateJob;
 
 export function initializeServices() {
 	console.log("Initializing services directly...");
@@ -472,6 +490,9 @@ export function initializeServices() {
 		scheduleActivityRepository = new TypeOrmScheduleActivityRepository();
 		resourceAssignmentRepository = new TypeOrmResourceAssignmentRepository();
 		progressTrackingRepository = new TypeOrmProgressTrackingRepository();
+		weatherFactorRepository = new TypeOrmWeatherFactorRepository();
+		workforceRepository = new TypeOrmWorkforceRepository();
+		equipmentRepository = new TypeOrmEquipmentRepository();
 
 		// ============= INICIALIZAR SERVICIOS =============
 		authService = new AuthService();
@@ -488,6 +509,30 @@ export function initializeServices() {
 		calculationBudgetService = new CalculationBudgetService();
 		budgetPricingService = new BudgetPricingService();
 		budgetTemplateService = new BudgetTemplateService();
+		resourceOptimizationService = new ResourceOptimizationService();
+		weatherImpactService = new WeatherImpactService();
+		budgetScheduleIntegrationService = new BudgetScheduleIntegrationService(
+			calculationBudgetRepository,
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			budgetLineItemRepository,
+			notificationService
+		);
+		
+		calculationScheduleService = new CalculationScheduleService(
+			calculationTemplateRepository,
+			calculationResultRepository,
+			scheduleTemplateRepository,
+			scheduleActivityRepository
+		);
+		
+		externalIntegrationService = new ExternalIntegrationService(
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			materialRepository,
+			notificationService
+		);
+		
 
 		// Servicios de infraestructura
 		emailService = new EmailServiceImpl(
@@ -650,6 +695,36 @@ export function initializeServices() {
 			templateRankingRepository,
 			promotionRequestRepository,
 			authorCreditRepository
+		);
+		generateScheduleFromBudgetUseCase = new GenerateScheduleFromBudgetUseCase(
+			calculationBudgetRepository,
+			calculationScheduleRepository,
+			scheduleTemplateRepository,
+			scheduleActivityRepository
+		);
+		
+		optimizeProjectScheduleUseCase = new OptimizeProjectScheduleUseCase(
+			calculationScheduleRepository,
+			scheduleActivityRepository
+		);
+		
+		trackDailyProgressUseCase = new TrackDailyProgressUseCase(
+			scheduleActivityRepository,
+			progressTrackingRepository,
+			notificationService
+		);
+		
+		generateScheduleReportsUseCase = new GenerateScheduleReportsUseCase(
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			progressTrackingRepository
+		);
+		
+		predictProjectDelaysScheduleUseCase = new PredictProjectDelaysScheduleUseCase(
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			progressTrackingRepository,
+			weatherFactorRepository
 		);
 
 		// ============= INICIALIZAR OTROS CASOS DE USO =============
@@ -1032,9 +1107,57 @@ export function initializeServices() {
 			applyBudgetTemplateUseCase
 		  );
 
+		  calculationScheduleController = new CalculationScheduleController(
+			generateScheduleFromBudgetUseCase,
+			optimizeProjectScheduleUseCase,
+			trackDailyProgressUseCase,
+			predictProjectDelaysScheduleUseCase,
+			budgetScheduleIntegrationService,
+			calculationScheduleService,
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			scheduleTemplateRepository
+		);
+		
+		scheduleAnalyticsController = new ScheduleAnalyticsController(
+			generateScheduleReportsUseCase,
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			progressTrackingRepository
+		);
+		
+		resourceManagementController = new ResourceManagementController(
+			scheduleActivityRepository,
+			resourceAssignmentRepository,
+			workforceRepository,
+			equipmentRepository,
+			resourceOptimizationService
+		);
+
 		// ============= INICIALIZAR JOBS =============
 		enhancedRankingJob = initializeRankingJobs();
 		console.log("Enhanced ranking calculation jobs initialized");
+
+		scheduleUpdateJob = new ScheduleUpdateJob(
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			progressTrackingRepository,
+			notificationService,
+			budgetScheduleIntegrationService
+		);
+		
+		performanceAnalysisJob = new PerformanceAnalysisJob(
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			progressTrackingRepository,
+			notificationService
+		);
+		
+		weatherUpdateJob = new WeatherUpdateJob(
+			weatherFactorRepository,
+			calculationScheduleRepository,
+			scheduleActivityRepository,
+			notificationService
 
 		console.log("Services initialized successfully");
 	} catch (error) {
@@ -1916,6 +2039,124 @@ export function getJobMetrics() {
     }
     
     return enhancedRankingJob.getMetrics();
+}
+
+export function getWeatherFactorRepository() {
+    if (!weatherFactorRepository)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return weatherFactorRepository;
+}
+
+export function getWorkforceRepository() {
+    if (!workforceRepository)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return workforceRepository;
+}
+
+export function getEquipmentRepository() {
+    if (!equipmentRepository)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return equipmentRepository;
+}
+
+// Schedule Services
+export function getBudgetScheduleIntegrationService() {
+    if (!budgetScheduleIntegrationService)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return budgetScheduleIntegrationService;
+}
+
+export function getCalculationScheduleService() {
+    if (!calculationScheduleService)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return calculationScheduleService;
+}
+
+export function getExternalIntegrationService() {
+    if (!externalIntegrationService)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return externalIntegrationService;
+}
+
+export function getResourceOptimizationService() {
+    if (!resourceOptimizationService)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return resourceOptimizationService;
+}
+
+export function getWeatherImpactService() {
+    if (!weatherImpactService)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return weatherImpactService;
+}
+
+// Schedule Use Cases
+export function getGenerateScheduleFromBudgetUseCase() {
+    if (!generateScheduleFromBudgetUseCase)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return generateScheduleFromBudgetUseCase;
+}
+
+export function getOptimizeProjectScheduleUseCase() {
+    if (!optimizeProjectScheduleUseCase)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return optimizeProjectScheduleUseCase;
+}
+
+export function getTrackDailyProgressUseCase() {
+    if (!trackDailyProgressUseCase)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return trackDailyProgressUseCase;
+}
+
+export function getGenerateScheduleReportsUseCase() {
+    if (!generateScheduleReportsUseCase)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return generateScheduleReportsUseCase;
+}
+
+export function getPredictProjectDelaysScheduleUseCase() {
+    if (!predictProjectDelaysScheduleUseCase)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return predictProjectDelaysScheduleUseCase;
+}
+
+// Schedule Controllers
+export function getCalculationScheduleController() {
+    if (!calculationScheduleController)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return calculationScheduleController;
+}
+
+export function getScheduleAnalyticsController() {
+    if (!scheduleAnalyticsController)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return scheduleAnalyticsController;
+}
+
+export function getResourceManagementController() {
+    if (!resourceManagementController)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return resourceManagementController;
+}
+
+// Schedule Jobs
+export function getScheduleUpdateJob() {
+    if (!scheduleUpdateJob)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return scheduleUpdateJob;
+}
+
+export function getPerformanceAnalysisJob() {
+    if (!performanceAnalysisJob)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return performanceAnalysisJob;
+}
+
+export function getWeatherUpdateJob() {
+    if (!weatherUpdateJob)
+        throw new Error("Services not initialized. Call initializeServices() first.");
+    return weatherUpdateJob;
 }
 
 // ============= INTEGRACIÓN CON TRACKING MIDDLEWARE =============

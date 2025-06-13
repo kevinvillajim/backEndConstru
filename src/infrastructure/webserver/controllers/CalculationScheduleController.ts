@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { GenerateScheduleFromBudgetUseCase } from '../../../application/schedule/GenerateScheduleFromBudgetUseCase';
 import { OptimizeProjectScheduleUseCase } from '../../../application/schedule/OptimizeProjectScheduleUseCase';
 import { TrackDailyProgressUseCase } from '../../../application/schedule/TrackDailyProgressUseCase';
-import { PredictProjectDelaysUseCase } from '../../../application/schedule/PredictProjectDelaysScheduleUseCase';
+import { PredictProjectDelaysScheduleUseCase } from '../../../application/schedule/PredictProjectDelaysScheduleUseCase';
 import { BudgetScheduleIntegrationService } from '../../../domain/services/BudgetScheduleIntegrationService';
 import { CalculationScheduleService } from '../../../domain/services/CalculationScheduleService';
 import { CalculationScheduleRepository } from '../../../domain/repositories/CalculationScheduleRepository';
@@ -15,7 +15,7 @@ export class CalculationScheduleController {
     private generateScheduleUseCase: GenerateScheduleFromBudgetUseCase,
     private optimizeScheduleUseCase: OptimizeProjectScheduleUseCase,
     private trackProgressUseCase: TrackDailyProgressUseCase,
-    private predictDelaysUseCase: PredictProjectDelaysUseCase,
+    private predictDelaysUseCase: PredictProjectDelaysScheduleUseCase,
     private budgetScheduleService: BudgetScheduleIntegrationService,
     private calculationScheduleService: CalculationScheduleService,
     private scheduleRepository: CalculationScheduleRepository,
