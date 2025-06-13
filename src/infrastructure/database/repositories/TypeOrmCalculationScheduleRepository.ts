@@ -27,6 +27,28 @@ export class TypeOrmCalculationScheduleRepository implements CalculationSchedule
     });
   }
 
+  async findByFilters(
+    filters: any, 
+    options: { page: number; limit: number; sortBy: string; sortOrder: "asc" | "desc"; }
+  ): Promise<CalculationScheduleEntity[]> {
+    const queryBuilder = this.repository.createQueryBuilder('schedule');
+    
+    // Aplicar filtros
+    if (filters.status) {
+      queryBuilder.andWhere('schedule.status = :status', { status: filters.status });
+    }
+    if (filters.isActive !== undefined) {
+      queryBuilder.andWhere('schedule.isActive = :isActive', { isActive: filters.isActive });
+    }
+    
+    // Aplicar paginación y ordenamiento
+    return queryBuilder
+      .orderBy(`schedule.${options.sortBy}`, options.sortOrder.toUpperCase() as 'ASC' | 'DESC')
+      .skip((options.page - 1) * options.limit)
+      .take(options.limit)
+      .getMany();
+  }
+
   async findByProjectId(projectId: string): Promise<CalculationScheduleEntity[]> {
     return await this.repository.find({
       where: { projectId },

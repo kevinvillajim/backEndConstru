@@ -10,6 +10,12 @@ export class TypeOrmProgressTrackingRepository implements ProgressTrackingReposi
   constructor() {
     this.repository = AppDataSource.getRepository(ProgressTrackingEntity);
   }
+  findByFilters(filters: any): Promise<ProgressTrackingEntity[]> {
+    throw new Error('Method not implemented.');
+  }
+  deleteOlderThan(date: Date): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
 
   async findById(id: string): Promise<ProgressTrackingEntity | null> {
     return await this.repository.findOne({

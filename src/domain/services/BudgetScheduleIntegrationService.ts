@@ -54,7 +54,7 @@ export class BudgetScheduleIntegrationService {
       }
 
       // 2. Obtener datos actuales
-      const budgetItems = await this.lineItemRepository.findByBudgetId(syncRequest.budgetId);
+      const budgetItems = await this.lineItemRepository.findByBudget(syncRequest.budgetId);
       const activities = await this.activityRepository.findByScheduleId(syncRequest.scheduleId);
 
       // 3. Detectar diferencias y conflictos
@@ -93,7 +93,7 @@ export class BudgetScheduleIntegrationService {
         conflictsDetected: 0,
         conflictsResolved: 0,
         warnings: [],
-        errors: [error.message],
+        errors: [(error as Error).message],
         summary: { budgetChanges: [], scheduleChanges: [], newItemsCreated: [] }
       };
     }
@@ -107,7 +107,7 @@ export class BudgetScheduleIntegrationService {
       throw new Error('Budget or Schedule not found');
     }
 
-    const budgetItems = await this.lineItemRepository.findByBudgetId(budgetId);
+    const budgetItems = await this.lineItemRepository.findByBudget(budgetId);
     const activities = await this.activityRepository.findByScheduleId(scheduleId);
 
     return {
@@ -144,7 +144,7 @@ export class BudgetScheduleIntegrationService {
     }
   }
 
-  private detectDifferences(budgetItems: any[], activities: any[]): any[] {
+  private async detectDifferences(budgetItems: any[], activities: any[]): Promise<any[]> {
     const differences = [];
 
     // Mapear ítems de presupuesto con actividades
@@ -231,7 +231,7 @@ export class BudgetScheduleIntegrationService {
           result.syncedItems++;
         }
       } catch (error) {
-        result.errors.push(`Error syncing item ${item.id}: ${error.message}`);
+        result.errors.push(`Error syncing item ${item.id}: ${(error as Error).message}`);
         result.success = false;
       }
     }
@@ -273,7 +273,7 @@ export class BudgetScheduleIntegrationService {
           result.syncedItems++;
         }
       } catch (error) {
-        result.errors.push(`Error syncing activity ${activity.id}: ${error.message}`);
+        result.errors.push(`Error syncing activity ${activity.id}: ${(error as Error).message}`);
         result.success = false;
       }
     }

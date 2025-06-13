@@ -6,6 +6,8 @@ export interface ResourceAssignmentRepository {
   findByActivityId(activityId: string): Promise<ResourceAssignmentEntity[]>;
   findByWorkforceId(workforceId: string): Promise<ResourceAssignmentEntity[]>;
   findByEquipmentId(equipmentId: string): Promise<ResourceAssignmentEntity[]>;
+  findByScheduleId(scheduleId: string): Promise<ResourceAssignmentEntity[]>;
+  findByResource(resourceId: string, resourceType: string): Promise<ResourceAssignmentEntity[]>;
   findResourceConflicts(resourceId: string, resourceType: 'workforce' | 'equipment', dateRange: { start: Date; end: Date }): Promise<ResourceAssignmentEntity[]>;
   findActiveAssignments(): Promise<ResourceAssignmentEntity[]>;
   getResourceUtilization(dateRange: { start: Date; end: Date }, resourceType?: 'workforce' | 'equipment'): Promise<any[]>;

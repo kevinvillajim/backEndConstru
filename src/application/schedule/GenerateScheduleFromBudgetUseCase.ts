@@ -5,6 +5,9 @@ import { ScheduleTemplateRepository } from '../../domain/repositories/ScheduleTe
 import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
 import { CalculationSchedule } from '../../domain/models/calculation/CalculationSchedule';
 import { ScheduleActivity, ActivityType, ActivityStatus, ActivityPriority, ConstructionTrade } from '../../domain/models/calculation/ScheduleActivity';
+import { CalculationScheduleEntity } from '../../infrastructure/database/entities/CalculationScheduleEntity';
+import { ScheduleActivityEntity } from '../../infrastructure/database/entities/ScheduleActivityEntity';
+import { ScheduleStatus } from '../../../src/infrastructure/database/entities/CalculationScheduleEntity';
 
 export interface GenerateScheduleRequest {
   budgetId: string;

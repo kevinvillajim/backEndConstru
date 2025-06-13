@@ -77,7 +77,7 @@ export class WeatherUpdateJob {
         userId: 'system',
         type: 'ERROR',
         title: 'Error en Actualización Meteorológica',
-        message: `Error al actualizar datos meteorológicos: ${error.message}`,
+        message: `Error al actualizar datos meteorológicos: ${(error as Error).message}`,
         priority: 'HIGH',
         relatedEntityType: 'SYSTEM_JOB',
         relatedEntityId: 'weather_update_job'

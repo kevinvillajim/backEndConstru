@@ -9,6 +9,7 @@ import { CalculationScheduleService } from '../../../domain/services/Calculation
 import { CalculationScheduleRepository } from '../../../domain/repositories/CalculationScheduleRepository';
 import { ScheduleActivityRepository } from '../../../domain/repositories/ScheduleActivityRepository';
 import { ScheduleTemplateRepository } from '../../../domain/repositories/ScheduleTemplateRepository';
+import { ActivityStatus } from '../../../domain/models/calculation/ScheduleActivity';
 
 export class CalculationScheduleController {
   constructor(
@@ -537,7 +538,13 @@ export class CalculationScheduleController {
       costPerformanceIndex: totalActualCost > 0 ? totalEarnedValue / totalActualCost : 1,
       totalPlannedValue: totalPlannedCost,
       totalEarnedValue: totalEarnedValue,
-      totalActualCost: totalActualCost
+      totalActualCost: totalActualCost,
+      summary: {
+        // Usar enum values para comparaciones correctas
+        completed: activities.filter(a => a.status === ActivityStatus.COMPLETED).length,
+        inProgress: activities.filter(a => a.status === ActivityStatus.IN_PROGRESS).length,
+        notStarted: activities.filter(a => a.status === ActivityStatus.NOT_STARTED).length
+      }
     };
   }
 

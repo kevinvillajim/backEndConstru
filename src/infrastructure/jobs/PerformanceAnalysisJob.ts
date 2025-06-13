@@ -3,6 +3,7 @@ import { CalculationScheduleRepository } from '../../domain/repositories/Calcula
 import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
 import { ProgressTrackingRepository } from '../../domain/repositories/ProgressTrackingRepository';
 import { NotificationService } from '../../domain/services/NotificationService';
+import { CalculationScheduleEntity } from '@infrastructure/database/entities/CalculationScheduleEntity';
 
 export interface PerformanceAnalysisResult {
   scheduleId: string;
@@ -40,10 +41,17 @@ export class PerformanceAnalysisJob {
     
     try {
       // 1. Obtener cronogramas activos
-      const activeSchedules = await this.scheduleRepository.findByFilters({
-        status: ['ACTIVE', 'ON_HOLD', 'DELAYED'],
-        isActive: true
-      });
+      const activeSchedules = await this.scheduleRepository.findByFilters(
+        { status: 'ACTIVE', isActive: true },
+        { page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' } // AGREGAR segundo parámetro
+      );
+
+      if (Array.isArray(activeSchedules)) { // VERIFICAR que sea array antes de usar
+        console.log(`Found ${activeSchedules.length} active schedules to update`);
+        for (const schedule of activeSchedules) {
+          await this.updateSchedule(schedule);
+        }
+      }
 
       console.log(`Analyzing performance for ${activeSchedules.length} schedules`);
 
@@ -77,6 +85,9 @@ export class PerformanceAnalysisJob {
         relatedEntityId: 'performance_analysis_job'
       });
     }
+  }
+  updateSchedule(schedule: CalculationScheduleEntity) {
+    throw new Error('Method not implemented.');
   }
 
   private async analyzeSchedulePerformance(schedule: any): Promise<PerformanceAnalysisResult> {

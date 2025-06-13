@@ -63,6 +63,16 @@ export interface NotificationService {
 		options: NotificationOptions
 	): Promise<NotificationResult[]>;
 
+	createNotification(notification: {
+		userId: string;
+		type: string;
+		title: string;
+		message: string;
+		priority: string;
+		relatedEntityType?: string;
+		relatedEntityId?: string;
+	  }): Promise<void>;
+
 	/**
 	 * Envía una notificación a todos los usuarios con un rol específico
 	 */
@@ -92,8 +102,7 @@ export interface NotificationService {
 	/**
 	 * Elimina una notificación
 	 */
-	deleteNotification(notificationId: string, userId: string): Promise<boolean>;
-
+	deleteNotification(id: string): Promise<boolean>;
 	/**
 	 * Elimina todas las notificaciones de un usuario
 	 */

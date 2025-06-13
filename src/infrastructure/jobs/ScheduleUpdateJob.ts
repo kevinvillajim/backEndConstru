@@ -19,10 +19,10 @@ export class ScheduleUpdateJob {
     
     try {
       // 1. Obtener cronogramas activos
-      const activeSchedules = await this.scheduleRepository.findByFilters({
-        status: 'ACTIVE',
-        isActive: true
-      });
+      const activeSchedules = await this.scheduleRepository.findByFilters(
+        { status: 'ACTIVE', isActive: true },
+        { page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }
+      );
 
       console.log(`Found ${activeSchedules.length} active schedules to update`);
 
@@ -45,7 +45,7 @@ export class ScheduleUpdateJob {
         userId: 'system',
         type: 'ERROR',
         title: 'Error en Job de Actualización de Cronogramas',
-        message: `Error en ejecución automática: ${error.message}`,
+        message: `Error en ejecución automática: ${(error as Error).message}`,
         priority: 'HIGH',
         relatedEntityType: 'SYSTEM_JOB',
         relatedEntityId: 'schedule_update_job'

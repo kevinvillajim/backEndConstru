@@ -23,6 +23,7 @@ export interface CalculationBudgetRepository {
   findVersions(parentBudgetId: string): Promise<CalculationBudget[]>;
   create(budget: CreateCalculationBudgetDTO): Promise<CalculationBudget>;
   update(id: string, budgetData: Partial<CalculationBudget>): Promise<CalculationBudget | null>;
+  save(budget: CalculationBudget): Promise<CalculationBudget>;
   delete(id: string): Promise<boolean>;
   recalculateTotals(id: string): Promise<CalculationBudget | null>;
 }

@@ -3,7 +3,10 @@ import { CalculationScheduleEntity, ScheduleStatus, ConstructionType, Geographic
 import { PaginationOptions } from '../models/common/PaginationOptions';
 
 export interface CalculationScheduleRepository {
-  findByFilters(filters: any, arg1: { page: number; limit: number; sortBy: string; sortOrder: "asc" | "desc"; }): unknown;
+  findByFilters(
+    filters: any, 
+    options: { page: number; limit: number; sortBy: string; sortOrder: "asc" | "desc"; }
+  ): Promise<CalculationScheduleEntity[]>;
   findById(id: string): Promise<CalculationScheduleEntity | null>;
   findByProjectId(projectId: string): Promise<CalculationScheduleEntity[]>;
   findByStatus(status: ScheduleStatus): Promise<CalculationScheduleEntity[]>;

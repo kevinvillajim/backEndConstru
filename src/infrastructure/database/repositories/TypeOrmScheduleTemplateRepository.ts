@@ -10,6 +10,9 @@ export class TypeOrmScheduleTemplateRepository implements ScheduleTemplateReposi
   constructor() {
     this.repository = AppDataSource.getRepository(ScheduleTemplateEntity);
   }
+  findByFilters(filters: { constructionType: any; geographicalZone: any; scope: string; isVerified: boolean; }): Promise<ScheduleTemplateEntity[]> {
+    throw new Error('Method not implemented.');
+  }
 
   async findById(id: string): Promise<ScheduleTemplateEntity | null> {
     return await this.repository.findOne({

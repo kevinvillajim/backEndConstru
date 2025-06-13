@@ -1,4 +1,5 @@
 // src/domain/repositories/MaterialRepository.ts
+import { MaterialEntity } from "../../infrastructure/database/entities/MaterialEntity";
 import {Material} from "../models/material/Material";
 
 export interface MaterialRepository {
@@ -10,6 +11,8 @@ export interface MaterialRepository {
 		pagination?: any
 	): Promise<{materials: Material[]; total: number}>;
 	create(material: Omit<Material, "id">): Promise<Material>;
+	findByExternalId(externalId: string): Promise<MaterialEntity | null>;
+  save(material: MaterialEntity): Promise<MaterialEntity>;
 	update(id: string, materialData: Partial<Material>): Promise<Material | null>;
 	delete(id: string): Promise<boolean>;
 	updateStock(id: string, quantity: number): Promise<boolean>;

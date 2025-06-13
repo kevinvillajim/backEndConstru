@@ -55,6 +55,7 @@ export class CalculationSchedule {
   costVariancePercentage: number;
   baseTemplateId?: string;
   isOptimized: boolean;
+  estimatedDurationDays: number; // AGREGAR
   optimizationParameters?: any;
   criticalPath?: string[];
   customFields?: Record<string, any>;

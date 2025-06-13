@@ -16,7 +16,17 @@ export enum ActivityStatus {
     DELIVERY = 'delivery',
     APPROVAL = 'approval',
     MILESTONE = 'milestone',
-    BUFFER = 'buffer'
+    BUFFER = 'buffer',
+    EXCAVATION = 'excavation',
+    FOUNDATION = 'foundation',
+    STRUCTURE = 'structure',
+    MASONRY = 'masonry',
+    ROOFING = 'roofing',
+    ELECTRICAL = 'electrical',
+    PLUMBING = 'plumbing',
+    FINISHING = 'finishing',
+    CLEANUP = 'cleanup',
+    OTHER = 'other'
   }
   
   export enum ActivityPriority {
@@ -36,7 +46,9 @@ export enum ActivityStatus {
     PLUMBING = 'plumbing',
     PAINTING = 'painting',
     FINISHING = 'finishing',
-    LANDSCAPING = 'landscaping'
+    LANDSCAPING = 'landscaping',
+    WELDING = 'welding',
+    GENERAL = 'general'
   }
   
   export interface ScheduleActivity {
@@ -153,6 +165,7 @@ export enum ActivityStatus {
         y: number;
         z: number;
       };
+      indoorWork: boolean;
     };
     resourceAssignments?: string[]; // Array of ResourceAssignment IDs
     progressReports?: string[]; // Array of ProgressTracking IDs
