@@ -2,6 +2,7 @@
 import { ProgressTrackingEntity, ProgressReportType } from '../models/calculation/ProgressTracking';
 
 export interface ProgressTrackingRepository {
+  findByFilters(filters: any): any[] | PromiseLike<any[]>;
   findById(id: string): Promise<ProgressTrackingEntity | null>;
   findByScheduleId(scheduleId: string): Promise<ProgressTrackingEntity[]>;
   findByDateRange(scheduleId: string, startDate: Date, endDate: Date): Promise<ProgressTrackingEntity[]>;

@@ -35,11 +35,15 @@ import { TypeOrmCalculationBudgetRepository } from "../database/repositories/Typ
 import { TypeOrmBudgetTemplateRepository } from "../database/repositories/TypeOrmBudgetTemplateRepository";
 import { TypeOrmBudgetLineItemRepository } from "../database/repositories/TypeOrmBudgetLineItemRepository";
 import { TypeOrmProfessionalCostRepository } from "../database/repositories/TypeOrmProfessionalCostRepository";
-import { TypeOrmCalculationScheduleRepository } from "../database/repositories/TypeOrmCalculationScheduleRepository";
-import { TypeOrmScheduleTemplateRepository } from "../database/repositories/TypeOrmScheduleTemplateRepository";
-import { TypeOrmScheduleActivityRepository } from "../database/repositories/TypeOrmScheduleActivityRepository";
-import { TypeOrmResourceAssignmentRepository } from "../database/repositories/TypeOrmResourceAssignmentRepository";
-import { TypeOrmProgressTrackingRepository } from "../database/repositories/TypeOrmProgressTrackingRepository";
+import { TypeOrmCalculationScheduleRepository } from "../../infrastructure/database/repositories/TypeOrmCalculationScheduleRepository";
+import { TypeOrmProgressTrackingRepository } from "../../infrastructure/database/repositories/TypeOrmProgressTrackingRepository";
+import { TypeOrmResourceAssignmentRepository } from "../../infrastructure/database/repositories/TypeOrmResourceAssignmentRepository";
+import { TypeOrmScheduleActivityRepository } from "../../infrastructure/database/repositories/TypeOrmScheduleActivityRepository";
+import { TypeOrmScheduleTemplateRepository } from "../../infrastructure/database/repositories/TypeOrmScheduleTemplateRepository";
+import { TypeOrmWeatherFactorRepository } from '../database/repositories/TypeOrmWeatherFactorRepository';
+import { TypeOrmWorkforceRepository } from '../database/repositories/TypeOrmWorkforceRepository';
+import { TypeOrmEquipmentRepository } from '../database/repositories/TypeOrmEquipmentRepository';
+
 
 
 // ============= SERVICIOS DE DOMINIO =============
@@ -55,6 +59,10 @@ import {RealtimeAnalyticsService} from "../websocket/RealtimeAnalyticsService";
 import { CalculationBudgetService } from "../../domain/services/CalculationBudgetService";
 import { BudgetPricingService } from "../../domain/services/BudgetPricingService";
 import { BudgetTemplateService } from "../../domain/services/BudgetTemplateService";
+import { BudgetScheduleIntegrationService } from '../../domain/services/BudgetScheduleIntegrationService';
+import { CalculationScheduleService } from '../../domain/services/CalculationScheduleService';
+import { ExternalIntegrationService } from '../../domain/services/ExternalIntegrationService';
+
 
 // ============= SERVICIOS DE INFRAESTRUCTURA =============
 import {NotificationServiceImpl} from "../services/NotificationServiceImpl";
@@ -100,6 +108,11 @@ import { CreateCalculationBudgetUseCase } from "../../application/budget/CreateC
 import { UpdateBudgetPricingUseCase } from "../../application/budget/UpdateBudgetPricingUseCase";
 import { GenerateProfessionalBudgetUseCase } from "../../application/budget/GenerateProfessionalBudgetUseCase";
 import { ApplyBudgetTemplateUseCase } from "../../application/budget/ApplyBudgetTemplateUseCase";
+import { GenerateScheduleFromBudgetUseCase } from '../../application/schedule/GenerateScheduleFromBudgetUseCase';
+import { OptimizeProjectScheduleUseCase } from '../../application/schedule/OptimizeProjectScheduleUseCase';
+import { TrackDailyProgressUseCase } from '../../application/schedule/TrackDailyProgressUseCase';
+import { GenerateScheduleReportsUseCase } from '../../application/schedule/GenerateScheduleReportsUseCase';
+import { PredictProjectDelaysScheduleUseCase } from '../../application/schedule/PredictProjectDelaysScheduleUseCase';
 
 // ============= OTROS CASOS DE USO =============
 import {GenerateProjectScheduleUseCase} from "../../application/project/GenerateProjectScheduleUseCase";
@@ -165,12 +178,19 @@ import { GetGlobalTemplateStatsUseCase } from "../../application/calculation/Get
 import { TemplateTrackingController } from "../webserver/controllers/TemplateTrackingController";
 import { CalculationBudgetController } from "../webserver/controllers/CalculationBudgetController";
 import { BudgetTemplateController } from "../webserver/controllers/BudgetTemplateController";
+import { CalculationScheduleController } from '../webserver/controllers/CalculationScheduleController';
+import { ScheduleAnalyticsController } from '../webserver/controllers/ScheduleAnalyticsController';
+import { ResourceManagementController } from '../webserver/controllers/ResourceManagementController';
+
 
 // ============= JOBS =============
 import {
 	EnhancedRankingCalculationJob,
 	initializeRankingJobs,
 } from "../jobs/EnhancedRankingCalculationJob";
+import { ScheduleUpdateJob } from '../jobs/ScheduleUpdateJob';
+import { PerformanceAnalysisJob } from '../jobs/PerformanceAnalysisJob';
+import { WeatherUpdateJob } from '../jobs/WeatherUpdateJob';
 
 import {MaterialCalculationResultRepository} from "../../domain/repositories/MaterialCalculationResultRepository";
 import {MaterialCalculationTemplateRepository} from "../../domain/repositories/MaterialCalculationTemplateRepository";
@@ -200,6 +220,7 @@ import { ProfessionalCostRepository } from "../../domain/repositories/Profession
 import { CalculationBudgetRepository } from "../../domain/repositories/CalculationBudgetRepository";
 import { ProjectRepository } from "../../domain/repositories/ProjectRepository";
 import { UserRepository } from "../../domain/repositories/UserRepository";
+
 
 
 // ============= VARIABLES GLOBALES DE REPOSITORIOS =============
@@ -242,6 +263,9 @@ let scheduleTemplateRepository: TypeOrmScheduleTemplateRepository;
 let scheduleActivityRepository: TypeOrmScheduleActivityRepository;
 let resourceAssignmentRepository: TypeOrmResourceAssignmentRepository;
 let progressTrackingRepository: TypeOrmProgressTrackingRepository;
+let weatherFactorRepository: TypeOrmWeatherFactorRepository;
+let workforceRepository: TypeOrmWorkforceRepository;
+let equipmentRepository: TypeOrmEquipmentRepository;
 
 // ============= VARIABLES GLOBALES DE SERVICIOS =============
 let authService: AuthService;
@@ -261,6 +285,7 @@ let realtimeAnalyticsService: RealtimeAnalyticsService;
 let calculationBudgetService: CalculationBudgetService | null = null;
 let budgetPricingService: BudgetPricingService | null = null;
 let budgetTemplateService: BudgetTemplateService | null = null;
+
 
 // ============= VARIABLES GLOBALES DE CASOS DE USO =============
 let executeCalculationUseCase: ExecuteCalculationUseCase;
