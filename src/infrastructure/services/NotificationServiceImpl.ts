@@ -261,6 +261,149 @@ export class NotificationServiceImpl implements NotificationService {
 		}
 	}
 
+	async getNotifications(userId: string, filters?: any): Promise<any> {
+		return await this.getUserNotifications(userId, filters);
+	}
+
+	/**
+	 * Crea una notificación básica (alias para sendToUser)
+	 */
+	async createNotification(
+		options: NotificationOptions & {userId: string}
+	): Promise<NotificationResult> {
+		return await this.sendToUser(options.userId, options);
+	}
+
+	/**
+	 * Marca todas las notificaciones de un usuario como leídas
+	 */
+	async markAllAsRead(userId: string): Promise<boolean> {
+		try {
+			// Obtener todas las notificaciones no leídas del usuario
+			const notifications = await this.notificationRepository.findByUser(
+				userId,
+				{isRead: false},
+				{page: 1, limit: 1000}
+			);
+
+			// Marcar todas como leídas
+			for (const notification of notifications.notifications) {
+				await this.notificationRepository.update(notification.id, {
+					isRead: true,
+					readAt: new Date(),
+				});
+			}
+
+			return true;
+		} catch (error) {
+			console.error(
+				`Error marking all notifications as read for user ${userId}:`,
+				error
+			);
+			return false;
+		}
+	}
+
+	/**
+	 * Crea una alerta meteorológica
+	 */
+	async createWeatherAlert(
+		userId: string,
+		weatherData: {
+			condition: string;
+			severity: "low" | "medium" | "high" | "critical";
+			message: string;
+			location?: string;
+		}
+	): Promise<NotificationResult> {
+		return await this.sendToUser(userId, {
+			title: "🌦️ Alerta Meteorológica",
+			content: `${weatherData.condition}: ${weatherData.message}${weatherData.location ? ` en ${weatherData.location}` : ""}`,
+			type: "weather_alert" as NotificationType,
+			priority: weatherData.severity as NotificationPriority,
+			sendEmail:
+				weatherData.severity === "high" || weatherData.severity === "critical",
+			sendPush: true,
+			icon: "weather-alert",
+			relatedEntityType: "weather",
+			relatedEntityId: `weather-${Date.now()}`,
+		});
+	}
+
+	/**
+	 * Crea una alerta de cronograma
+	 */
+	async createScheduleAlert(
+		userId: string,
+		scheduleData: {
+			scheduleId: string;
+			activityName: string;
+			alertType: "delay" | "completion" | "conflict" | "update";
+			message: string;
+			severity?: "low" | "medium" | "high";
+		}
+	): Promise<NotificationResult> {
+		const severity = scheduleData.severity || "medium";
+		const icons = {
+			delay: "clock-alert",
+			completion: "check-circle",
+			conflict: "alert-triangle",
+			update: "calendar",
+		};
+
+		return await this.sendToUser(userId, {
+			title: `📅 Alerta de Cronograma - ${scheduleData.activityName}`,
+			content: scheduleData.message,
+			type: "schedule_alert" as NotificationType,
+			priority: severity as NotificationPriority,
+			sendEmail: severity === "high",
+			sendPush: true,
+			icon: icons[scheduleData.alertType],
+			relatedEntityType: "schedule",
+			relatedEntityId: scheduleData.scheduleId,
+			actionUrl: `/schedules/${scheduleData.scheduleId}`,
+			actionText: "Ver Cronograma",
+		});
+	}
+
+	/**
+	 * Crea una alerta de recursos
+	 */
+	async createResourceAlert(
+		userId: string,
+		resourceData: {
+			resourceType: "workforce" | "equipment" | "material";
+			resourceName: string;
+			alertType: "shortage" | "conflict" | "availability" | "maintenance";
+			message: string;
+			severity?: "low" | "medium" | "high";
+			projectId?: string;
+		}
+	): Promise<NotificationResult> {
+		const severity = resourceData.severity || "medium";
+		const icons = {
+			workforce: "users",
+			equipment: "tool",
+			material: "package",
+		};
+
+		return await this.sendToUser(userId, {
+			title: `🔧 Alerta de Recursos - ${resourceData.resourceName}`,
+			content: resourceData.message,
+			type: "resource_alert" as NotificationType,
+			priority: severity as NotificationPriority,
+			sendEmail: severity === "high",
+			sendPush: true,
+			icon: icons[resourceData.resourceType],
+			relatedEntityType: "resource",
+			relatedEntityId: `${resourceData.resourceType}-${resourceData.resourceName}`,
+			actionUrl: resourceData.projectId
+				? `/projects/${resourceData.projectId}/resources`
+				: "/resources",
+			actionText: "Gestionar Recursos",
+		});
+	}
+
 	/**
 	 * Marca una notificación como leída
 	 */
@@ -381,122 +524,137 @@ export class NotificationServiceImpl implements NotificationService {
 	}
 
 	/**
-   * Actualiza las preferencias de notificación de un usuario
-   */
-  async updateUserNotificationPreferences(
-    userId: string, 
-    preferences: {
-      email?: boolean;
-      push?: boolean;
-      sms?: boolean;
-      projectUpdates?: boolean;
-      materialRecommendations?: boolean;
-      pricingAlerts?: boolean;
-      weeklyReports?: boolean;
-    }
-  ): Promise<boolean> {
-    try {
-      // 1. Obtener el usuario actual
-      const user = await this.userRepository.findById(userId);
-      if (!user) {
-        throw new Error(`Usuario no encontrado: ${userId}`);
-      }
+	 * Actualiza las preferencias de notificación de un usuario
+	 */
+	async updateUserNotificationPreferences(
+		userId: string,
+		preferences: {
+			email?: boolean;
+			push?: boolean;
+			sms?: boolean;
+			projectUpdates?: boolean;
+			materialRecommendations?: boolean;
+			pricingAlerts?: boolean;
+			weeklyReports?: boolean;
+		}
+	): Promise<boolean> {
+		try {
+			// 1. Obtener el usuario actual
+			const user = await this.userRepository.findById(userId);
+			if (!user) {
+				throw new Error(`Usuario no encontrado: ${userId}`);
+			}
 
-      // 2. Preparar el objeto de preferencias actualizado
-      const currentPreferences = user.preferences || {
-        notifications: { email: true, push: true, sms: false },
-        projectUpdates: true,
-        materialRecommendations: true,
-        pricingAlerts: true,
-        weeklyReports: true,
-        languagePreference: "es"
-      };
+			// 2. Preparar el objeto de preferencias actualizado
+			const currentPreferences = user.preferences || {
+				notifications: {email: true, push: true, sms: false},
+				projectUpdates: true,
+				materialRecommendations: true,
+				pricingAlerts: true,
+				weeklyReports: true,
+				languagePreference: "es",
+			};
 
-      // 3. Actualizar las preferencias de notificaciones
-      if (preferences.email !== undefined) {
-        currentPreferences.notifications.email = preferences.email;
-      }
-      
-      if (preferences.push !== undefined) {
-        currentPreferences.notifications.push = preferences.push;
-      }
-      
-      if (preferences.sms !== undefined) {
-        currentPreferences.notifications.sms = preferences.sms;
-      }
+			// 3. Actualizar las preferencias de notificaciones
+			if (preferences.email !== undefined) {
+				currentPreferences.notifications.email = preferences.email;
+			}
 
-      // 4. Actualizar otras preferencias relacionadas
-      if (preferences.projectUpdates !== undefined) {
-        currentPreferences.projectUpdates = preferences.projectUpdates;
-      }
-      
-      if (preferences.materialRecommendations !== undefined) {
-        currentPreferences.materialRecommendations = preferences.materialRecommendations;
-      }
-      
-      if (preferences.pricingAlerts !== undefined) {
-        currentPreferences.pricingAlerts = preferences.pricingAlerts;
-      }
-      
-      if (preferences.weeklyReports !== undefined) {
-        currentPreferences.weeklyReports = preferences.weeklyReports;
-      }
+			if (preferences.push !== undefined) {
+				currentPreferences.notifications.push = preferences.push;
+			}
 
-      // 5. Guardar las preferencias actualizadas
-      await this.userRepository.update(userId, {
-        preferences: currentPreferences
-      });
+			if (preferences.sms !== undefined) {
+				currentPreferences.notifications.sms = preferences.sms;
+			}
 
-      return true;
-    } catch (error) {
-      console.error(`Error updating notification preferences for user ${userId}:`, error);
-      return false;
-    }
-  }
+			// 4. Actualizar otras preferencias relacionadas
+			if (preferences.projectUpdates !== undefined) {
+				currentPreferences.projectUpdates = preferences.projectUpdates;
+			}
 
-  /**
-   * Obtiene las preferencias de notificación de un usuario
-   */
-  async getUserNotificationPreferences(userId: string): Promise<any> {
-    try {
-      const user = await this.userRepository.findById(userId);
-      if (!user) {
-        throw new Error(`Usuario no encontrado: ${userId}`);
-      }
+			if (preferences.materialRecommendations !== undefined) {
+				currentPreferences.materialRecommendations =
+					preferences.materialRecommendations;
+			}
 
-      // Si el usuario no tiene preferencias, retornar valores predeterminados
-      if (!user.preferences) {
-        return {
-          notifications: {
-            email: true,
-            push: true,
-            sms: false
-          },
-          projectUpdates: true,
-          materialRecommendations: true,
-          pricingAlerts: true,
-          weeklyReports: true
-        };
-      }
+			if (preferences.pricingAlerts !== undefined) {
+				currentPreferences.pricingAlerts = preferences.pricingAlerts;
+			}
 
-      return {
-        notifications: user.preferences.notifications || {
-          email: true,
-          push: true,
-          sms: false
-        },
-        projectUpdates: user.preferences.projectUpdates !== undefined ? 
-          user.preferences.projectUpdates : true,
-        materialRecommendations: user.preferences.materialRecommendations !== undefined ? 
-          user.preferences.materialRecommendations : true,
-        pricingAlerts: user.preferences.pricingAlerts !== undefined ? 
-          user.preferences.pricingAlerts : true,
-        weeklyReports: user.preferences.weeklyReports !== undefined ? 
-          user.preferences.weeklyReports : true
-      };
-    } catch (error) {
-      console.error(`Error getting notification preferences for user ${userId}:`, error);
-      throw error;
-    }
-  }
+			if (preferences.weeklyReports !== undefined) {
+				currentPreferences.weeklyReports = preferences.weeklyReports;
+			}
+
+			// 5. Guardar las preferencias actualizadas
+			await this.userRepository.update(userId, {
+				preferences: currentPreferences,
+			});
+
+			return true;
+		} catch (error) {
+			console.error(
+				`Error updating notification preferences for user ${userId}:`,
+				error
+			);
+			return false;
+		}
+	}
+
+	/**
+	 * Obtiene las preferencias de notificación de un usuario
+	 */
+	async getUserNotificationPreferences(userId: string): Promise<any> {
+		try {
+			const user = await this.userRepository.findById(userId);
+			if (!user) {
+				throw new Error(`Usuario no encontrado: ${userId}`);
+			}
+
+			// Si el usuario no tiene preferencias, retornar valores predeterminados
+			if (!user.preferences) {
+				return {
+					notifications: {
+						email: true,
+						push: true,
+						sms: false,
+					},
+					projectUpdates: true,
+					materialRecommendations: true,
+					pricingAlerts: true,
+					weeklyReports: true,
+				};
+			}
+
+			return {
+				notifications: user.preferences.notifications || {
+					email: true,
+					push: true,
+					sms: false,
+				},
+				projectUpdates:
+					user.preferences.projectUpdates !== undefined
+						? user.preferences.projectUpdates
+						: true,
+				materialRecommendations:
+					user.preferences.materialRecommendations !== undefined
+						? user.preferences.materialRecommendations
+						: true,
+				pricingAlerts:
+					user.preferences.pricingAlerts !== undefined
+						? user.preferences.pricingAlerts
+						: true,
+				weeklyReports:
+					user.preferences.weeklyReports !== undefined
+						? user.preferences.weeklyReports
+						: true,
+			};
+		} catch (error) {
+			console.error(
+				`Error getting notification preferences for user ${userId}:`,
+				error
+			);
+			throw error;
+		}
+	}
 }

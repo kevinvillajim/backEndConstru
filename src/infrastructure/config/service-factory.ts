@@ -517,7 +517,7 @@ export function initializeServices() {
 			scheduleActivityRepository,
 			notificationService,
 			budgetLineItemRepository,
-			
+			progressTrackingRepository // ← AGREGADO: Parámetro faltante
 		);
 		
 		calculationScheduleService = new CalculationScheduleService(
@@ -908,7 +908,7 @@ export function initializeServices() {
 		);
 
 		createCalculationBudgetUseCase = new CreateCalculationBudgetUseCase(
-			calculationBudgetRepository,
+			calculationBudgetRepository as CalculationBudgetRepository, // ← CAST EXPLÍCITO
 			budgetTemplateRepository,
 			calculationResultRepository,
 			budgetLineItemRepository,
@@ -916,7 +916,7 @@ export function initializeServices() {
 			materialRepository,
 			calculationBudgetService,
 			budgetTemplateService
-		  );
+		);
 		
 		  updateBudgetPricingUseCase = new UpdateBudgetPricingUseCase(
 			calculationBudgetRepository,
@@ -1129,6 +1129,7 @@ export function initializeServices() {
 		
 		resourceManagementController = new ResourceManagementController(
 			scheduleActivityRepository,
+			calculationScheduleRepository, // ← AGREGADO: Parámetro faltante
 			resourceAssignmentRepository,
 			workforceRepository,
 			equipmentRepository,
@@ -1159,8 +1160,8 @@ export function initializeServices() {
 			calculationScheduleRepository,
 			scheduleActivityRepository,
 			notificationService
+		);
 
-		console.log("Services initialized successfully");
 	} catch (error) {
 		console.error("Failed to initialize services:", error);
 		throw error;
