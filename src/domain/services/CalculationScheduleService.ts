@@ -4,6 +4,7 @@ import { CalculationResultRepository } from '../repositories/CalculationResultRe
 import { ScheduleTemplateRepository } from '../repositories/ScheduleTemplateRepository';
 import { ScheduleActivityRepository } from '../repositories/ScheduleActivityRepository';
 
+
 export interface ScheduleFromCalculationRequest {
   calculationResultId: string;
   templateId?: string;
@@ -179,134 +180,198 @@ export class CalculationScheduleService {
     return this.selectBestTemplate(templates, calculationResult);
   }
 
-  private extractTechnicalActivities(calculationResult: any): any[] {
-    const activities = [];
-
-    // Extraer actividades de cálculos estructurales
-    if (calculationResult.calculations?.structural) {
-      activities.push(...this.extractStructuralActivities(calculationResult.calculations.structural));
-    }
-
-    // Extraer actividades de cálculos de materiales
-    if (calculationResult.calculations?.materials) {
-      activities.push(...this.extractMaterialActivities(calculationResult.calculations.materials));
-    }
-
-    // Extraer actividades de instalaciones
-    if (calculationResult.calculations?.installations) {
-      activities.push(...this.extractInstallationActivities(calculationResult.calculations.installations));
-    }
-
-    return activities;
-  }
-
   private extractStructuralActivities(structuralCalc: any): any[] {
-    const activities = [];
+    const activities: any[] = [];
 
-    // Actividades de fundación
-    if (structuralCalc.foundation) {
-      activities.push({
-        name: 'Excavación y preparación de fundación',
-        type: 'FOUNDATION',
-        duration: this.calculateFoundationDuration(structuralCalc.foundation),
-        dependencies: [],
-        technicalRequirements: structuralCalc.foundation.specifications,
-        necReferences: structuralCalc.foundation.necCompliance
-      });
-    }
+    try {
+      // Actividades de fundación
+      if (structuralCalc?.foundation) {
+        activities.push({
+          name: 'Excavación y preparación de fundación',
+          type: 'FOUNDATION',
+          duration: this.calculateFoundationDuration(structuralCalc.foundation),
+          dependencies: [],
+          technicalRequirements: structuralCalc.foundation.specifications || {},
+          necReferences: this.ensureArray(structuralCalc.foundation.necCompliance)
+        });
+      }
 
-    // Actividades estructurales
-    if (structuralCalc.columns || structuralCalc.beams) {
-      activities.push({
-        name: 'Construcción de estructura',
-        type: 'STRUCTURE',
-        duration: this.calculateStructureDuration(structuralCalc),
-        dependencies: ['foundation'],
-        technicalRequirements: this.combineStructuralRequirements(structuralCalc),
-        necReferences: this.extractNECReferences(structuralCalc)
-      });
+      // Actividades estructurales
+      if (structuralCalc?.columns || structuralCalc?.beams) {
+        activities.push({
+          name: 'Construcción de estructura',
+          type: 'STRUCTURE',
+          duration: this.calculateStructureDuration(structuralCalc),
+          dependencies: ['foundation'],
+          technicalRequirements: this.combineStructuralRequirements(structuralCalc),
+          necReferences: this.extractNECReferences(structuralCalc)
+        });
+      }
+
+    } catch (error) {
+      console.warn('Error extracting structural activities:', error);
     }
 
     return activities;
   }
 
   private extractMaterialActivities(materialCalc: any): any[] {
-    // CORREGIDO: Verificar que materials sea un array antes de usar map
-    const materials = Array.isArray(materialCalc.materials) ? materialCalc.materials : [];
+    // FIX: Verificar y convertir materials a array de forma segura
+    const materials = this.ensureArray(materialCalc?.materials);
     
     return materials.map(material => ({
-      name: `Suministro e instalación de ${material.name}`,
+      name: `Suministro e instalación de ${material?.name || 'Material'}`,
       type: 'MATERIAL_INSTALLATION',
       duration: this.calculateMaterialDuration(material),
       dependencies: this.determineMaterialDependencies(material),
-      technicalRequirements: material.specifications,
-      quantityRequired: material.quantity,
-      unit: material.unit
+      technicalRequirements: material?.specifications || {},
+      quantityRequired: material?.quantity || 1,
+      unit: material?.unit || 'unit'
     }));
   }
 
   private extractInstallationActivities(installationCalc: any): any[] {
     const activities = [];
-
+  
     // Instalaciones eléctricas
-    if (installationCalc.electrical) {
-      activities.push({
+    if (installationCalc?.electrical) {
+      const electricalData = Array.isArray(installationCalc.electrical) ? 
+        installationCalc.electrical : [installationCalc.electrical];
+      
+      activities.push(...electricalData.map((electrical: any) => ({
         name: 'Instalaciones eléctricas',
         type: 'ELECTRICAL',
-        duration: this.calculateElectricalDuration(installationCalc.electrical),
+        duration: this.calculateElectricalDuration(electrical),
         dependencies: ['structure'],
-        technicalRequirements: installationCalc.electrical.specifications
-      });
+        technicalRequirements: electrical.specifications || {}
+      })));
     }
-
-    // Instalaciones sanitarias
-    if (installationCalc.plumbing) {
-      activities.push({
+  
+    // Instalaciones sanitarias  
+    if (installationCalc?.plumbing) {
+      const plumbingData = Array.isArray(installationCalc.plumbing) ? 
+        installationCalc.plumbing : [installationCalc.plumbing];
+      
+      activities.push(...plumbingData.map((plumbing: any) => ({
         name: 'Instalaciones sanitarias',
-        type: 'PLUMBING',
-        duration: this.calculatePlumbingDuration(installationCalc.plumbing),
+        type: 'PLUMBING', 
+        duration: this.calculatePlumbingDuration(plumbing),
         dependencies: ['structure'],
-        technicalRequirements: installationCalc.plumbing.specifications
-      });
+        technicalRequirements: plumbing.specifications || {}
+      })));
     }
-
+  
     return activities;
   }
+  
 
-  // MÉTODO CORREGIDO para evitar problemas con tipos unknown
   private extractTechnicalActivities(calculationResult: any): any[] {
-    const activities = [];
+    const activities: any[] = [];
 
-    // Extraer actividades de cálculos estructurales
-    if (calculationResult.calculations?.structural) {
-      const structuralActivities = this.extractStructuralActivities(calculationResult.calculations.structural);
-      activities.push(...structuralActivities);
-    }
+    try {
+      // Extraer actividades de cálculos estructurales
+      if (calculationResult?.calculations?.structural) {
+        const structuralActivities = this.extractStructuralActivities(
+          calculationResult.calculations.structural
+        );
+        activities.push(...structuralActivities);
+      }
 
-    // Extraer actividades de cálculos de materiales
-    if (calculationResult.calculations?.materials) {
-      const materialActivities = this.extractMaterialActivities(calculationResult.calculations.materials);
-      activities.push(...materialActivities);
-    }
+      // Extraer actividades de cálculos de materiales  
+      if (calculationResult?.calculations?.materials) {
+        const materialActivities = this.extractMaterialActivities(
+          calculationResult.calculations.materials
+        );
+        activities.push(...materialActivities);
+      }
 
-    // Extraer actividades de instalaciones
-    if (calculationResult.calculations?.installations) {
-      const installationActivities = this.extractInstallationActivities(calculationResult.calculations.installations);
-      activities.push(...installationActivities);
+      // Extraer actividades de instalaciones
+      if (calculationResult?.calculations?.installations) {
+        const installationActivities = this.extractInstallationActivities(
+          calculationResult.calculations.installations
+        );
+        activities.push(...installationActivities);
+      }
+
+      // Si no hay datos específicos, crear actividades básicas desde el resultado
+      if (activities.length === 0 && calculationResult?.results) {
+        activities.push(...this.createBasicActivitiesFromResults(calculationResult.results));
+      }
+
+    } catch (error) {
+      console.warn('Error extracting technical activities:', error);
+      // Devolver al menos una actividad básica para evitar errores
+      activities.push(this.createDefaultActivity(calculationResult));
     }
 
     return activities;
   }
 
   private ensureArray(value: unknown): any[] {
+    // Si ya es un array, devolverlo
     if (Array.isArray(value)) {
       return value;
     }
-    if (value && typeof value === 'object') {
-      // Si es un objeto, intentar convertirlo a array de sus valores
-      return Object.values(value);
+    
+    // Si es null o undefined, devolver array vacío
+    if (value == null) {
+      return [];
     }
-    return [];
+    
+    // Si es un objeto, intentar convertirlo
+    if (typeof value === 'object') {
+      // Si tiene una propiedad que parece ser un array
+      if ('items' in value && Array.isArray(value.items)) {
+        return value.items;
+      }
+      
+      // Si tiene propiedades numéricas como un array-like object
+      const keys = Object.keys(value);
+      if (keys.length > 0 && keys.every(key => !isNaN(Number(key)))) {
+        return Object.values(value);
+      }
+      
+      // Convertir objeto a array de sus valores
+      return Object.values(value).filter(item => item != null);
+    }
+    
+    // Si es un valor primitivo, envolverlo en array
+    return [value];
+  }
+
+  private createBasicActivitiesFromResults(results: any): any[] {
+    const activities: any[] = [];
+    
+    if (results && typeof results === 'object') {
+      Object.entries(results).forEach(([key, value]) => {
+        if (typeof value === 'number' && value > 0) {
+          activities.push({
+            name: `Actividad para ${key}`,
+            type: 'OTHER',
+            duration: Math.ceil(value / 10), // Estimación simple
+            dependencies: [],
+            technicalRequirements: { [key]: value },
+            quantityRequired: value,
+            unit: 'unit'
+          });
+        }
+      });
+    }
+    
+    return activities;
+  }
+
+  // NUEVO MÉTODO: Crear actividad por defecto
+  private createDefaultActivity(calculationResult: any): any {
+    return {
+      name: `Actividad del cálculo ${calculationResult?.name || 'Sin nombre'}`,
+      type: 'OTHER',
+      duration: 1,
+      dependencies: [],
+      technicalRequirements: {},
+      quantityRequired: 1,
+      unit: 'unit'
+    };
   }
 
   private validateStructuralSequence(activities: any[], calculationResult: any): boolean {
@@ -448,42 +513,66 @@ export class CalculationScheduleService {
   }
 
   private extractNECReferences(structural: any): string[] {
-    const references = [];
+    const references: string[] = [];
     
-    if (structural.foundation?.necCompliance) {
-      references.push(...this.ensureArray(structural.foundation.necCompliance));
+    try {
+      if (structural?.foundation?.necCompliance) {
+        references.push(...this.ensureArray(structural.foundation.necCompliance));
+      }
+      if (structural?.columns?.necCompliance) {
+        references.push(...this.ensureArray(structural.columns.necCompliance));
+      }
+      if (structural?.beams?.necCompliance) {
+        references.push(...this.ensureArray(structural.beams.necCompliance));
+      }
+      
+      // Filtrar solo strings válidos
+      const validReferences = references.filter(ref => 
+        typeof ref === 'string' && ref.trim().length > 0
+      );
+      
+      // Agregar referencias por defecto si no hay ninguna
+      if (validReferences.length === 0) {
+        validReferences.push('NEC-SE-DS', 'NEC-SE-HM');
+      }
+      
+      return validReferences;
+      
+    } catch (error) {
+      console.warn('Error extracting NEC references:', error);
+      return ['NEC-SE-DS', 'NEC-SE-HM']; // Referencias por defecto
     }
-    if (structural.columns?.necCompliance) {
-      references.push(...this.ensureArray(structural.columns.necCompliance));
-    }
-    if (structural.beams?.necCompliance) {
-      references.push(...this.ensureArray(structural.beams.necCompliance));
-    }
-    
-    // Agregar referencias por defecto si no hay ninguna
-    if (references.length === 0) {
-      references.push('NEC-SE-DS', 'NEC-SE-HM');
-    }
-    
-    return references;
   }
 
   private determineMaterialDependencies(material: any): string[] {
-    const dependencies = [];
+    const dependencies: string[] = [];
+    
+    if (!material || typeof material !== 'object') {
+      return dependencies;
+    }
+    
+    const materialType = material.type || material.materialType || '';
     
     // Dependencias basadas en tipo de material
-    switch (material.type) {
+    switch (materialType.toLowerCase()) {
       case 'concrete':
+      case 'concreto':
         dependencies.push('foundation', 'formwork');
         break;
       case 'steel':
+      case 'acero':
         dependencies.push('structure');
         break;
       case 'finishing':
+      case 'acabados':
         dependencies.push('structure', 'installations');
         break;
+      case 'masonry':
+      case 'mamposteria':
+        dependencies.push('foundation');
+        break;
       default:
-        // Sin dependencias específicas
+        // Sin dependencias específicas para tipos desconocidos
         break;
     }
     

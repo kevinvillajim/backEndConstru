@@ -2,6 +2,7 @@
 import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
 import { ProgressTrackingRepository } from '../../domain/repositories/ProgressTrackingRepository';
 import { NotificationService } from '../../domain/services/NotificationService';
+import { ActivityProgressEntity, ProgressReportStatus, QualityLevel, WeatherCondition } from '../../infrastructure/database/entities/ActivityProgressEntity';
 
 export interface DailyProgressRequest {
   scheduleId: string;
@@ -105,80 +106,132 @@ export class TrackDailyProgressUseCase {
     };
   }
 
-  private async createProgressRecord(request: DailyProgressRequest, activity: any): Promise<any> {
-    // CORREGIDO: Crear objeto con todas las propiedades requeridas por ActivityProgressEntity
-    const progressRecord = {
-      // Propiedades básicas requeridas
-      id: '', // Generado por el repositorio
-      activityId: request.activityId,
-      scheduleId: request.scheduleId,
-      reportDate: request.reportDate,
-      reportedBy: request.reportedBy,
-      progressPercentage: request.progressPercentage,
-      
-      // Propiedades de trabajo completado
-      workCompleted: request.workCompleted,
-      actualWorkersOnSite: request.actualWorkersOnSite,
-      actualHoursWorked: request.actualHoursWorked,
-      
-      // PROPIEDADES AGREGADAS para cumplir con ActivityProgressEntity
-      status: 'ACTIVE',
-      plannedHoursForDay: 8, // Valor por defecto
-      efficiencyPercentage: this.calculateEfficiency(request, activity),
-      obstacles: request.materialIssues?.map(issue => issue.issue) || [],
-      
-      // Condiciones y problemas
-      weatherConditions: request.weatherConditions,
-      qualityIssues: request.qualityIssues || [],
-      safetyIncidents: request.safetyIncidents || [],
-      materialIssues: request.materialIssues || [],
-      
-      // Archivos y ubicación
-      photos: request.photos || [],
-      notes: request.notes,
-      location: request.location,
-      
-      // Métricas calculadas
-      productivityRate: this.calculateProductivityRate(request, activity),
-      costToDate: this.calculateCostToDate(request, activity),
-      earnedValue: (activity.plannedTotalCost * request.progressPercentage) / 100,
-      scheduleVariance: this.calculateScheduleVariance(request, activity),
-      qualityScore: this.calculateQualityScore(request),
-      safetyScore: this.calculateSafetyScore(request),
-      
-      // PROPIEDADES ADICIONALES requeridas por la entidad
-      actualDailyProgress: request.progressPercentage,
-      plannedDailyProgress: this.getPlannedProgressForDate(activity, request.reportDate),
-      varianceFromPlan: 0, // Calculado después
-      resourcesUsed: {
-        workers: request.actualWorkersOnSite,
-        hours: request.actualHoursWorked,
-        materials: request.materialIssues?.map(m => m.material) || []
-      },
-      delaysReported: request.materialIssues?.filter(m => m.issue === 'delivery_delay').length || 0,
-      timeWorked: request.actualHoursWorked,
-      overtimeHours: Math.max(0, request.actualHoursWorked - 8),
-      weatherImpact: this.calculateWeatherImpact(request.weatherConditions),
-      equipmentUsed: [], // Array vacío por defecto
-      materialUsed: request.materialIssues?.map(m => ({ material: m.material, quantity: 0 })) || [],
-      completedTasks: [], // Array vacío por defecto
-      pendingTasks: [], // Array vacío por defecto
-      nextDayPlans: '', // String vacío por defecto
-      supervisorNotes: request.notes || '',
-      isVerified: false,
-      verifiedBy: null,
-      verificationDate: null,
-      
-      // Timestamps
-      createdAt: new Date(),
-      updatedAt: new Date()
+  private async createProgressRecord(request: DailyProgressRequest, activity: any): Promise<ActivityProgressEntity> {
+    // Crear una instancia de ActivityProgressEntity con todas las propiedades requeridas
+    const progressRecord = new ActivityProgressEntity();
+    
+    // Propiedades básicas requeridas
+    progressRecord.activityId = request.activityId;
+    progressRecord.reportDate = request.reportDate;
+    progressRecord.reportedBy = request.reportedBy;
+    progressRecord.progressPercentage = request.progressPercentage;
+    
+    // Trabajo completado con estructura correcta
+    progressRecord.workCompleted = {
+      quantity: request.workCompleted.quantity,
+      unit: request.workCompleted.unit,
+      description: request.workCompleted.description,
+      qualityLevel: 'SATISFACTORY' as any // Usar enum correcto
     };
-
-    // Calcular varianza después de tener todos los datos
-    progressRecord.varianceFromPlan = progressRecord.actualDailyProgress - progressRecord.plannedDailyProgress;
-
+    
+    // Recursos utilizados
+    progressRecord.actualWorkersOnSite = request.actualWorkersOnSite;
+    progressRecord.actualHoursWorked = request.actualHoursWorked;
+    progressRecord.plannedHoursForDay = 8; // Valor por defecto
+    
+    // Métricas calculadas
+    progressRecord.productivityRate = this.calculateProductivityRate(request, activity);
+    progressRecord.efficiencyPercentage = this.calculateEfficiency(request, activity);
+    
+    // Condiciones ambientales (estructura completa requerida por la entidad)
+    if (request.weatherConditions) {
+      progressRecord.weatherConditions = {
+        workability: request.weatherConditions.workability as any,
+        temperature: request.weatherConditions.temperature,
+        humidity: 50, // Valor por defecto si no se proporciona
+        precipitation: request.weatherConditions.precipitation,
+        windSpeed: 0, // Valor por defecto
+        visibility: 'good', // Valor por defecto
+        description: `${request.weatherConditions.condition} weather conditions`
+      };
+    }
+    
+    // Problemas de calidad (mapear correctamente)
+    progressRecord.qualityIssues = request.qualityIssues?.map((issue, index) => ({
+      id: `quality_${Date.now()}_${index}`,
+      description: issue.issue,
+      severity: issue.severity,
+      status: 'open' as const,
+      reportedBy: request.reportedBy,
+      correctionAction: issue.correctionRequired ? 'Required' : 'Not required'
+    })) || [];
+    
+    // Incidentes de seguridad (mapear correctamente)
+    progressRecord.safetyIncidents = request.safetyIncidents?.map((incident, index) => ({
+      id: `safety_${Date.now()}_${index}`,
+      type: incident.type,
+      description: incident.description,
+      severity: incident.severity,
+      correctionAction: 'To be determined',
+      preventiveMeasures: 'To be defined'
+    })) || [];
+    
+    // Obstáculos (mapear desde materialIssues)
+    progressRecord.obstacles = request.materialIssues?.map(issue => ({
+      type: issue.issue === 'delivery_delay' ? 'material_delay' as const : 'other' as const,
+      description: `${issue.material}: ${issue.impact}`,
+      impact: 'medium' as const,
+      estimatedDelayHours: 0,
+      preventable: true
+    })) || [];
+    
+    // Uso de materiales
+    progressRecord.materialUsage = request.materialIssues?.map(issue => ({
+      materialId: `material_${issue.material}`,
+      materialName: issue.material,
+      quantityUsed: 0,
+      quantityWasted: 0,
+      unit: 'unit',
+      wasteReason: issue.issue === 'quality' ? 'Quality issues' : undefined
+    })) || [];
+    
+    // Uso de equipos (array vacío por defecto)
+    progressRecord.equipmentUsage = [];
+    
+    // Costos del día (calculados)
+    progressRecord.dailyLaborCost = request.actualWorkersOnSite * request.actualHoursWorked * 25;
+    progressRecord.dailyMaterialCost = 0; // Se calculará después
+    progressRecord.dailyEquipmentCost = 0;
+    progressRecord.dailyTotalCost = progressRecord.dailyLaborCost;
+    
+    // Ubicación
+    progressRecord.location = request.location ? {
+      latitude: request.location.latitude,
+      longitude: request.location.longitude,
+      altitude: 0,
+      accuracy: request.location.accuracy,
+      area: 'construction_site',
+      zone: 'main'
+    } : undefined;
+    
+    // Fotos (mapear correctamente)
+    progressRecord.photos = request.photos?.map(url => ({
+      url,
+      description: 'Progress photo',
+      type: 'progress' as const,
+      timestamp: new Date()
+    })) || [];
+    
+    // Puntuaciones
+    progressRecord.qualityScore = this.calculateQualityScore(request);
+    progressRecord.safetyScore = this.calculateSafetyScore(request);
+    progressRecord.productivityScore = 8.0; // Valor calculado
+    progressRecord.overallScore = 0; // Se calculará automáticamente
+    
+    // Comentarios
+    progressRecord.generalComments = request.notes || '';
+    progressRecord.nextDayPlanning = '';
+    progressRecord.supervisorNotes = '';
+    
+    // Estado del reporte
+    progressRecord.status = 'submitted' as any;
+    progressRecord.isActive = true;
+    
+    // Las fechas se asignan automáticamente por las decoraciones de TypeORM
+    
     return await this.progressRepository.save(progressRecord);
   }
+  
 
   private async updateActivityProgress(activity: any, request: DailyProgressRequest): Promise<any> {
     // Actualizar progreso de la actividad
