@@ -62,7 +62,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error fetching schedules',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -82,7 +82,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error creating schedule',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -120,7 +120,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error fetching schedule',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -155,7 +155,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error updating schedule',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -189,7 +189,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error deleting schedule',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -209,7 +209,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error generating schedule from budget',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -229,7 +229,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error generating schedule from calculation',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -254,7 +254,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error optimizing schedule',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -280,7 +280,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error submitting progress report',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -321,7 +321,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error predicting delays',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -359,7 +359,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error synchronizing with budget',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -392,9 +392,9 @@ export class CalculationScheduleController {
         activities,
         summary: {
           total: activities.length,
-          completed: activities.filter(a => a.status === 'COMPLETED').length,
-          inProgress: activities.filter(a => a.status === 'IN_PROGRESS').length,
-          notStarted: activities.filter(a => a.status === 'NOT_STARTED').length,
+          completed: activities.filter(a => a.status === ActivityStatus.COMPLETED).length,
+          inProgress: activities.filter(a => a.status === ActivityStatus.IN_PROGRESS).length,
+          notStarted: activities.filter(a => a.status === ActivityStatus.NOT_STARTED).length,
           criticalPath: activities.filter(a => a.isCriticalPath).length
         }
       };
@@ -411,7 +411,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error fetching schedule activities',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -461,7 +461,7 @@ export class CalculationScheduleController {
       res.status(400).json({
         success: false,
         message: 'Error updating schedule status',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -497,7 +497,7 @@ export class CalculationScheduleController {
       res.status(500).json({
         success: false,
         message: 'Error fetching schedule templates',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -517,7 +517,7 @@ export class CalculationScheduleController {
 
     const totalProgress = activities.reduce((sum, activity) => sum + activity.progressPercentage, 0);
     const overallProgress = totalProgress / activities.length;
-    const completedActivities = activities.filter(a => a.status === 'COMPLETED').length;
+    const completedActivities = activities.filter(a => a.status === ActivityStatus.COMPLETED).length;
 
     return {
       overallProgress: Math.round(overallProgress * 100) / 100,

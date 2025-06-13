@@ -49,7 +49,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error generating dashboard',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -66,10 +66,7 @@ export class ScheduleAnalyticsController {
       } = req.query;
 
       const activities = await this.activityRepository.findByScheduleId(scheduleId);
-      const progressReports = await this.progressRepository.findByScheduleId(scheduleId, {
-        startDate: startDate ? new Date(startDate as string) : undefined,
-        endDate: endDate ? new Date(endDate as string) : undefined
-      });
+      const progressReports = await this.progressRepository.findByScheduleId(scheduleId);
 
       const performance = {
         earnedValueAnalysis: this.calculateEarnedValueAnalysis(activities, progressReports),
@@ -90,7 +87,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error generating performance analytics',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -123,7 +120,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error generating variance analysis',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -162,7 +159,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error generating critical path analysis',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -187,7 +184,7 @@ export class ScheduleAnalyticsController {
       res.status(400).json({
         success: false,
         message: 'Error generating report',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -243,7 +240,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error calculating KPIs',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -279,7 +276,7 @@ export class ScheduleAnalyticsController {
       res.status(500).json({
         success: false,
         message: 'Error generating predictive analytics',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -303,7 +300,7 @@ export class ScheduleAnalyticsController {
         startDate.setDate(endDate.getDate() - 30);
     }
 
-    return await this.progressRepository.findByScheduleId(scheduleId, { startDate, endDate });
+    return await this.progressRepository.findByScheduleId(scheduleId);
   }
 
   private async generateOverviewMetrics(schedule: any, activities: any[]): Promise<any> {

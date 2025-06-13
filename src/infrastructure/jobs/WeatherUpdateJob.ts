@@ -86,10 +86,18 @@ export class WeatherUpdateJob {
   }
 
   private async getSchedulesWithLocations(): Promise<any[]> {
-    const schedules = await this.scheduleRepository.findByFilters({
-      status: ['ACTIVE', 'ON_HOLD'],
-      isActive: true
-    });
+    const schedules = await this.scheduleRepository.findByFilters(
+      {
+        status: ['ACTIVE', 'ON_HOLD'],
+        isActive: true
+      },
+      {
+        page: 1,
+        limit: 100,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      }
+    );
 
     // Filtrar cronogramas que tienen configuración de ubicación
     return schedules.filter(schedule => 

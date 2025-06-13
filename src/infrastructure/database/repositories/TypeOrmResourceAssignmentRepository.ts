@@ -10,6 +10,27 @@ export class TypeOrmResourceAssignmentRepository implements ResourceAssignmentRe
   constructor() {
     this.repository = AppDataSource.getRepository(ResourceAssignmentEntity);
   }
+  async findByScheduleId(scheduleId: string): Promise<ResourceAssignmentEntity[]> {
+    return await this.repository.find({
+      where: { 
+        activity: { scheduleId } // Assuming there's a relation to activity
+      },
+      relations: ['activity', 'workforce', 'equipment'],
+      order: { plannedStartDate: 'ASC' }
+    });
+  }
+
+  async findByResource(resourceType: 'workforce' | 'equipment', resourceId: string): Promise<ResourceAssignmentEntity[]> {
+    const where = resourceType === 'workforce' 
+      ? { workforceId: resourceId }
+      : { equipmentId: resourceId };
+
+    return await this.repository.find({
+      where,
+      relations: ['activity'],
+      order: { plannedStartDate: 'ASC' }
+    });
+  }
 
   async findById(id: string): Promise<ResourceAssignmentEntity | null> {
     return await this.repository.findOne({

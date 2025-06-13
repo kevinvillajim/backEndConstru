@@ -44,7 +44,7 @@ export class ResourceManagementController {
       res.status(500).json({
         success: false,
         message: 'Error fetching schedule resources',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -76,7 +76,7 @@ export class ResourceManagementController {
       res.status(400).json({
         success: false,
         message: 'Error creating resource assignment',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -126,7 +126,7 @@ export class ResourceManagementController {
       res.status(400).json({
         success: false,
         message: 'Error updating resource assignment',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -155,7 +155,7 @@ export class ResourceManagementController {
       res.status(500).json({
         success: false,
         message: 'Error deleting resource assignment',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -182,7 +182,7 @@ export class ResourceManagementController {
       res.status(500).json({
         success: false,
         message: 'Error identifying resource conflicts',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -204,7 +204,7 @@ export class ResourceManagementController {
       res.status(400).json({
         success: false,
         message: 'Error resolving resource conflict',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -215,15 +215,51 @@ export class ResourceManagementController {
       const { scheduleId } = req.params;
       const { optimizationGoals, constraints } = req.body;
 
-      const optimizationResult = await this.resourceOptimizationService.optimizeScheduleResources({
-        scheduleId,
-        goals: optimizationGoals || {
-          minimizeCost: true,
-          maximizeUtilization: true,
-          minimizeConflicts: true
+      // Obtener cronograma y actividades
+      const schedule = await this.scheduleRepository.findById(scheduleId);
+      const activities = await this.activityRepository.findByScheduleId(scheduleId);
+
+      if (!schedule || !activities) {
+        res.status(404).json({
+          success: false,
+          message: 'Schedule or activities not found'
+        });
+        return;
+      }
+
+      // Crear opciones de optimización
+      const optimizationOptions = {
+        objectiveFunction: optimizationGoals?.primary || 'maximize_efficiency',
+        constraints: {
+          maxBudget: constraints?.maxBudget,
+          maxProjectDuration: constraints?.maxDuration,
+          availableWorkforce: await this.workforceRepository.findAvailable(),
+          availableEquipment: await this.equipmentRepository.findAvailable(),
+          workingHours: constraints?.workingHours || {
+            dailyHours: 8,
+            weeklyHours: 48,
+            overtimeAllowed: false,
+            maxOvertimeHours: 0
+          },
+          qualityRequirements: constraints?.qualityRequirements || {
+            minimumSkillLevel: 'intermediate',
+            inspectionRequired: true,
+            certificationRequired: false
+          }
         },
-        constraints: constraints || {}
-      });
+        preferences: constraints?.preferences || {
+          prioritizeLocalResources: true,
+          allowSubcontracting: false,
+          preferExperiencedWorkers: true,
+          minimizeResourceTransitions: true
+        }
+      };
+
+      const optimizationResult = await this.resourceOptimizationService.optimizeResourceAllocation(
+        schedule,
+        activities,
+        optimizationOptions
+      );
 
       res.json({
         success: true,
@@ -234,7 +270,7 @@ export class ResourceManagementController {
       res.status(400).json({
         success: false,
         message: 'Error optimizing resources',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -266,7 +302,7 @@ export class ResourceManagementController {
       res.status(500).json({
         success: false,
         message: 'Error calculating resource availability',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -300,7 +336,7 @@ export class ResourceManagementController {
       res.status(500).json({
         success: false,
         message: 'Error calculating resource utilization',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }
@@ -322,7 +358,7 @@ export class ResourceManagementController {
       res.status(400).json({
         success: false,
         message: 'Error rebalancing resources',
-        error: error.message
+        error: (error as Error).message
       });
     }
   }

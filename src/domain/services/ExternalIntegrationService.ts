@@ -113,7 +113,7 @@ export class ExternalIntegrationService {
         userId: 'system',
         type: 'ERROR',
         title: 'Error en Sincronización con Proveedor',
-        message: `Error al sincronizar con ${integration.supplierName}: ${error.message}`,
+        message: `Error al sincronizar con ${integration.supplierName}: ${(error as Error).message}`,
         priority: 'HIGH',
         relatedEntityType: 'SUPPLIER_INTEGRATION',
         relatedEntityId: supplierId

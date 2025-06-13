@@ -1,4 +1,10 @@
 // src/application/schedule/OptimizeProjectScheduleUseCase.ts
+
+import { CalculationScheduleRepository } from '../../domain/repositories/CalculationScheduleRepository';
+import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
+import { ScheduleActivityEntity } from '../../infrastructure/database/entities/ScheduleActivityEntity';
+
+
 export interface OptimizeScheduleRequest {
     scheduleId: string;
     optimizationGoals: {
@@ -87,7 +93,7 @@ export interface OptimizeScheduleRequest {
       };
     }
   
-    private optimizeForDuration(schedule: any, activities: ScheduleActivity[], constraints: any): void {
+    private optimizeForDuration(schedule: any, activities: ScheduleActivityEntity[], constraints: any): void {
       // Fast-tracking: Identificar actividades que se pueden paralelizar
       const criticalPath = activities.filter(a => a.isCriticalPath);
       
@@ -119,7 +125,7 @@ export interface OptimizeScheduleRequest {
       }
     }
   
-    private optimizeForCost(schedule: any, activities: ScheduleActivity[], constraints: any): void {
+    private optimizeForCost(schedule: any, activities: ScheduleActivityEntity[], constraints: any): void {
       // Optimización de recursos para reducir costos
       const resourceGroups = this.groupActivitiesByResource(activities);
       
@@ -132,7 +138,7 @@ export interface OptimizeScheduleRequest {
       }
     }
   
-    private optimizeForResources(schedule: any, activities: ScheduleActivity[], constraints: any): void {
+    private optimizeForResources(schedule: any, activities: ScheduleActivityEntity[], constraints: any): void {
       // Resource leveling algorithm
       const resourceCalendar = this.buildResourceCalendar(activities);
       

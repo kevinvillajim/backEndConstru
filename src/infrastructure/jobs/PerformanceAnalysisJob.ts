@@ -79,7 +79,7 @@ export class PerformanceAnalysisJob {
         userId: 'system',
         type: 'ERROR',
         title: 'Error en Análisis de Performance',
-        message: `Error en análisis automático: ${error.message}`,
+        message: `Error en análisis automático: ${(error as Error).message}`,
         priority: 'HIGH',
         relatedEntityType: 'SYSTEM_JOB',
         relatedEntityId: 'performance_analysis_job'

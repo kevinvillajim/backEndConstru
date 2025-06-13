@@ -10,11 +10,35 @@ export class TypeOrmProgressTrackingRepository implements ProgressTrackingReposi
   constructor() {
     this.repository = AppDataSource.getRepository(ProgressTrackingEntity);
   }
-  findByFilters(filters: any): Promise<ProgressTrackingEntity[]> {
-    throw new Error('Method not implemented.');
+  async findByFilters(filters: any): Promise<ProgressTrackingEntity[]> {
+    const queryBuilder = this.repository.createQueryBuilder('progress');
+    
+    if (filters.scheduleId) {
+      queryBuilder.andWhere('progress.scheduleId = :scheduleId', { scheduleId: filters.scheduleId });
+    }
+    
+    if (filters.startDate) {
+      queryBuilder.andWhere('progress.reportDate >= :startDate', { startDate: filters.startDate });
+    }
+    
+    if (filters.endDate) {
+      queryBuilder.andWhere('progress.reportDate <= :endDate', { endDate: filters.endDate });
+    }
+    
+    return await queryBuilder
+      .leftJoinAndSelect('progress.reportedBy', 'reportedBy')
+      .orderBy('progress.reportDate', 'DESC')
+      .getMany();
   }
-  deleteOlderThan(date: Date): Promise<number> {
-    throw new Error('Method not implemented.');
+  
+  async deleteOlderThan(cutoffDate: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(ProgressTrackingEntity)
+      .where('createdAt < :cutoffDate', { cutoffDate })
+      .execute();
+    return result.affected || 0;
   }
 
   async findById(id: string): Promise<ProgressTrackingEntity | null> {
