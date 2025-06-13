@@ -3,7 +3,8 @@ import { WeatherFactorRepository } from '../../domain/repositories/WeatherFactor
 import { CalculationScheduleRepository } from '../../domain/repositories/CalculationScheduleRepository';
 import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
 import { NotificationService } from '../../domain/services/NotificationService';
-import { WeatherFactorEntity } from '../../domain/entities/WeatherFactorEntity'; // Adjust the path as needed
+// CORREGIDO: Importación correcta del WeatherFactorEntity
+import { WeatherFactorEntity } from '../database/entities/WeatherFactorEntity';
 
 export interface WeatherForecast {
   date: Date;
@@ -46,46 +47,96 @@ export class WeatherUpdateJob {
     private notificationService: NotificationService
   ) {}
 
-  async execute(): Promise<void> {
-    console.log('Starting Weather Update Job...');
-    
-    try {
-      // 1. Obtener cronogramas activos con ubicaciones geográficas
-      const activeSchedules = await this.getSchedulesWithLocations();
-      
-      console.log(`Found ${activeSchedules.length} schedules to update weather data`);
+  // ... [otros métodos permanecen igual] ...
 
-      // 2. Obtener datos meteorológicos para cada ubicación
-      const weatherUpdates = await this.fetchWeatherData(activeSchedules);
+  // MÉTODO CORREGIDO - processWeatherData
+  private async processWeatherData(weatherUpdates: Map<string, WeatherForecast[]>): Promise<void> {
+    for (const [scheduleId, forecasts] of weatherUpdates) {
+      // CORREGIDO: Obtener información del schedule para tener geographicalZone
+      const schedule = await this.scheduleRepository.findById(scheduleId);
+      if (!schedule) continue;
 
-      // 3. Procesar y guardar datos meteorológicos
-      await this.processWeatherData(weatherUpdates);
+      for (const forecast of forecasts) {
+        const weatherFactor: Partial<WeatherFactorEntity> = {
+          scheduleId,
+          date: forecast.date,
+          geographicalZone: schedule.geographicalZone || 'QUITO', // CORREGIDO: Usar schedule en lugar de variable indefinida
+          weatherCondition: forecast.conditions.join(', '),
+          rainfall: forecast.precipitation.amount,
+          temperature: forecast.temperature.avg,
+          windSpeed: forecast.wind.speed,
+          humidity: forecast.humidity,
+          workingSuitability: forecast.workability,
+          productivityFactor: this.calculateProductivityFactor(forecast),
+          activityImpacts: await this.calculateActivityImpacts(scheduleId, forecast),
+          isActual: false, // Es pronóstico, no datos reales
+          dataSource: 'OpenWeatherMap'
+        };
 
-      // 4. Generar alertas meteorológicas
-      const weatherAlerts = await this.generateWeatherAlerts(activeSchedules, weatherUpdates);
+        // CORREGIDO: Crear la entidad completa
+        const weatherEntity = new WeatherFactorEntity();
+        Object.assign(weatherEntity, weatherFactor);
+        
+        await this.weatherRepository.save(weatherEntity);
+      }
+    }
+  }
 
-      // 5. Ajustar cronogramas por impacto climático
-      await this.adjustSchedulesForWeather(weatherAlerts);
+  // MÉTODO CORREGIDO - calculateActivityImpacts 
+  private async calculateActivityImpacts(scheduleId: string, forecast: WeatherForecast): Promise<any[]> {
+    const activities = await this.activityRepository.findByScheduleId(scheduleId);
+    const impacts = [];
 
-      // 6. Enviar notificaciones
-      await this.sendWeatherNotifications(weatherAlerts);
+    for (const activity of activities) {
+      // Solo actividades exteriores son afectadas significativamente
+      if (this.isOutdoorActivity(activity)) {
+        const adjustmentFactor = this.calculateAdjustmentFactor(activity, forecast);
+        
+        if (adjustmentFactor < 1.0) {
+          impacts.push({
+            activityType: activity.primaryTrade || activity.activityType,
+            impactLevel: this.getImpactLevel(adjustmentFactor),
+            adjustmentFactor,
+            notes: this.getImpactReason(forecast)
+          });
+        }
+      }
+    }
 
-      console.log('Weather Update Job completed successfully');
+    return impacts;
+  }
 
-    } catch (error) {
-      console.error('Error in Weather Update Job:', error);
+  // MÉTODO AGREGADO - getImpactLevel
+  private getImpactLevel(adjustmentFactor: number): 'none' | 'minimal' | 'moderate' | 'severe' | 'prohibitive' {
+    if (adjustmentFactor >= 0.9) return 'minimal';
+    if (adjustmentFactor >= 0.7) return 'moderate';
+    if (adjustmentFactor >= 0.4) return 'severe';
+    return 'prohibitive';
+  }
+
+  // MÉTODO CORREGIDO - sendWeatherNotifications
+  private async sendWeatherNotifications(alerts: WeatherAlert[]): Promise<void> {
+    for (const alert of alerts) {
       await this.notificationService.createNotification({
-        userId: 'system',
-        type: 'ERROR',
-        title: 'Error en Actualización Meteorológica',
-        message: `Error al actualizar datos meteorológicos: ${(error as Error).message}`,
-        priority: 'HIGH',
-        relatedEntityType: 'SYSTEM_JOB',
-        relatedEntityId: 'weather_update_job'
+        userId: 'system', // Debería ser reemplazado con project managers
+        type: 'WEATHER_ALERT',
+        title: 'Alerta Meteorológica',
+        message: alert.message,
+        priority: alert.severity === 'high' ? 'HIGH' : 'MEDIUM',
+        relatedEntityType: 'CALCULATION_SCHEDULE',
+        relatedEntityId: alert.scheduleId,
+        // CORREGIDO: Removido actionRequired ya que no existe en el tipo
+        metadata: {
+          alertType: alert.alertType,
+          affectedDates: alert.affectedDates,
+          recommendedActions: alert.recommendedActions,
+          severity: alert.severity
+        }
       });
     }
   }
 
+  // Resto de métodos permanecen igual...
   private async getSchedulesWithLocations(): Promise<any[]> {
     const schedules = await this.scheduleRepository.findByFilters(
       {
@@ -100,7 +151,6 @@ export class WeatherUpdateJob {
       }
     );
 
-    // Filtrar cronogramas que tienen configuración de ubicación
     return schedules.filter(schedule => 
       schedule.customFields?.location || 
       schedule.geographicalZone
@@ -109,22 +159,17 @@ export class WeatherUpdateJob {
 
   private async fetchWeatherData(schedules: any[]): Promise<Map<string, WeatherForecast[]>> {
     const weatherData = new Map<string, WeatherForecast[]>();
-
-    // Agrupar por ubicación para evitar llamadas duplicadas
     const locationGroups = this.groupSchedulesByLocation(schedules);
 
     for (const [location, locationSchedules] of locationGroups) {
       try {
         const forecasts = await this.getWeatherForecast(location);
         
-        // Asignar datos a todos los cronogramas de esa ubicación
         for (const schedule of locationSchedules) {
           weatherData.set(schedule.id, forecasts);
         }
 
         console.log(`Weather data fetched for ${location}: ${forecasts.length} days`);
-
-        // Esperar un poco entre llamadas para respetar rate limits
         await this.delay(1000);
 
       } catch (error) {
@@ -151,12 +196,10 @@ export class WeatherUpdateJob {
   }
 
   private getLocationKey(schedule: any): string {
-    // Usar coordenadas específicas si están disponibles
     if (schedule.customFields?.location?.latitude && schedule.customFields?.location?.longitude) {
       return `${schedule.customFields.location.latitude},${schedule.customFields.location.longitude}`;
     }
 
-    // Usar zona geográfica como fallback
     const zoneCoordinates = this.getZoneCoordinates(schedule.geographicalZone);
     return `${zoneCoordinates.lat},${zoneCoordinates.lon}`;
   }
@@ -181,7 +224,7 @@ export class WeatherUpdateJob {
     }
 
     const [lat, lon] = location.split(',');
-    const url = `${this.WEATHER_API_URL}/forecast?lat=${lat}&lon=${lon}&appid=${this.WEATHER_API_KEY}&units=metric&cnt=40`; // 5 days
+    const url = `${this.WEATHER_API_URL}/forecast?lat=${lat}&lon=${lon}&appid=${this.WEATHER_API_KEY}&units=metric&cnt=40`;
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -194,8 +237,6 @@ export class WeatherUpdateJob {
 
   private parseWeatherData(apiData: any): WeatherForecast[] {
     const forecasts: WeatherForecast[] = [];
-
-    // Agrupar por día
     const dailyGroups = new Map<string, any[]>();
     
     for (const item of apiData.list) {
@@ -208,7 +249,6 @@ export class WeatherUpdateJob {
       dailyGroups.get(dateKey)!.push(item);
     }
 
-    // Procesar cada día
     for (const [dateKey, dayItems] of dailyGroups) {
       const forecast = this.processDayForecast(new Date(dateKey), dayItems);
       forecasts.push(forecast);
@@ -218,33 +258,27 @@ export class WeatherUpdateJob {
   }
 
   private processDayForecast(date: Date, dayItems: any[]): WeatherForecast {
-    // Calcular temperaturas
     const temperatures = dayItems.map(item => item.main.temp);
     const minTemp = Math.min(...temperatures);
     const maxTemp = Math.max(...temperatures);
     const avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
 
-    // Calcular precipitación
     const precipitationAmounts = dayItems.map(item => item.rain?.['3h'] || 0);
     const totalPrecipitation = precipitationAmounts.reduce((sum, amount) => sum + amount, 0);
     const precipitationProbability = dayItems.some(item => item.rain) ? 
       dayItems.filter(item => item.rain).length / dayItems.length : 0;
 
-    // Calcular viento (promedio)
-    const windSpeeds = dayItems.map(item => item.wind.speed * 3.6); // m/s to km/h
+    const windSpeeds = dayItems.map(item => item.wind.speed * 3.6);
     const avgWindSpeed = windSpeeds.reduce((sum, speed) => sum + speed, 0) / windSpeeds.length;
     const windDirection = this.getWindDirection(dayItems[0].wind.deg);
 
-    // Calcular humedad
     const humidities = dayItems.map(item => item.main.humidity);
     const avgHumidity = humidities.reduce((sum, humidity) => sum + humidity, 0) / humidities.length;
 
-    // Determinar condiciones
     const conditions = [...new Set(dayItems.flatMap(item => 
       item.weather.map(w => w.description)
     ))];
 
-    // Calcular workability
     const workability = this.calculateWorkability({
       temperature: avgTemp,
       precipitation: totalPrecipitation,
@@ -282,14 +316,12 @@ export class WeatherUpdateJob {
   private calculateWorkability(conditions: any): 'excellent' | 'good' | 'fair' | 'poor' {
     let score = 100;
 
-    // Impacto de temperatura
     if (conditions.temperature < 5 || conditions.temperature > 35) {
       score -= 30;
     } else if (conditions.temperature < 10 || conditions.temperature > 30) {
       score -= 15;
     }
 
-    // Impacto de precipitación
     if (conditions.precipitation > 10) {
       score -= 50;
     } else if (conditions.precipitation > 5) {
@@ -298,7 +330,6 @@ export class WeatherUpdateJob {
       score -= 10;
     }
 
-    // Impacto de viento
     if (conditions.windSpeed > 50) {
       score -= 40;
     } else if (conditions.windSpeed > 30) {
@@ -307,42 +338,14 @@ export class WeatherUpdateJob {
       score -= 10;
     }
 
-    // Impacto de humedad
     if (conditions.humidity > 90) {
       score -= 10;
     }
 
-    // Determinar categoría
     if (score >= 85) return 'excellent';
     if (score >= 70) return 'good';
     if (score >= 50) return 'fair';
     return 'poor';
-  }
-
-  private async processWeatherData(weatherUpdates: Map<string, WeatherForecast[]>): Promise<void> {
-    for (const [scheduleId, forecasts] of weatherUpdates) {
-      for (const forecast of forecasts) {
-        const weatherFactor: WeatherFactorEntity = {
-          id: '', // Assign a unique identifier if required
-          scheduleId,
-          geographicalZone: schedule.geographicalZone || '', // Add geographicalZone if applicable
-          weatherCondition: forecast.conditions.join(', '),
-          rainfall: forecast.precipitation.amount,
-          temperature: forecast.temperature.avg,
-          windSpeed: forecast.wind.speed,
-          humidity: forecast.humidity,
-          workabilityCondition: forecast.workability,
-          productivityFactor: this.calculateProductivityFactor(forecast),
-          activityImpacts: await this.calculateActivityImpacts(scheduleId, forecast),
-          weatherConditions: forecast.conditions.join(', '),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          // Add other required properties with appropriate values
-        };
-
-        await this.weatherRepository.save(weatherFactor);
-      }
-    }
   }
 
   private calculateProductivityFactor(forecast: WeatherForecast): number {
@@ -355,39 +358,16 @@ export class WeatherUpdateJob {
     }
   }
 
-  private async calculateActivityImpacts(scheduleId: string, forecast: WeatherForecast): Promise<any[]> {
-    const activities = await this.activityRepository.findByScheduleId(scheduleId);
-    const impacts = [];
-
-    for (const activity of activities) {
-      // Solo actividades exteriores son afectadas significativamente
-      if (this.isOutdoorActivity(activity)) {
-        const adjustmentFactor = this.calculateAdjustmentFactor(activity, forecast);
-        
-        if (adjustmentFactor < 1.0) {
-          impacts.push({
-            activityId: activity.id,
-            activityType: activity.activityType,
-            adjustmentFactor,
-            reason: this.getImpactReason(forecast)
-          });
-        }
-      }
-    }
-
-    return impacts;
-  }
-
   private isOutdoorActivity(activity: any): boolean {
     const outdoorTypes = ['EXCAVATION', 'FOUNDATION', 'STRUCTURE', 'ROOFING', 'EXTERIOR'];
-    return outdoorTypes.includes(activity.activityType);
+    return outdoorTypes.includes(activity.activityType) || outdoorTypes.includes(activity.primaryTrade);
   }
 
   private calculateAdjustmentFactor(activity: any, forecast: WeatherForecast): number {
     let factor = this.calculateProductivityFactor(forecast);
+    const activityType = activity.activityType || activity.primaryTrade;
 
-    // Ajustes específicos por tipo de actividad
-    switch (activity.activityType) {
+    switch (activityType) {
       case 'EXCAVATION':
         if (forecast.precipitation.amount > 5) factor *= 0.5;
         break;
@@ -402,7 +382,7 @@ export class WeatherUpdateJob {
         break;
     }
 
-    return Math.max(0.1, factor); // Mínimo 10%
+    return Math.max(0.1, factor);
   }
 
   private getImpactReason(forecast: WeatherForecast): string {
@@ -427,7 +407,6 @@ export class WeatherUpdateJob {
       const forecasts = weatherUpdates.get(schedule.id);
       if (!forecasts) continue;
 
-      // Buscar condiciones adversas en los próximos días
       const adverseForecasts = forecasts.filter(forecast => 
         forecast.workability === 'poor' || 
         forecast.precipitation.amount > 10 ||
@@ -449,7 +428,6 @@ export class WeatherUpdateJob {
     let message: string;
     let recommendedActions: string[];
 
-    // Determinar tipo y severidad de alerta
     if (forecast.precipitation.amount > 20) {
       alertType = 'storm';
       severity = 'high';
@@ -511,7 +489,6 @@ export class WeatherUpdateJob {
   private async adjustScheduleForAlert(alert: WeatherAlert): Promise<void> {
     const activities = await this.activityRepository.findByScheduleId(alert.scheduleId);
     
-    // Identificar actividades afectadas en las fechas de alerta
     const affectedActivities = activities.filter(activity => {
       if (!this.isOutdoorActivity(activity)) return false;
       
@@ -522,12 +499,10 @@ export class WeatherUpdateJob {
       });
     });
 
-    // Ajustar actividades afectadas
     for (const activity of affectedActivities) {
       const adjustment = this.getScheduleAdjustment(alert);
       
       if (adjustment.postpone) {
-        // Postergar actividad
         const newStartDate = new Date(activity.plannedStartDate);
         newStartDate.setDate(newStartDate.getDate() + adjustment.days);
         
@@ -552,36 +527,11 @@ export class WeatherUpdateJob {
 
   private getScheduleAdjustment(alert: WeatherAlert): { postpone: boolean; days: number } {
     switch (alert.alertType) {
-      case 'storm':
-        return { postpone: true, days: 2 };
-      case 'rain':
-        return { postpone: alert.severity === 'high', days: 1 };
-      case 'wind':
-        return { postpone: alert.severity === 'high', days: 1 };
-      case 'temperature':
-        return { postpone: false, days: 0 };
-      default:
-        return { postpone: false, days: 0 };
-    }
-  }
-
-  private async sendWeatherNotifications(alerts: WeatherAlert[]): Promise<void> {
-    for (const alert of alerts) {
-      await this.notificationService.createNotification({
-        userId: 'system', // Should be replaced with project managers
-        type: 'WEATHER_ALERT',
-        title: 'Alerta Meteorológica',
-        message: alert.message,
-        priority: alert.severity === 'high' ? 'HIGH' : 'MEDIUM',
-        relatedEntityType: 'CALCULATION_SCHEDULE',
-        relatedEntityId: alert.scheduleId,
-        actionRequired: alert.severity === 'high',
-        metadata: {
-          alertType: alert.alertType,
-          affectedDates: alert.affectedDates,
-          recommendedActions: alert.recommendedActions
-        }
-      });
+      case 'storm': return { postpone: true, days: 2 };
+      case 'rain': return { postpone: alert.severity === 'high', days: 1 };
+      case 'wind': return { postpone: alert.severity === 'high', days: 1 };
+      case 'temperature': return { postpone: false, days: 0 };
+      default: return { postpone: false, days: 0 };
     }
   }
 
@@ -591,5 +541,36 @@ export class WeatherUpdateJob {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Método principal execute
+  async execute(): Promise<void> {
+    console.log('Starting Weather Update Job...');
+    
+    try {
+      const activeSchedules = await this.getSchedulesWithLocations();
+      console.log(`Found ${activeSchedules.length} schedules to update weather data`);
+
+      const weatherUpdates = await this.fetchWeatherData(activeSchedules);
+      await this.processWeatherData(weatherUpdates);
+
+      const weatherAlerts = await this.generateWeatherAlerts(activeSchedules, weatherUpdates);
+      await this.adjustSchedulesForWeather(weatherAlerts);
+      await this.sendWeatherNotifications(weatherAlerts);
+
+      console.log('Weather Update Job completed successfully');
+
+    } catch (error) {
+      console.error('Error in Weather Update Job:', error);
+      await this.notificationService.createNotification({
+        userId: 'system',
+        type: 'ERROR',
+        title: 'Error en Actualización Meteorológica',
+        message: `Error al actualizar datos meteorológicos: ${(error as Error).message}`,
+        priority: 'HIGH',
+        relatedEntityType: 'SYSTEM_JOB',
+        relatedEntityId: 'weather_update_job'
+      });
+    }
   }
 }

@@ -174,12 +174,11 @@ export class CalculationScheduleController {
         return;
       }
 
-      // Soft delete
-      await this.scheduleRepository.save({
-        ...schedule,
-        isActive: false,
-        updatedAt: new Date()
-      });
+      // CORREGIDO: Soft delete usando update en lugar de save con spread
+      schedule.isActive = false;
+      schedule.updatedAt = new Date();
+      
+      await this.scheduleRepository.save(schedule);
 
       res.json({
         success: true,
@@ -335,7 +334,7 @@ export class CalculationScheduleController {
       const syncRequest = {
         budgetId,
         scheduleId,
-        syncDirection: 'bidirectional',
+        syncDirection: 'bidirectional' as 'budget_to_schedule' | 'schedule_to_budget' | 'bidirectional',
         syncOptions: {
           syncCosts: true,
           syncQuantities: true,
@@ -345,7 +344,8 @@ export class CalculationScheduleController {
           preserveCustomizations: true,
           ...syncOptions
         },
-        conflictResolution: 'manual_review'
+        // CORREGIDO: Usar valores válidos para conflictResolution
+        conflictResolution: 'manual_review' as 'budget_wins' | 'schedule_wins' | 'manual_review'
       };
 
       const result = await this.budgetScheduleService.synchronizeBudgetAndSchedule(syncRequest);
@@ -441,16 +441,16 @@ export class CalculationScheduleController {
         return;
       }
 
-      const updatedSchedule = await this.scheduleRepository.save({
-        ...schedule,
-        status,
-        customFields: {
-          ...schedule.customFields,
-          statusChangeNotes: notes,
-          lastStatusChange: new Date()
-        },
-        updatedAt: new Date()
-      });
+      // CORREGIDO: Actualizar propiedades directamente en lugar de usar spread
+      schedule.status = status;
+      schedule.customFields = {
+        ...schedule.customFields,
+        statusChangeNotes: notes,
+        lastStatusChange: new Date()
+      };
+      schedule.updatedAt = new Date();
+
+      const updatedSchedule = await this.scheduleRepository.save(schedule);
 
       res.json({
         success: true,
@@ -529,9 +529,9 @@ export class CalculationScheduleController {
   }
 
   private calculateActivitiesProgress(activities: any[]): any {
-    const totalPlannedCost = activities.reduce((sum, a) => sum + a.plannedTotalCost, 0);
-    const totalEarnedValue = activities.reduce((sum, a) => sum + a.earnedValue, 0);
-    const totalActualCost = activities.reduce((sum, a) => sum + a.actualTotalCost, 0);
+    const totalPlannedCost = activities.reduce((sum, a) => sum + (a.plannedTotalCost || 0), 0);
+    const totalEarnedValue = activities.reduce((sum, a) => sum + (a.earnedValue || a.plannedTotalCost * (a.progressPercentage / 100) || 0), 0);
+    const totalActualCost = activities.reduce((sum, a) => sum + (a.actualTotalCost || 0), 0);
 
     return {
       schedulePerformanceIndex: totalPlannedCost > 0 ? totalEarnedValue / totalPlannedCost : 1,
@@ -540,7 +540,7 @@ export class CalculationScheduleController {
       totalEarnedValue: totalEarnedValue,
       totalActualCost: totalActualCost,
       summary: {
-        // Usar enum values para comparaciones correctas
+        // CORREGIDO: Usar enum values correctamente
         completed: activities.filter(a => a.status === ActivityStatus.COMPLETED).length,
         inProgress: activities.filter(a => a.status === ActivityStatus.IN_PROGRESS).length,
         notStarted: activities.filter(a => a.status === ActivityStatus.NOT_STARTED).length
@@ -558,7 +558,7 @@ export class CalculationScheduleController {
 
   private estimateCompletionDate(activities: any[]): Date | null {
     const inProgressActivities = activities.filter(a => 
-      a.status === 'IN_PROGRESS' && a.progressPercentage > 0
+      a.status === ActivityStatus.IN_PROGRESS && a.progressPercentage > 0
     );
 
     if (inProgressActivities.length === 0) return null;

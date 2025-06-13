@@ -30,6 +30,13 @@ export class MaterialEntity {
 	@Column({type: "decimal", precision: 10, scale: 2})
 	price: number;
 
+	// PROPIEDADES AGREGADAS para compatibilidad con el sistema
+	@Column({type: "decimal", precision: 10, scale: 2, nullable: true})
+	currentPrice: number;
+
+	@Column({type: "decimal", precision: 10, scale: 2, nullable: true})
+	unitCost: number;
+
 	@Column({
 		name: "wholesale_price",
 		type: "decimal",
@@ -44,6 +51,10 @@ export class MaterialEntity {
 
 	@Column({type: "int", default: 0})
 	stock: number;
+
+	// PROPIEDADES AGREGADAS - Alias para availableQuantity
+	@Column({name: "available_quantity", type: "int", default: 0})
+	availableQuantity: number;
 
 	@Column({
 		name: "min_stock",
@@ -73,6 +84,19 @@ export class MaterialEntity {
 	@Column({name: "barcode", nullable: true})
 	barcode: string;
 
+	// PROPIEDADES AGREGADAS para integraciones externas
+	@Column({name: "external_id", nullable: true})
+	externalId: string;
+
+	@Column({name: "supplier_code", nullable: true})
+	supplierCode: string;
+
+	@Column({name: "last_price_update", type: "datetime", nullable: true})
+	lastPriceUpdate: Date;
+
+	@Column({name: "last_inventory_update", type: "datetime", nullable: true})
+	lastInventoryUpdate: Date;
+
 	@Column({name: "image_urls", type: "simple-array", nullable: true})
 	imageUrls: string[];
 
@@ -93,6 +117,23 @@ export class MaterialEntity {
 		height?: number;
 		weight?: number;
 		unit?: string;
+	};
+
+	// PROPIEDADES AGREGADAS - Información adicional del material
+	@Column({type: "varchar", length: 100, nullable: true})
+	type: string;
+
+	@Column({
+		type: "json",
+		nullable: true,
+		comment: "Información del proveedor",
+	})
+	supplierInfo: {
+		supplierId?: string;
+		supplierName?: string;
+		minimumOrder?: number;
+		deliveryTime?: number;
+		qualityRating?: number;
 	};
 
 	@Column({name: "category_id"})
@@ -148,6 +189,104 @@ export class MaterialEntity {
 
 	@DeleteDateColumn({name: "deleted_at", nullable: true})
 	deletedAt: Date;
-  type: string;
-  unitCost: number;
+
+	// MÉTODOS DE UTILIDAD
+	
+	// Getter para sincronizar availableQuantity con stock
+	get availableStock(): number {
+		return this.availableQuantity || this.stock || 0;
+	}
+
+	// Setter para mantener sincronización
+	set availableStock(value: number) {
+		this.availableQuantity = value;
+		this.stock = value;
+	}
+
+	// Getter para precio actual
+	get currentPriceValue(): number {
+		return this.currentPrice || this.price || this.unitCost || 0;
+	}
+
+	// Método para verificar disponibilidad
+	isAvailable(requiredQuantity: number = 1): boolean {
+		return this.availableStock >= requiredQuantity && this.isActive;
+	}
+
+	// Método para verificar si necesita restock
+	needsRestock(): boolean {
+		return this.availableStock <= this.minStock;
+	}
+
+	// Método para obtener información del proveedor
+	getSupplierInfo(): any {
+		return this.supplierInfo || {
+			supplierId: null,
+			supplierName: null,
+			minimumOrder: 1,
+			deliveryTime: 7,
+			qualityRating: 0
+		};
+	}
+
+	// Método para actualizar inventario
+	updateInventory(newQuantity: number, source: string = 'manual'): void {
+		this.availableQuantity = newQuantity;
+		this.stock = newQuantity;
+		this.lastInventoryUpdate = new Date();
+	}
+
+	// Método para actualizar precio
+	updatePrice(newPrice: number, source: string = 'manual'): void {
+		this.currentPrice = newPrice;
+		if (!this.price || newPrice !== this.price) {
+			this.price = newPrice;
+		}
+		this.lastPriceUpdate = new Date();
+	}
+
+	// Método para reducir stock
+	reduceStock(quantity: number): boolean {
+		if (this.availableStock >= quantity) {
+			this.availableQuantity -= quantity;
+			this.stock -= quantity;
+			this.lastInventoryUpdate = new Date();
+			return true;
+		}
+		return false;
+	}
+
+	// Método para aumentar stock
+	increaseStock(quantity: number): void {
+		this.availableQuantity += quantity;
+		this.stock += quantity;
+		this.lastInventoryUpdate = new Date();
+	}
+
+	// Método para calcular valor total del inventario
+	getTotalInventoryValue(): number {
+		return this.availableStock * this.currentPriceValue;
+	}
+
+	// Método para verificar si el precio necesita actualización
+	needsPriceUpdate(daysThreshold: number = 30): boolean {
+		if (!this.lastPriceUpdate) return true;
+		
+		const daysSinceUpdate = Math.floor(
+			(new Date().getTime() - this.lastPriceUpdate.getTime()) / (1000 * 60 * 60 * 24)
+		);
+		
+		return daysSinceUpdate >= daysThreshold;
+	}
+
+	// Método para verificar si el inventario necesita actualización
+	needsInventoryUpdate(daysThreshold: number = 7): boolean {
+		if (!this.lastInventoryUpdate) return true;
+		
+		const daysSinceUpdate = Math.floor(
+			(new Date().getTime() - this.lastInventoryUpdate.getTime()) / (1000 * 60 * 60 * 24)
+		);
+		
+		return daysSinceUpdate >= daysThreshold;
+	}
 }

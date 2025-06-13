@@ -122,14 +122,16 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
       return null;
     }
 
+    // CORREGIDO: usar startDate y endDate en lugar de plannedStartDate y plannedEndDate
     const assignments = equipment.assignments?.filter(assignment => 
-      assignment.plannedStartDate >= dateRange.start && 
-      assignment.plannedEndDate <= dateRange.end
+      assignment.startDate >= dateRange.start && 
+      assignment.endDate <= dateRange.end
     ) || [];
 
     const totalDays = Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 3600 * 24));
     const utilizedDays = assignments.reduce((sum, assignment) => {
-      const assignmentDays = Math.ceil((assignment.plannedEndDate.getTime() - assignment.plannedStartDate.getTime()) / (1000 * 3600 * 24));
+      // CORREGIDO: usar startDate y endDate
+      const assignmentDays = Math.ceil((assignment.endDate.getTime() - assignment.startDate.getTime()) / (1000 * 3600 * 24));
       return sum + assignmentDays;
     }, 0);
 
@@ -141,8 +143,9 @@ export class TypeOrmEquipmentRepository implements EquipmentRepository {
       utilizationPercentage: (utilizedDays / totalDays) * 100,
       assignments: assignments.map(assignment => ({
         activityId: assignment.activityId,
-        startDate: assignment.plannedStartDate,
-        endDate: assignment.plannedEndDate,
+        // CORREGIDO: usar startDate y endDate
+        startDate: assignment.startDate,
+        endDate: assignment.endDate,
         allocationPercentage: assignment.allocationPercentage
       }))
     };

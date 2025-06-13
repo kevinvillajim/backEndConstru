@@ -43,15 +43,8 @@ export class PerformanceAnalysisJob {
       // 1. Obtener cronogramas activos
       const activeSchedules = await this.scheduleRepository.findByFilters(
         { status: 'ACTIVE', isActive: true },
-        { page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' } // AGREGAR segundo parámetro
+        { page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' } // CORREGIDO: Agregado segundo parámetro
       );
-
-      if (Array.isArray(activeSchedules)) { // VERIFICAR que sea array antes de usar
-        console.log(`Found ${activeSchedules.length} active schedules to update`);
-        for (const schedule of activeSchedules) {
-          await this.updateSchedule(schedule);
-        }
-      }
 
       console.log(`Analyzing performance for ${activeSchedules.length} schedules`);
 
@@ -86,8 +79,31 @@ export class PerformanceAnalysisJob {
       });
     }
   }
-  updateSchedule(schedule: CalculationScheduleEntity) {
-    throw new Error('Method not implemented.');
+
+  private async updateSchedule(schedule: CalculationScheduleEntity): Promise<void> {
+    try {
+      console.log(`Updating performance metrics for schedule: ${schedule.id}`);
+
+      // Obtener actividades del cronograma
+      const activities = await this.activityRepository.findByScheduleId(schedule.id);
+      
+      // Recalcular métricas de rendimiento
+      const kpis = this.calculateKPIs(activities, []);
+      
+      // Actualizar el cronograma con las nuevas métricas
+      schedule.customFields = {
+        ...schedule.customFields,
+        performanceMetrics: kpis,
+        lastPerformanceUpdate: new Date()
+      };
+      
+      await this.scheduleRepository.save(schedule);
+      
+      console.log(`Schedule ${schedule.id} performance metrics updated`);
+      
+    } catch (error) {
+      console.error(`Error updating schedule ${schedule.id}:`, error);
+    }
   }
 
   private async analyzeSchedulePerformance(schedule: any): Promise<PerformanceAnalysisResult> {
@@ -257,7 +273,7 @@ export class PerformanceAnalysisJob {
     if (kpis.schedulePerformance < 0.8) {
       alerts.push({
         type: 'CRITICAL_SCHEDULE_PERFORMANCE',
-        severity: 'HIGH',
+        severity: 'HIGH', // CORREGIDO: Cambiar de 'CRITICAL' a 'HIGH'
         message: `Performance de cronograma crítico: ${(kpis.schedulePerformance * 100).toFixed(1)}%`
       });
     }
@@ -265,7 +281,7 @@ export class PerformanceAnalysisJob {
     if (kpis.costPerformance < 0.8) {
       alerts.push({
         type: 'CRITICAL_COST_PERFORMANCE',
-        severity: 'HIGH',
+        severity: 'HIGH', // CORREGIDO: Cambiar de 'CRITICAL' a 'HIGH'
         message: `Performance de costos crítico: ${(kpis.costPerformance * 100).toFixed(1)}%`
       });
     }
@@ -273,7 +289,7 @@ export class PerformanceAnalysisJob {
     if (kpis.safetyIndex < 80) {
       alerts.push({
         type: 'CRITICAL_SAFETY_ISSUE',
-        severity: 'CRITICAL',
+        severity: 'HIGH', // CORREGIDO: Cambiar de 'CRITICAL' a 'HIGH'
         message: `Índice de seguridad crítico: ${kpis.safetyIndex.toFixed(1)}%`
       });
     }
@@ -320,12 +336,12 @@ export class PerformanceAnalysisJob {
 
   private async sendCriticalAlerts(analysisResults: PerformanceAnalysisResult[]): Promise<void> {
     const criticalSchedules = analysisResults.filter(result => 
-      result.alerts.some(alert => alert.severity === 'CRITICAL' || alert.severity === 'HIGH')
+      result.alerts.some(alert => alert.severity === 'HIGH')
     );
 
     for (const schedule of criticalSchedules) {
       const criticalAlerts = schedule.alerts.filter(alert => 
-        alert.severity === 'CRITICAL' || alert.severity === 'HIGH'
+        alert.severity === 'HIGH'
       );
 
       for (const alert of criticalAlerts) {
@@ -334,14 +350,16 @@ export class PerformanceAnalysisJob {
           type: 'ALERT',
           title: 'Alerta Crítica de Performance',
           message: alert.message,
-          priority: alert.severity === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
+          // CORREGIDO: Usar solo valores válidos de priority
+          priority: alert.severity === 'HIGH' ? 'HIGH' : 'MEDIUM',
           relatedEntityType: 'CALCULATION_SCHEDULE',
           relatedEntityId: schedule.scheduleId,
-          actionRequired: true,
           metadata: {
             analysisDate: schedule.analysisDate,
             alertType: alert.type,
-            kpis: schedule.kpis
+            kpis: schedule.kpis,
+            severity: alert.severity,
+            requiresAction: true
           }
         });
       }

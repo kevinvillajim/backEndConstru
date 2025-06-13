@@ -175,7 +175,12 @@ export class ScheduleUpdateJob {
         type: 'SCHEDULE_DELAY',
         severity: delayedActivities.some(a => a.isCriticalPath) ? 'HIGH' : 'MEDIUM',
         message: `${delayedActivities.length} actividades retrasadas detectadas`,
-        affectedActivities: delayedActivities.map(a => a.id)
+        affectedActivities: delayedActivities.map(a => a.id),
+        details: {
+          totalDelayedActivities: delayedActivities.length,
+          criticalPathAffected: delayedActivities.some(a => a.isCriticalPath),
+          maxDelay: Math.max(...delayedActivities.map(a => this.calculateActivityDelay(a)))
+        }
       });
     }
 
@@ -186,37 +191,67 @@ export class ScheduleUpdateJob {
         type: 'COST_VARIANCE',
         severity: Math.abs(costVariance) > 25 ? 'HIGH' : 'MEDIUM',
         message: `Varianza de costos significativa: ${costVariance.toFixed(1)}%`,
-        variance: costVariance
+        variance: costVariance,
+        details: {
+          variancePercentage: costVariance,
+          thresholdExceeded: Math.abs(costVariance) > 25,
+          impactLevel: Math.abs(costVariance) > 25 ? 'high' : 'medium'
+        }
       });
     }
 
     // Alerta por baja productividad
-    const recentReports = await this.progressRepository.findByScheduleId(schedule.id, {
-      startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
-    });
-
-    const avgProductivity = this.calculateAverageProductivity(recentReports);
-    if (avgProductivity < 0.5) {
-      alerts.push({
-        type: 'LOW_PRODUCTIVITY',
-        severity: 'MEDIUM',
-        message: `Productividad baja detectada: ${avgProductivity.toFixed(2)} unidades/hora-persona`,
-        productivity: avgProductivity
+    try {
+      const recentReports = await this.progressRepository.findByScheduleId(schedule.id, {
+        startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
       });
+
+      const avgProductivity = this.calculateAverageProductivity(recentReports);
+      if (avgProductivity < 0.5) {
+        alerts.push({
+          type: 'LOW_PRODUCTIVITY',
+          severity: avgProductivity < 0.3 ? 'HIGH' : 'MEDIUM',
+          message: `Productividad baja detectada: ${avgProductivity.toFixed(2)} unidades/hora-persona`,
+          productivity: avgProductivity,
+          details: {
+            currentProductivity: avgProductivity,
+            threshold: 0.5,
+            reportsPeriod: '7 days',
+            reportsAnalyzed: recentReports.length
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error calculating productivity alerts:', error);
     }
 
     return alerts;
+  }
+  private calculateActivityDelay(activity: any): number {
+    if (activity.status === 'COMPLETED') {
+      const plannedEnd = activity.plannedEndDate.getTime();
+      const actualEnd = activity.actualEndDate.getTime();
+      return Math.max(0, (actualEnd - plannedEnd) / (24 * 60 * 60 * 1000));
+    }
+    
+    const expectedProgress = this.getExpectedProgress(activity);
+    const actualProgress = activity.progressPercentage;
+    const progressDelay = Math.max(0, expectedProgress - actualProgress);
+    
+    // Convertir retraso de progreso a días estimados
+    const totalDuration = this.daysBetween(activity.plannedStartDate, activity.plannedEndDate);
+    return (progressDelay / 100) * totalDuration;
   }
 
   private async executeBudgetScheduleSync(): Promise<void> {
     console.log('Executing automatic budget-schedule synchronization...');
 
     try {
-      // Obtener cronogramas con sincronización automática habilitada
-      const autoSyncSchedules = await this.scheduleRepository.findByFilters({
-        'customFields.autoSync': true,
-        isActive: true
-      });
+      // CORREGIDO: Obtener cronogramas con sincronización automática habilitada
+      const autoSyncSchedules = await this.scheduleRepository.findByFilters(
+        { 'customFields.autoSync': true, isActive: true },
+        { page: 1, limit: 50, sortBy: 'updatedAt', sortOrder: 'desc' }
+      );
 
       for (const schedule of autoSyncSchedules) {
         if (schedule.customFields?.linkedBudgetId) {
@@ -253,10 +288,31 @@ export class ScheduleUpdateJob {
       cutoffDate.setDate(cutoffDate.getDate() - 90); // 90 días atrás
 
       // Limpiar reportes de progreso antiguos (mantener solo los últimos 90 días)
-      await this.progressRepository.deleteOlderThan(cutoffDate);
+      try {
+        await this.progressRepository.deleteOlderThan(cutoffDate);
+        console.log('Old progress reports cleaned up');
+      } catch (error) {
+        console.error('Error cleaning progress reports:', error);
+      }
 
-      // Limpiar logs de uso de templates antiguos
-      // await this.templateUsageLogRepository.deleteOlderThan(cutoffDate);
+      // Limpiar logs de actualizaciones automáticas antiguos
+      try {
+        const oldSchedules = await this.scheduleRepository.findByFilters(
+          { 'customFields.lastAutoUpdate': { $lt: cutoffDate } },
+          { page: 1, limit: 100, sortBy: 'updatedAt', sortOrder: 'asc' }
+        );
+
+        for (const schedule of oldSchedules) {
+          if (schedule.customFields?.autoUpdateResults) {
+            // Limpiar resultados de actualizaciones automáticas muy antiguas
+            delete schedule.customFields.autoUpdateResults;
+            await this.scheduleRepository.save(schedule);
+          }
+        }
+        console.log(`Cleaned up auto-update results for ${oldSchedules.length} schedules`);
+      } catch (error) {
+        console.error('Error cleaning schedule auto-update results:', error);
+      }
 
       console.log('Old data cleanup completed');
 
@@ -275,10 +331,12 @@ export class ScheduleUpdateJob {
         priority: alert.severity === 'HIGH' ? 'HIGH' : 'MEDIUM',
         relatedEntityType: 'CALCULATION_SCHEDULE',
         relatedEntityId: scheduleId,
-        actionRequired: alert.severity === 'HIGH',
+        // CORREGIDO: Removido actionRequired, agregado a metadata
         metadata: {
           alertType: alert.type,
-          alertData: alert
+          alertData: alert,
+          severity: alert.severity,
+          requiresAction: alert.severity === 'HIGH'
         }
       });
     }

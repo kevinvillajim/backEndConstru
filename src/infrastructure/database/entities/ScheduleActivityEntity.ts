@@ -400,7 +400,7 @@ export class ScheduleActivityEntity {
 
   public hasResourceConflicts(): boolean {
     const assignments = this.getActiveAssignments();
-    return assignments.some(assignment => assignment.isOverallocated?.());
+    return assignments.some(assignment => assignment.isOverallocated);
   }
 
   // Método helper para obtener requerimientos de recursos 

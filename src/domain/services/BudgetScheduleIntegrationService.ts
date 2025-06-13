@@ -445,7 +445,10 @@ export class BudgetScheduleIntegrationService {
   }
 
   private async createActivityFromBudgetItem(item: any, scheduleId: string): Promise<any> {
+    // CORREGIDO: Crear actividad con todas las propiedades requeridas por ScheduleActivityEntity
     const newActivity = {
+      // Propiedades básicas requeridas
+      id: '', // Generado por el repositorio
       scheduleId,
       name: item.description,
       description: `Actividad generada desde ítem de presupuesto: ${item.description}`,
@@ -453,38 +456,136 @@ export class BudgetScheduleIntegrationService {
       activityType: 'OTHER',
       priority: 'NORMAL',
       primaryTrade: 'GENERAL',
+      
+      // Fechas de planificación
       plannedStartDate: new Date(),
       plannedEndDate: new Date(),
       plannedDurationDays: 1,
+      
+      // Fechas reales (inicialmente nulas)
       actualStartDate: null,
       actualEndDate: null,
       actualDurationDays: 0,
+      
+      // PROPIEDADES AGREGADAS para ScheduleActivityEntity
+      earlyStartDate: new Date(),
+      earlyFinishDate: new Date(),
+      lateStartDate: new Date(),
+      lateFinishDate: new Date(),
+      totalFloat: 0,
+      freeFloat: 0,
+      
+      // Progreso y costos
       progressPercentage: 0,
       plannedTotalCost: item.totalCost,
       actualTotalCost: 0,
+      earnedValue: 0,
+      costVariance: 0,
+      scheduleVariance: 0,
+      
+      // Cantidades de trabajo
       workQuantities: {
         plannedQuantity: item.quantity,
         completedQuantity: 0,
-        unit: item.unit
+        unit: item.unit,
+        wastePercentage: 5
       },
+      
+      // Requerimientos y dependencias
       qualityRequirements: [],
       safetyRequirements: [],
       deliverables: [item.description],
       predecessors: [],
       successors: [],
-      resourceRequirements: { workforce: [], equipment: [], materials: [] },
+      resourceRequirements: { 
+        workforce: [], 
+        equipment: [], 
+        materials: [{
+          materialId: item.id,
+          quantity: item.quantity,
+          unit: item.unit,
+          description: item.description
+        }]
+      },
+      
+      // Propiedades de cronograma
       isCriticalPath: false,
       bufferDays: 0,
-      customFields: { budgetLineItemId: item.id, generatedFromBudget: true },
+      slack: 0,
+      
+      // PROPIEDADES ADICIONALES requeridas
+      baselineStartDate: new Date(),
+      baselineEndDate: new Date(),
+      baselineDuration: 1,
+      baselineCost: item.totalCost,
+      
+      // Ubicación y contexto
+      location: {
+        area: 'general',
+        floor: 'ground',
+        zone: 'main',
+        coordinates: { x: 0, y: 0, z: 0 }
+      },
+      
+      // Riesgos y dependencias
+      risks: [],
+      technicalDependencies: [],
+      externalDependencies: [],
+      
+      // Métricas de performance
+      performanceMetrics: {
+        productivityRate: 0,
+        qualityScore: 100,
+        safetyScore: 100,
+        costEfficiency: 1.0
+      },
+      
+      // Configuración y validación
+      milestoneType: null,
+      isTemplate: false,
+      templateId: null,
+      validationRules: [],
+      approvalRequirements: [],
+      
+      // Estado y seguimiento
+      currentPhase: 'PLANNING',
+      phaseCompletionPercentage: 0,
+      lastStatusUpdate: new Date(),
+      nextReviewDate: null,
+      
+      // Campos personalizados y metadatos
+      customFields: { 
+        budgetLineItemId: item.id, 
+        generatedFromBudget: true,
+        originalBudgetData: {
+          itemId: item.id,
+          description: item.description,
+          totalCost: item.totalCost,
+          createdAt: new Date()
+        }
+      },
+      
+      // Timestamps
       createdAt: new Date(),
       updatedAt: new Date()
     };
+
+    // Calcular fechas de finalización
+    const endDate = new Date(newActivity.plannedStartDate);
+    endDate.setDate(endDate.getDate() + newActivity.plannedDurationDays);
+    newActivity.plannedEndDate = endDate;
+    newActivity.earlyFinishDate = endDate;
+    newActivity.lateFinishDate = endDate;
+    newActivity.baselineEndDate = endDate;
 
     return await this.activityRepository.save(newActivity);
   }
 
   private async createBudgetItemFromActivity(activity: any, budgetId: string): Promise<any> {
+    // CORREGIDO: Crear ítem de presupuesto con todas las propiedades requeridas por BudgetLineItemEntity
     const newItem = {
+      // Propiedades básicas requeridas
+      id: '', // Generado por el repositorio
       budgetId,
       description: activity.name,
       quantity: activity.workQuantities.plannedQuantity,
@@ -492,13 +593,113 @@ export class BudgetScheduleIntegrationService {
       unitCost: activity.workQuantities.plannedQuantity > 0 ? 
         activity.plannedTotalCost / activity.workQuantities.plannedQuantity : 0,
       totalCost: activity.plannedTotalCost,
+      
+      // Costos por categoría
       materialCost: activity.plannedTotalCost * 0.6, // Estimación
       laborCost: activity.plannedTotalCost * 0.4, // Estimación
+      equipmentCost: 0,
+      subcontractorCost: 0,
+      
+      // Categorización
       category: 'OTHER',
       subcategory: activity.activityType,
       specifications: activity.description,
+      
+      // PROPIEDADES AGREGADAS para BudgetLineItemEntity
+      itemType: 'ACTIVITY_BASED',
+      source: 'SCHEDULE_INTEGRATION',
+      calculationBudgetId: budgetId,
+      
+      // Propiedades técnicas
       wastePercentage: 5,
-      customFields: { linkedActivityId: activity.id, generatedFromSchedule: true },
+      contingencyPercentage: 10,
+      overheadPercentage: 15,
+      profitMargin: 12,
+      
+      // Análisis de precios unitarios
+      unitPriceAnalysis: {
+        materials: activity.plannedTotalCost * 0.6,
+        labor: activity.plannedTotalCost * 0.4,
+        equipment: 0,
+        overhead: activity.plannedTotalCost * 0.15,
+        profit: activity.plannedTotalCost * 0.12
+      },
+      
+      // Información de mercado
+      marketPrices: {
+        currentPrice: activity.plannedTotalCost / Math.max(1, activity.workQuantities.plannedQuantity),
+        lastUpdate: new Date(),
+        source: 'generated_from_schedule',
+        reliability: 'estimated'
+      },
+      
+      // Escalación y ajustes
+      escalationFactors: {
+        materials: 1.0,
+        labor: 1.0,
+        equipment: 1.0,
+        general: 1.0
+      },
+      
+      // Ubicación geográfica
+      geographicalZone: 'SIERRA', // Valor por defecto
+      locationFactors: {
+        transportation: 1.0,
+        availability: 1.0,
+        climatic: 1.0
+      },
+      
+      // Referencias y estándares
+      measurementCriteria: activity.workQuantities.unit,
+      qualityStandards: activity.qualityRequirements || [],
+      necReferences: [],
+      
+      // Estado y validación
+      isActive: true,
+      isTemplate: false,
+      validationStatus: 'PENDING',
+      approvalStatus: 'DRAFT',
+      
+      // Información del proveedor
+      preferredSuppliers: [],
+      alternativeSuppliers: [],
+      
+      // Fechas y vigencia
+      priceValidityDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
+      lastPriceUpdate: new Date(),
+      
+      // Análisis de riesgo
+      riskFactors: {
+        priceVolatility: 'LOW',
+        supplyAvailability: 'HIGH',
+        qualityRisk: 'LOW',
+        deliveryRisk: 'LOW'
+      },
+      
+      // Datos históricos
+      historicalData: {
+        hasHistoricalPrices: false,
+        averageHistoricalPrice: 0,
+        priceVariance: 0,
+        lastUsedDate: null
+      },
+      
+      // Referencias de proyecto
+      projectReferences: [],
+      
+      // Campos personalizados y metadatos
+      customFields: { 
+        linkedActivityId: activity.id, 
+        generatedFromSchedule: true,
+        originalActivityData: {
+          activityId: activity.id,
+          activityName: activity.name,
+          plannedCost: activity.plannedTotalCost,
+          createdAt: new Date()
+        }
+      },
+      
+      // Timestamps
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -577,11 +778,13 @@ export class BudgetScheduleIntegrationService {
       priority: 'MEDIUM',
       relatedEntityType: 'BUDGET_SCHEDULE_SYNC',
       relatedEntityId: syncRequest.budgetId,
-      actionRequired: true,
+      // CORREGIDO: Removido actionRequired, agregado a metadata
       metadata: {
         budgetId: syncRequest.budgetId,
         scheduleId: syncRequest.scheduleId,
-        conflicts: syncResult.conflictsDetected
+        conflicts: syncResult.conflictsDetected,
+        syncDirection: syncRequest.syncDirection,
+        requiresAction: true // Movido a metadata
       }
     });
   }

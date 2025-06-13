@@ -231,7 +231,10 @@ export class CalculationScheduleService {
   }
 
   private extractMaterialActivities(materialCalc: any): any[] {
-    return materialCalc.materials?.map(material => ({
+    // CORREGIDO: Verificar que materials sea un array antes de usar map
+    const materials = Array.isArray(materialCalc.materials) ? materialCalc.materials : [];
+    
+    return materials.map(material => ({
       name: `Suministro e instalación de ${material.name}`,
       type: 'MATERIAL_INSTALLATION',
       duration: this.calculateMaterialDuration(material),
@@ -239,7 +242,7 @@ export class CalculationScheduleService {
       technicalRequirements: material.specifications,
       quantityRequired: material.quantity,
       unit: material.unit
-    })) || [];
+    }));
   }
 
   private extractInstallationActivities(installationCalc: any): any[] {
@@ -268,6 +271,42 @@ export class CalculationScheduleService {
     }
 
     return activities;
+  }
+
+  // MÉTODO CORREGIDO para evitar problemas con tipos unknown
+  private extractTechnicalActivities(calculationResult: any): any[] {
+    const activities = [];
+
+    // Extraer actividades de cálculos estructurales
+    if (calculationResult.calculations?.structural) {
+      const structuralActivities = this.extractStructuralActivities(calculationResult.calculations.structural);
+      activities.push(...structuralActivities);
+    }
+
+    // Extraer actividades de cálculos de materiales
+    if (calculationResult.calculations?.materials) {
+      const materialActivities = this.extractMaterialActivities(calculationResult.calculations.materials);
+      activities.push(...materialActivities);
+    }
+
+    // Extraer actividades de instalaciones
+    if (calculationResult.calculations?.installations) {
+      const installationActivities = this.extractInstallationActivities(calculationResult.calculations.installations);
+      activities.push(...installationActivities);
+    }
+
+    return activities;
+  }
+
+  private ensureArray(value: unknown): any[] {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    if (value && typeof value === 'object') {
+      // Si es un objeto, intentar convertirlo a array de sus valores
+      return Object.values(value);
+    }
+    return [];
   }
 
   private validateStructuralSequence(activities: any[], calculationResult: any): boolean {
@@ -330,38 +369,125 @@ export class CalculationScheduleService {
   }
 
   private calculateFoundationDuration(foundation: any): number {
+    // Validar entrada
+    if (!foundation || typeof foundation !== 'object') return 1;
+    
     // Calcular duración basada en complejidad de fundación
-    return Math.ceil(foundation.volume * 0.5); // días
+    const volume = foundation.volume || 10; // Valor por defecto
+    return Math.ceil(volume * 0.5); // días
   }
 
   private calculateStructureDuration(structural: any): number {
+    // Validar entrada
+    if (!structural || typeof structural !== 'object') return 15;
+    
     // Calcular duración basada en elementos estructurales
-    return 15; // Simplified
+    const complexity = this.assessStructuralComplexity(structural);
+    return Math.ceil(15 * complexity);
   }
 
   private calculateMaterialDuration(material: any): number {
+    // Validar entrada
+    if (!material || typeof material !== 'object') return 1;
+    
     // Calcular duración basada en cantidad y tipo de material
-    return Math.ceil(material.quantity * 0.1); // días
+    const quantity = material.quantity || 1;
+    const complexity = this.getMaterialComplexity(material.type);
+    return Math.ceil(quantity * 0.1 * complexity);
   }
 
   private calculateElectricalDuration(electrical: any): number {
-    return 10; // Simplified
+    // Validar entrada
+    if (!electrical || typeof electrical !== 'object') return 10;
+    
+    const complexity = electrical.complexity || 1;
+    return Math.ceil(10 * complexity);
   }
 
   private calculatePlumbingDuration(plumbing: any): number {
-    return 8; // Simplified
+    // Validar entrada
+    if (!plumbing || typeof plumbing !== 'object') return 8;
+    
+    const complexity = plumbing.complexity || 1;
+    return Math.ceil(8 * complexity);
+  }
+
+  // MÉTODOS AUXILIARES AGREGADOS
+  private assessStructuralComplexity(structural: any): number {
+    let complexity = 1;
+    
+    if (structural.columns) complexity += 0.3;
+    if (structural.beams) complexity += 0.3;
+    if (structural.slabs) complexity += 0.2;
+    if (structural.specialElements) complexity += 0.5;
+    
+    return complexity;
+  }
+
+  private getMaterialComplexity(materialType: string): number {
+    const complexityMap = {
+      'concrete': 1.2,
+      'steel': 1.5,
+      'wood': 1.0,
+      'brick': 0.8,
+      'default': 1.0
+    };
+    
+    return complexityMap[materialType] || complexityMap['default'];
   }
 
   private combineStructuralRequirements(structural: any): any {
-    return { combined: true }; // Simplified
+    return {
+      combined: true,
+      requirements: Object.keys(structural).map(key => ({
+        element: key,
+        specifications: structural[key].specifications || {},
+        necCompliance: structural[key].necCompliance || []
+      }))
+    };
   }
 
   private extractNECReferences(structural: any): string[] {
-    return ['NEC-SE-DS', 'NEC-SE-HM']; // Simplified
+    const references = [];
+    
+    if (structural.foundation?.necCompliance) {
+      references.push(...this.ensureArray(structural.foundation.necCompliance));
+    }
+    if (structural.columns?.necCompliance) {
+      references.push(...this.ensureArray(structural.columns.necCompliance));
+    }
+    if (structural.beams?.necCompliance) {
+      references.push(...this.ensureArray(structural.beams.necCompliance));
+    }
+    
+    // Agregar referencias por defecto si no hay ninguna
+    if (references.length === 0) {
+      references.push('NEC-SE-DS', 'NEC-SE-HM');
+    }
+    
+    return references;
   }
 
   private determineMaterialDependencies(material: any): string[] {
-    return []; // Simplified
+    const dependencies = [];
+    
+    // Dependencias basadas en tipo de material
+    switch (material.type) {
+      case 'concrete':
+        dependencies.push('foundation', 'formwork');
+        break;
+      case 'steel':
+        dependencies.push('structure');
+        break;
+      case 'finishing':
+        dependencies.push('structure', 'installations');
+        break;
+      default:
+        // Sin dependencias específicas
+        break;
+    }
+    
+    return dependencies;
   }
 
   private calculateTotalResourceDemand(activities: any[]): any {

@@ -617,8 +617,8 @@ export class ExternalIntegrationService {
     // Actualizar inventario de material
     const material = await this.materialRepository.findByExternalId(item.id);
     if (material) {
-      material.availableQuantity = item.quantity;
-      material.lastInventoryUpdate = new Date();
+      // CORREGIDO: Usar método de la entidad
+      material.updateInventory(item.quantity, 'supplier_sync');
       await this.materialRepository.save(material);
     }
   }
@@ -627,8 +627,8 @@ export class ExternalIntegrationService {
     // Actualizar precios de material
     const material = await this.materialRepository.findByExternalId(priceItem.materialId);
     if (material) {
-      material.currentPrice = priceItem.price;
-      material.lastPriceUpdate = new Date();
+      // CORREGIDO: Usar método de la entidad
+      material.updatePrice(priceItem.price, 'supplier_sync');
       await this.materialRepository.save(material);
     }
   }

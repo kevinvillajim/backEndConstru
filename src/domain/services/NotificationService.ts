@@ -1,133 +1,155 @@
-// src/domain/services/NotificationService.ts
-import {
-	NotificationType,
-	NotificationPriority,
-} from "../../infrastructure/database/entities/NotificationEntity";
+// src/domain/services/NotificationService.ts - Interface actualizada
 
-export interface NotificationOptions {
+export interface CreateNotificationRequest {
+	userId: string;
+	type: string;
 	title: string;
-	content: string;
-	type: NotificationType;
-	priority?: NotificationPriority;
-	actionUrl?: string;
-	actionText?: string;
+	message: string;
+	priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 	relatedEntityType?: string;
 	relatedEntityId?: string;
-	icon?: string;
-	expiresAt?: Date;
-	sendEmail?: boolean;
-	sendPush?: boolean;
-	sendSms?: boolean;
-}
-
-export interface NotificationResult {
-	id: string;
-	userId: string;
-	title: string;
-	content: string;
-	type: NotificationType;
-	priority: NotificationPriority;
-	isRead: boolean;
-	createdAt: Date;
-	success: boolean;
-	emailSent?: boolean;
-	pushSent?: boolean;
-	smsSent?: boolean;
-}
-
-/**
- * Interfaz para el servicio de notificaciones
- */
-export interface NotificationService {
-	/**
-	 * Envía una notificación a un usuario específico
-	 */
-	sendToUser(
-		userId: string,
-		options: NotificationOptions
-	): Promise<NotificationResult>;
-
-	/**
-	 * Envía una notificación a varios usuarios
-	 */
-	sendToUsers(
-		userIds: string[],
-		options: NotificationOptions
-	): Promise<NotificationResult[]>;
-
-	/**
-	 * Envía una notificación a todos los usuarios de un proyecto
-	 */
-	sendToProjectMembers(
-		projectId: string,
-		options: NotificationOptions
-	): Promise<NotificationResult[]>;
-
-	createNotification(notification: {
-		userId: string;
-		type: string;
-		title: string;
-		message: string;
-		priority: string;
-		relatedEntityType?: string;
-		relatedEntityId?: string;
-	  }): Promise<void>;
-
-	/**
-	 * Envía una notificación a todos los usuarios con un rol específico
-	 */
-	sendToUsersByRole(
-		role: string,
-		options: NotificationOptions
-	): Promise<NotificationResult[]>;
-
-	/**
-	 * Marca una notificación como leída
-	 */
+	metadata?: Record<string, any>;
+	// NOTA: actionRequired no está incluido en la interface base
+	// Si se necesita, debe ser parte de metadata
+  }
+  
+  export interface NotificationService {
+	createNotification(request: CreateNotificationRequest): Promise<any>;
+	
+	// Otros métodos del servicio...
 	markAsRead(notificationId: string, userId: string): Promise<boolean>;
-
-	/**
-	 * Obtiene todas las notificaciones de un usuario
-	 */
-	getUserNotifications(
-		userId: string,
-		options?: {
-			unreadOnly?: boolean;
-			page?: number;
-			limit?: number;
-			type?: NotificationType;
+	markAllAsRead(userId: string): Promise<boolean>;
+	getNotifications(userId: string, filters?: any): Promise<any[]>;
+	deleteNotification(notificationId: string, userId: string): Promise<boolean>;
+	
+	// Métodos específicos para tipos de notificación
+	createWeatherAlert(request: CreateNotificationRequest & { 
+	  metadata: {
+		alertType: 'rain' | 'wind' | 'temperature' | 'storm';
+		severity: 'low' | 'medium' | 'high';
+		affectedDates: Date[];
+		recommendedActions: string[];
+	  }
+	}): Promise<any>;
+	
+	createScheduleAlert(request: CreateNotificationRequest & {
+	  metadata: {
+		scheduleId: string;
+		changeType: 'delay' | 'cost_overrun' | 'resource_conflict';
+		impact: 'low' | 'medium' | 'high';
+	  }
+	}): Promise<any>;
+	
+	createSystemAlert(request: CreateNotificationRequest & {
+	  metadata: {
+		component: string;
+		errorCode?: string;
+		resolution?: string;
+	  }
+	}): Promise<any>;
+  }
+  
+  // Ejemplo de implementación base
+  export class BaseNotificationService implements NotificationService {
+	async createNotification(request: CreateNotificationRequest): Promise<any> {
+	  // Implementación base
+	  const notification = {
+		id: this.generateId(),
+		...request,
+		createdAt: new Date(),
+		isRead: false,
+		isArchived: false
+	  };
+	  
+	  // Guardar en base de datos
+	  // await this.notificationRepository.save(notification);
+	  
+	  return notification;
+	}
+	
+	async createWeatherAlert(request: CreateNotificationRequest & { 
+	  metadata: {
+		alertType: 'rain' | 'wind' | 'temperature' | 'storm';
+		severity: 'low' | 'medium' | 'high';
+		affectedDates: Date[];
+		recommendedActions: string[];
+	  }
+	}): Promise<any> {
+	  // Enriquecer la notificación con información específica del clima
+	  const enrichedRequest = {
+		...request,
+		type: 'WEATHER_ALERT',
+		metadata: {
+		  ...request.metadata,
+		  category: 'weather',
+		  requiresAction: request.metadata.severity === 'high'
 		}
-	): Promise<{notifications: any[]; total: number}>;
-
-	/**
-	 * Elimina una notificación
-	 */
-	deleteNotification(id: string): Promise<boolean>;
-	/**
-	 * Elimina todas las notificaciones de un usuario
-	 */
-	deleteAllUserNotifications(userId: string): Promise<boolean>;
-
-	/**
-	 * Actualiza las preferencias de notificación de un usuario
-	 */
-	updateUserNotificationPreferences(
-		userId: string,
-		preferences: {
-			email?: boolean;
-			push?: boolean;
-			sms?: boolean;
-			projectUpdates?: boolean;
-			materialRecommendations?: boolean;
-			pricingAlerts?: boolean;
-			weeklyReports?: boolean;
+	  };
+	  
+	  return this.createNotification(enrichedRequest);
+	}
+	
+	async createScheduleAlert(request: CreateNotificationRequest & {
+	  metadata: {
+		scheduleId: string;
+		changeType: 'delay' | 'cost_overrun' | 'resource_conflict';
+		impact: 'low' | 'medium' | 'high';
+	  }
+	}): Promise<any> {
+	  const enrichedRequest = {
+		...request,
+		type: 'SCHEDULE_ALERT',
+		metadata: {
+		  ...request.metadata,
+		  category: 'schedule',
+		  requiresAction: request.metadata.impact === 'high'
 		}
-	): Promise<boolean>;
-
-	/**
-	 * Obtiene las preferencias de notificación de un usuario
-	 */
-	getUserNotificationPreferences(userId: string): Promise<any>;
-}
-
-export { NotificationType };
+	  };
+	  
+	  return this.createNotification(enrichedRequest);
+	}
+	
+	async createSystemAlert(request: CreateNotificationRequest & {
+	  metadata: {
+		component: string;
+		errorCode?: string;
+		resolution?: string;
+	  }
+	}): Promise<any> {
+	  const enrichedRequest = {
+		...request,
+		type: 'SYSTEM_ALERT',
+		metadata: {
+		  ...request.metadata,
+		  category: 'system',
+		  requiresAction: request.priority === 'HIGH' || request.priority === 'URGENT'
+		}
+	  };
+	  
+	  return this.createNotification(enrichedRequest);
+	}
+	
+	async markAsRead(notificationId: string, userId: string): Promise<boolean> {
+	  // Implementación de marcado como leído
+	  return true;
+	}
+	
+	async markAllAsRead(userId: string): Promise<boolean> {
+	  // Implementación de marcar todos como leídos
+	  return true;
+	}
+	
+	async getNotifications(userId: string, filters?: any): Promise<any[]> {
+	  // Implementación de obtener notificaciones
+	  return [];
+	}
+	
+	async deleteNotification(notificationId: string, userId: string): Promise<boolean> {
+	  // Implementación de eliminar notificación
+	  return true;
+	}
+	
+	private generateId(): string {
+	  return `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	}
+  }

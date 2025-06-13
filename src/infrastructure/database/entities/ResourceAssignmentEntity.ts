@@ -22,6 +22,9 @@ export enum ResourceAssignmentStatus {
   ON_HOLD = 'on_hold'
 }
 
+// EXPORTAR AssignmentStatus como alias para compatibilidad
+export const AssignmentStatus = ResourceAssignmentStatus;
+
 export enum ResourceType {
   WORKFORCE = 'WORKFORCE',
   EQUIPMENT = 'EQUIPMENT',
@@ -62,6 +65,16 @@ export class ResourceAssignmentEntity {
 
   @Column({ type: 'date' })
   endDate: Date;
+
+  // PROPIEDADES AGREGADAS para compatibilidad
+  @Column({ type: 'date', nullable: true })
+  plannedStartDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  plannedEndDate: Date;
+
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 8 })
+  dailyHours: number;
 
   @Column({
     type: 'enum',
@@ -164,7 +177,8 @@ export class ResourceAssignmentEntity {
     return ((actual - this.plannedCost) / this.plannedCost) * 100;
   }
 
-  public get isOverallocated(): boolean {
+  // MÉTODO AGREGADO - Verificar si está sobreasignado
+  public isOverallocated?(): boolean {
     return this.allocationPercentage > 100;
   }
 
@@ -180,24 +194,35 @@ export class ResourceAssignmentEntity {
   }
 
   public get durationDays(): number {
-    return Math.ceil((this.endDate.getTime() - this.startDate.getTime()) / (1000 * 3600 * 24));
+    const endDate = this.plannedEndDate || this.endDate;
+    const startDate = this.plannedStartDate || this.startDate;
+    return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
+  }
+
+  // MÉTODO AGREGADO - Obtener duración
+  public getDuration(): number {
+    return this.durationDays;
   }
 
   public get isCurrentlyActive(): boolean {
     const now = new Date();
+    const startDate = this.plannedStartDate || this.startDate;
+    const endDate = this.plannedEndDate || this.endDate;
     return this.status === ResourceAssignmentStatus.ACTIVE && 
-           this.startDate <= now && 
-           this.endDate >= now;
+           startDate <= now && 
+           endDate >= now;
   }
 
   public get isPending(): boolean {
+    const startDate = this.plannedStartDate || this.startDate;
     return this.status === ResourceAssignmentStatus.ASSIGNED && 
-           new Date() < this.startDate;
+           new Date() < startDate;
   }
 
   public get isCompleted(): boolean {
+    const endDate = this.plannedEndDate || this.endDate;
     return this.status === ResourceAssignmentStatus.COMPLETED ||
-           new Date() > this.endDate;
+           new Date() > endDate;
   }
 
   // Métodos de utilidad
@@ -222,15 +247,16 @@ export class ResourceAssignmentEntity {
   }
 
   public canBeReassigned(): boolean {
+    const startDate = this.plannedStartDate || this.startDate;
     return [
       ResourceAssignmentStatus.DRAFT,
       ResourceAssignmentStatus.ASSIGNED
-    ].includes(this.status) && new Date() < this.startDate;
+    ].includes(this.status) && new Date() < startDate;
   }
 
   public getResourceName(): string {
-    if (this.workforce) return this.workforce.name || `${this.workforce.trade} Worker`;
-    if (this.equipment) return this.equipment.name || this.equipment.type;
+    if (this.workforce) return this.workforce.fullName || this.workforce.name || `${this.workforce.primaryTrade} Worker`;
+    if (this.equipment) return this.equipment.name || this.equipment.equipmentType;
     if (this.material) return this.material.name || this.material.type;
     return `${this.resourceType} Resource`;
   }
@@ -240,16 +266,16 @@ export class ResourceAssignmentEntity {
       case ResourceType.WORKFORCE:
         return {
           type: 'workforce',
-          trade: this.workforce?.trade,
+          trade: this.workforce?.primaryTrade,
           skillLevel: this.workforce?.skillLevel,
           hourlyRate: this.hourlyRate || this.workforce?.hourlyRate
         };
       case ResourceType.EQUIPMENT:
         return {
           type: 'equipment',
-          equipmentType: this.equipment?.type,
+          equipmentType: this.equipment?.equipmentType,
           model: this.equipment?.model,
-          dailyRate: this.dailyRate || this.equipment?.dailyCost
+          dailyRate: this.dailyRate || this.equipment?.dailyRentalCost
         };
       case ResourceType.MATERIAL:
         return {
@@ -273,6 +299,7 @@ export class ResourceAssignmentEntity {
       plannedCost: this.plannedCost,
       hourlyRate: this.hourlyRate,
       dailyRate: this.dailyRate,
+      dailyHours: this.dailyHours,
       workConfiguration: this.workConfiguration ? { ...this.workConfiguration } : undefined,
       notes: this.notes,
       specialRequirements: this.specialRequirements,
@@ -296,7 +323,10 @@ export class ResourceAssignmentEntity {
       errors.push('Allocation percentage must be between 0 and 200');
     }
 
-    if (this.startDate >= this.endDate) {
+    const startDate = this.plannedStartDate || this.startDate;
+    const endDate = this.plannedEndDate || this.endDate;
+
+    if (startDate >= endDate) {
       errors.push('Start date must be before end date');
     }
 
@@ -317,5 +347,32 @@ export class ResourceAssignmentEntity {
 
   public isValid(): boolean {
     return this.validate().length === 0;
+  }
+
+  // MÉTODOS AGREGADOS para compatibilidad con el sistema existente
+  public syncPlannedDates(): void {
+    if (!this.plannedStartDate && this.startDate) {
+      this.plannedStartDate = this.startDate;
+    }
+    if (!this.plannedEndDate && this.endDate) {
+      this.plannedEndDate = this.endDate;
+    }
+    if (!this.startDate && this.plannedStartDate) {
+      this.startDate = this.plannedStartDate;
+    }
+    if (!this.endDate && this.plannedEndDate) {
+      this.endDate = this.plannedEndDate;
+    }
+  }
+
+  // Constructor para inicializar fechas
+  constructor() {
+    // Sincronizar fechas al crear la instancia
+    if (this.startDate && !this.plannedStartDate) {
+      this.plannedStartDate = this.startDate;
+    }
+    if (this.endDate && !this.plannedEndDate) {
+      this.plannedEndDate = this.endDate;
+    }
   }
 }

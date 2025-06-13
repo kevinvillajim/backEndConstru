@@ -250,9 +250,10 @@ export class WorkforceEntity {
   getTotalAssignedHours(): number {
     const activeAssignments = this.getActiveAssignments();
     return activeAssignments.reduce((total, assignment) => {
-      // Calcular horas basadas en la duración de la asignación
-      const duration = assignment.getDuration();
-      return total + duration * this.maxHoursPerDay; // Estimación simplificada
+      // CORREGIDO: Calcular horas basadas en la duración y horas diarias
+      const assignmentDays = assignment.durationDays;
+      const dailyHours = assignment.dailyHours || this.maxHoursPerDay;
+      return total + (assignmentDays * dailyHours * (assignment.allocationPercentage / 100));
     }, 0);
   }
 

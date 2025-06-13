@@ -10,6 +10,27 @@ export class TypeOrmWeatherFactorRepository implements WeatherFactorRepository {
   constructor() {
     this.repository = AppDataSource.getRepository(WeatherFactorEntity);
   }
+  findCurrentConditions(zone: string): Promise<WeatherFactorEntity | null> {
+    throw new Error('Method not implemented.');
+  }
+  findByWorkingSuitability(suitability: 'excellent' | 'good' | 'fair' | 'poor' | 'unsuitable'): Promise<WeatherFactorEntity[]> {
+    throw new Error('Method not implemented.');
+  }
+  findRainyDays(zone: string, dateRange: { start: Date; end: Date; }): Promise<WeatherFactorEntity[]> {
+    throw new Error('Method not implemented.');
+  }
+  findExtremeDays(zone: string, dateRange: { start: Date; end: Date; }): Promise<WeatherFactorEntity[]> {
+    throw new Error('Method not implemented.');
+  }
+  getProductivityAnalysis(scheduleId: string): Promise<{ averageProductivity: number; bestDays: WeatherFactorEntity[]; worstDays: WeatherFactorEntity[]; recommendations: string[]; }> {
+    throw new Error('Method not implemented.');
+  }
+  getSeasonalTrends(zone: string, year?: number): Promise<{ month: number; averageTemp: number; totalRainfall: number; suitableWorkingDays: number; productivityFactor: number; }[]> {
+    throw new Error('Method not implemented.');
+  }
+  getWeatherAlerts(zone: string, daysAhead?: number): Promise<{ date: Date; alertType: 'storm' | 'extreme_temp' | 'high_wind' | 'heavy_rain'; severity: 'low' | 'medium' | 'high'; message: string; recommendations: string[]; }[]> {
+    throw new Error('Method not implemented.');
+  }
 
   async findById(id: string): Promise<WeatherFactorEntity | null> {
     return await this.repository.findOne({

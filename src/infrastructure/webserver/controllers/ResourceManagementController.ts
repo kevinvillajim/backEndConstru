@@ -1,6 +1,7 @@
 // src/infrastructure/webserver/controllers/ResourceManagementController.ts
 import { Request, Response } from 'express';
 import { ScheduleActivityRepository } from '../../../domain/repositories/ScheduleActivityRepository';
+import { CalculationScheduleRepository } from '../../../domain/repositories/CalculationScheduleRepository'; // AGREGADO
 import { ResourceAssignmentRepository } from '../../../domain/repositories/ResourceAssignmentRepository';
 import { WorkforceRepository } from '../../../domain/repositories/WorkforceRepository';
 import { EquipmentRepository } from '../../../domain/repositories/EquipmentRepository';
@@ -9,6 +10,7 @@ import { ResourceOptimizationService } from '../../../domain/services/ResourceOp
 export class ResourceManagementController {
   constructor(
     private activityRepository: ScheduleActivityRepository,
+    private scheduleRepository: CalculationScheduleRepository, // AGREGADO
     private resourceAssignmentRepository: ResourceAssignmentRepository,
     private workforceRepository: WorkforceRepository,
     private equipmentRepository: EquipmentRepository,
@@ -33,7 +35,7 @@ export class ResourceManagementController {
       };
 
       if (includeAvailability === 'true') {
-        resourceSummary['availability'] = await this.getResourceAvailability(scheduleId, date as string);
+        resourceSummary['availability'] = await this.getResourceAvailabilityForSchedule(scheduleId, date as string);
       }
 
       res.json({
@@ -227,14 +229,20 @@ export class ResourceManagementController {
         return;
       }
 
+      // CORREGIDO: Proporcionar argumentos para los métodos
+      const dateRange = { 
+        start: new Date(), 
+        end: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 días desde ahora
+      };
+
       // Crear opciones de optimización
       const optimizationOptions = {
         objectiveFunction: optimizationGoals?.primary || 'maximize_efficiency',
         constraints: {
           maxBudget: constraints?.maxBudget,
           maxProjectDuration: constraints?.maxDuration,
-          availableWorkforce: await this.workforceRepository.findAvailable(),
-          availableEquipment: await this.equipmentRepository.findAvailable(),
+          availableWorkforce: await this.workforceRepository.findAvailable(dateRange), // CORREGIDO: Proporcionar dateRange
+          availableEquipment: await this.equipmentRepository.findAvailable(dateRange), // CORREGIDO: Proporcionar dateRange
           workingHours: constraints?.workingHours || {
             dailyHours: 8,
             weeklyHours: 48,
@@ -292,7 +300,7 @@ export class ResourceManagementController {
       if (resourceType) filters.resourceType = resourceType;
       if (location) filters.location = location;
 
-      const availability = await this.calculateResourceAvailability(filters);
+      const availability = await this.calculateResourceAvailabilityWithFilters(filters);
 
       res.json({
         success: true,
@@ -373,9 +381,9 @@ export class ResourceManagementController {
     };
 
     for (const assignment of workforceAssignments) {
-      const trade = assignment.resourceDetails?.trade || 'unknown';
+      const trade = assignment.getResourceDetails?.()?.trade || 'unknown';
       summary.byTrade.set(trade, (summary.byTrade.get(trade) || 0) + assignment.quantity);
-      summary.totalCost += assignment.estimatedCost || 0;
+      summary.totalCost += assignment.totalCost || 0;
     }
 
     return {
@@ -393,9 +401,9 @@ export class ResourceManagementController {
     };
 
     for (const assignment of equipmentAssignments) {
-      const type = assignment.resourceDetails?.type || 'unknown';
+      const type = assignment.getResourceDetails?.()?.equipmentType || 'unknown';
       summary.byType.set(type, (summary.byType.get(type) || 0) + assignment.quantity);
-      summary.totalCost += assignment.estimatedCost || 0;
+      summary.totalCost += assignment.totalCost || 0;
     }
 
     return {
@@ -462,8 +470,8 @@ export class ResourceManagementController {
 
   private async checkResourceConflicts(assignmentData: any): Promise<any> {
     const existingAssignments = await this.resourceAssignmentRepository.findByResource(
-      assignmentData.resourceType,
-      assignmentData.resourceId
+      assignmentData.resourceId,
+      assignmentData.resourceType
     );
 
     const conflicts = [];
@@ -505,8 +513,8 @@ export class ResourceManagementController {
     if (workforceAssignments.length === 0) return 0;
 
     // Simplified calculation - in reality would be more complex
-    const totalAssignedHours = workforceAssignments.reduce((sum, a) => sum + (a.hoursAssigned || 0), 0);
-    const totalAvailableHours = workforceAssignments.reduce((sum, a) => sum + (a.hoursAvailable || a.hoursAssigned || 0), 0);
+    const totalAssignedHours = workforceAssignments.reduce((sum, a) => sum + (a.plannedHours || 0), 0);
+    const totalAvailableHours = workforceAssignments.reduce((sum, a) => sum + (a.plannedHours || 0), 0);
 
     return totalAvailableHours > 0 ? (totalAssignedHours / totalAvailableHours) * 100 : 0;
   }
@@ -519,7 +527,8 @@ export class ResourceManagementController {
     return 75; // Placeholder
   }
 
-  private async getResourceAvailability(scheduleId: string, date?: string): Promise<any> {
+  // CORREGIDO: Renombrado para evitar duplicación
+  private async getResourceAvailabilityForSchedule(scheduleId: string, date?: string): Promise<any> {
     // This would integrate with workforce and equipment repositories
     return {
       workforce: await this.getWorkforceAvailability(date),
@@ -595,7 +604,8 @@ export class ResourceManagementController {
     };
   }
 
-  private async calculateResourceAvailability(filters: any): Promise<any> {
+  // CORREGIDO: Renombrado para evitar duplicación
+  private async calculateResourceAvailabilityWithFilters(filters: any): Promise<any> {
     // Implementation would calculate availability based on filters
     return {
       workforce: {},

@@ -59,3 +59,15 @@ export interface MaterialRepository {
   findSimilar(materialId: string): Promise<MaterialEntity[]>;
   findAlternatives(materialId: string): Promise<MaterialEntity[]>;
 }
+
+export interface MaterialFilters {
+	isActive?: boolean;
+	type?: string;
+	supplierCode?: string;
+	isInStock?: boolean;
+	isLowStock?: boolean;
+	needsPriceUpdate?: boolean;
+	needsInventoryUpdate?: boolean;
+	minQuantity?: number;
+	maxPrice?: number;
+  }

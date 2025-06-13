@@ -49,8 +49,9 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
       }
 
       const hasConflict = worker.assignments.some(assignment => {
-        return assignment.plannedStartDate < dateRange.end && 
-               assignment.plannedEndDate > dateRange.start &&
+        // CORREGIDO: usar startDate y endDate en lugar de plannedStartDate y plannedEndDate
+        return assignment.startDate < dateRange.end && 
+               assignment.endDate > dateRange.start &&
                assignment.status !== 'cancelled';
       });
 
@@ -139,17 +140,19 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
       return null;
     }
 
+    // CORREGIDO: usar startDate y endDate
     const assignments = worker.assignments?.filter(assignment => 
-      assignment.plannedStartDate >= dateRange.start && 
-      assignment.plannedEndDate <= dateRange.end
+      assignment.startDate >= dateRange.start && 
+      assignment.endDate <= dateRange.end
     ) || [];
 
     const totalDays = Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 3600 * 24));
     const totalWorkingHours = totalDays * worker.standardWorkingHours;
     
     const utilizedHours = assignments.reduce((sum, assignment) => {
-      const assignmentDays = Math.ceil((assignment.plannedEndDate.getTime() - assignment.plannedStartDate.getTime()) / (1000 * 3600 * 24));
-      return sum + (assignmentDays * assignment.dailyHours * (assignment.allocationPercentage / 100));
+      // CORREGIDO: usar startDate y endDate, y dailyHours
+      const assignmentDays = Math.ceil((assignment.endDate.getTime() - assignment.startDate.getTime()) / (1000 * 3600 * 24));
+      return sum + (assignmentDays * (assignment.dailyHours || 8) * (assignment.allocationPercentage / 100));
     }, 0);
 
     return {
@@ -161,8 +164,9 @@ export class TypeOrmWorkforceRepository implements WorkforceRepository {
       utilizationPercentage: (utilizedHours / totalWorkingHours) * 100,
       assignments: assignments.map(assignment => ({
         activityId: assignment.activityId,
-        startDate: assignment.plannedStartDate,
-        endDate: assignment.plannedEndDate,
+        // CORREGIDO: usar startDate y endDate, y dailyHours
+        startDate: assignment.startDate,
+        endDate: assignment.endDate,
         dailyHours: assignment.dailyHours,
         allocationPercentage: assignment.allocationPercentage
       }))

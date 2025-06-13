@@ -717,11 +717,23 @@ export class WeatherImpactService {
   }
 
   private createIndoorFocusRecommendation(unsuitableDays: any[], activities: ScheduleActivityEntity[]): WeatherRecommendation {
+    // CORREGIDO: Filtrar actividades que pueden realizarse en interiores
+    const indoorCapableActivities = activities.filter(a => {
+      // Verificar si la actividad puede realizarse en interiores
+      const activityType = a.primaryTrade;
+      const indoorTypes = ['ELECTRICAL', 'PLUMBING', 'INTERIOR_FINISHING', 'PAINTING_INTERIOR', 'FLOORING', 'CARPENTRY_INTERIOR'];
+      
+      // Si es un tipo que puede ser interior o si está explícitamente marcado como interior
+      return indoorTypes.includes(activityType) || 
+             (a.customFields?.canBeIndoor === true) ||
+             (a.location?.area && a.location.area.includes('interior'));
+    });
+
     return {
       type: 'indoor_focus',
       priority: 'medium',
       description: 'Enfocar en actividades interiores durante condiciones adversas',
-      affectedActivities: activities.filter(a => a.location?.indoorWork !== false).map(a => a.id),
+      affectedActivities: indoorCapableActivities.map(a => a.id),
       estimatedCost: 0,
       estimatedBenefit: 5000,
       implementationTime: 1

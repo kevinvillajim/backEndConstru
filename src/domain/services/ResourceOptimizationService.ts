@@ -1,6 +1,6 @@
 // src/domain/services/ResourceOptimizationService.ts
 import { ScheduleActivityEntity } from '../../infrastructure/database/entities/ScheduleActivityEntity';
-import { ResourceAssignmentEntity, ResourceType } from '../../infrastructure/database/entities/ResourceAssignmentEntity';
+import { ResourceAssignmentEntity, ResourceAssignmentStatus, ResourceType } from '../../infrastructure/database/entities/ResourceAssignmentEntity';
 import { WorkforceEntity } from '../../infrastructure/database/entities/WorkforceEntity';
 import { EquipmentEntity } from '../../infrastructure/database/entities/EquipmentEntity';
 import { CalculationScheduleEntity } from '../../infrastructure/database/entities/CalculationScheduleEntity';
@@ -633,7 +633,7 @@ export class ResourceOptimizationService {
 
   private findCheapestQualifiedWorker(activity: ScheduleActivityEntity, workforce: WorkforceEntity[]): WorkforceEntity | null {
     const qualifiedWorkers = workforce.filter(worker => 
-      worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
+      worker.hasTrade && worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
     );
     
     return qualifiedWorkers.length > 0 
@@ -645,7 +645,7 @@ export class ResourceOptimizationService {
 
   private findMostEfficientWorker(activity: ScheduleActivityEntity, workforce: WorkforceEntity[]): WorkforceEntity | null {
     const qualifiedWorkers = workforce.filter(worker => 
-      worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
+      worker.hasTrade && worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
     );
     
     return qualifiedWorkers.length > 0 
@@ -658,7 +658,7 @@ export class ResourceOptimizationService {
 
   private findBestValueWorker(activity: ScheduleActivityEntity, workforce: WorkforceEntity[]): WorkforceEntity | null {
     const qualifiedWorkers = workforce.filter(worker => 
-      worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
+      worker.hasTrade && worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
     );
     
     return qualifiedWorkers.length > 0 
@@ -676,7 +676,7 @@ export class ResourceOptimizationService {
     workloadTracker: Map<string, number>
   ): WorkforceEntity | null {
     const qualifiedWorkers = workforce.filter(worker => 
-      worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
+      worker.hasTrade && worker.hasTrade(activity.primaryTrade) && worker.isWorkerAvailable()
     );
     
     return qualifiedWorkers.length > 0 
@@ -690,7 +690,7 @@ export class ResourceOptimizationService {
 
   private findCheapestSuitableEquipment(activity: ScheduleActivityEntity, equipment: EquipmentEntity[]): EquipmentEntity | null {
     // Implementación simplificada
-    const suitableEquipment = equipment.filter(eq => eq.isEquipmentAvailable());
+    const suitableEquipment = equipment.filter(eq => eq.isEquipmentAvailable && eq.isEquipmentAvailable());
     return suitableEquipment.length > 0 
       ? suitableEquipment.reduce((cheapest, current) => 
           current.dailyRentalCost < cheapest.dailyRentalCost ? current : cheapest
@@ -699,7 +699,7 @@ export class ResourceOptimizationService {
   }
 
   private findMostEfficientEquipment(activity: ScheduleActivityEntity, equipment: EquipmentEntity[]): EquipmentEntity | null {
-    const suitableEquipment = equipment.filter(eq => eq.isEquipmentAvailable());
+    const suitableEquipment = equipment.filter(eq => eq.isEquipmentAvailable && eq.isEquipmentAvailable());
     return suitableEquipment.length > 0 ? suitableEquipment[0] : null; // Simplificado
   }
 
@@ -714,19 +714,31 @@ export class ResourceOptimizationService {
   ): ResourceAssignmentEntity {
     const assignment = new ResourceAssignmentEntity();
     assignment.activityId = activity.id;
-    assignment.resourceType = type === 'workforce' ? 'workforce' as ResourceType : 'equipment' as ResourceType;
+    assignment.resourceType = type === 'workforce' ? ResourceType.WORKFORCE : ResourceType.EQUIPMENT;
     assignment.resourceId = resource.id;
+    
+    // CORREGIDO: Usar las propiedades correctas
+    assignment.startDate = activity.plannedStartDate;
+    assignment.endDate = activity.plannedEndDate;
     assignment.plannedStartDate = activity.plannedStartDate;
     assignment.plannedEndDate = activity.plannedEndDate;
+    
     assignment.allocationPercentage = 100;
+    assignment.assignmentDate = new Date();
+    assignment.dailyHours = 8;
     
     if (type === 'workforce') {
       assignment.workforceId = resource.id;
       assignment.plannedCost = (resource as WorkforceEntity).hourlyRate * 8 * activity.plannedDurationDays;
+      assignment.hourlyRate = (resource as WorkforceEntity).hourlyRate;
     } else {
       assignment.equipmentId = resource.id;
       assignment.plannedCost = (resource as EquipmentEntity).dailyRentalCost * activity.plannedDurationDays;
+      assignment.dailyRate = (resource as EquipmentEntity).dailyRentalCost;
     }
+    
+    assignment.plannedHours = 8 * activity.plannedDurationDays;
+    assignment.status = ResourceAssignmentStatus.ASSIGNED;
     
     return assignment;
   }

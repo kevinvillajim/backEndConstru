@@ -192,6 +192,7 @@ export class TypeOrmMaterialRepository implements MaterialRepository {
   async updateInventory(id: string, quantity: number, source: string = 'manual'): Promise<boolean> {
     const result = await this.repository.update(id, {
       availableQuantity: quantity,
+      stock: quantity, // CORREGIDO: Mantener sincronización con stock
       lastInventoryUpdate: new Date()
     });
     return result.affected > 0;
@@ -200,6 +201,7 @@ export class TypeOrmMaterialRepository implements MaterialRepository {
   async updatePrice(id: string, price: number, source: string = 'manual'): Promise<boolean> {
     const result = await this.repository.update(id, {
       currentPrice: price,
+      price: price, // CORREGIDO: Mantener sincronización con price
       lastPriceUpdate: new Date()
     });
     return result.affected > 0;
