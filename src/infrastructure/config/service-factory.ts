@@ -515,8 +515,9 @@ export function initializeServices() {
 			calculationBudgetRepository,
 			calculationScheduleRepository,
 			scheduleActivityRepository,
+			notificationService,
 			budgetLineItemRepository,
-			notificationService
+			
 		);
 		
 		calculationScheduleService = new CalculationScheduleService(

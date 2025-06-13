@@ -142,13 +142,28 @@ export class CalculationScheduleService {
     for (const [complexity, groupActivities] of Object.entries(complexityGroups)) {
       switch (complexity) {
         case 'high':
-          optimizations[complexity] = this.optimizeHighComplexityActivities(groupActivities);
+          if (Array.isArray(groupActivities)) {
+            optimizations[complexity] = this.optimizeHighComplexityActivities(groupActivities);
+          } else {
+            console.warn(`Group activities for complexity "${complexity}" are not an array.`);
+            optimizations[complexity] = { error: 'Invalid group activities' };
+          }
           break;
         case 'medium':
-          optimizations[complexity] = this.optimizeMediumComplexityActivities(groupActivities);
+          if (Array.isArray(groupActivities)) {
+            optimizations[complexity] = this.optimizeMediumComplexityActivities(groupActivities);
+          } else {
+            console.warn(`Group activities for complexity "${complexity}" are not an array.`);
+            optimizations[complexity] = { error: 'Invalid group activities' };
+          }
           break;
         case 'low':
-          optimizations[complexity] = this.optimizeLowComplexityActivities(groupActivities);
+          if (Array.isArray(groupActivities)) {
+            optimizations[complexity] = this.optimizeLowComplexityActivities(groupActivities);
+          } else {
+            console.warn(`Group activities for complexity "${complexity}" are not an array.`);
+            optimizations[complexity] = { error: 'Invalid group activities' };
+          }
           break;
       }
     }
@@ -180,117 +195,42 @@ export class CalculationScheduleService {
     return this.selectBestTemplate(templates, calculationResult);
   }
 
-  private extractStructuralActivities(structuralCalc: any): any[] {
-    const activities: any[] = [];
-
-    try {
-      // Actividades de fundación
-      if (structuralCalc?.foundation) {
-        activities.push({
-          name: 'Excavación y preparación de fundación',
-          type: 'FOUNDATION',
-          duration: this.calculateFoundationDuration(structuralCalc.foundation),
-          dependencies: [],
-          technicalRequirements: structuralCalc.foundation.specifications || {},
-          necReferences: this.ensureArray(structuralCalc.foundation.necCompliance)
-        });
-      }
-
-      // Actividades estructurales
-      if (structuralCalc?.columns || structuralCalc?.beams) {
-        activities.push({
-          name: 'Construcción de estructura',
-          type: 'STRUCTURE',
-          duration: this.calculateStructureDuration(structuralCalc),
-          dependencies: ['foundation'],
-          technicalRequirements: this.combineStructuralRequirements(structuralCalc),
-          necReferences: this.extractNECReferences(structuralCalc)
-        });
-      }
-
-    } catch (error) {
-      console.warn('Error extracting structural activities:', error);
-    }
-
-    return activities;
-  }
-
-  private extractMaterialActivities(materialCalc: any): any[] {
-    // FIX: Verificar y convertir materials a array de forma segura
-    const materials = this.ensureArray(materialCalc?.materials);
-    
-    return materials.map(material => ({
-      name: `Suministro e instalación de ${material?.name || 'Material'}`,
-      type: 'MATERIAL_INSTALLATION',
-      duration: this.calculateMaterialDuration(material),
-      dependencies: this.determineMaterialDependencies(material),
-      technicalRequirements: material?.specifications || {},
-      quantityRequired: material?.quantity || 1,
-      unit: material?.unit || 'unit'
-    }));
-  }
-
-  private extractInstallationActivities(installationCalc: any): any[] {
-    const activities = [];
-  
-    // Instalaciones eléctricas
-    if (installationCalc?.electrical) {
-      const electricalData = Array.isArray(installationCalc.electrical) ? 
-        installationCalc.electrical : [installationCalc.electrical];
-      
-      activities.push(...electricalData.map((electrical: any) => ({
-        name: 'Instalaciones eléctricas',
-        type: 'ELECTRICAL',
-        duration: this.calculateElectricalDuration(electrical),
-        dependencies: ['structure'],
-        technicalRequirements: electrical.specifications || {}
-      })));
-    }
-  
-    // Instalaciones sanitarias  
-    if (installationCalc?.plumbing) {
-      const plumbingData = Array.isArray(installationCalc.plumbing) ? 
-        installationCalc.plumbing : [installationCalc.plumbing];
-      
-      activities.push(...plumbingData.map((plumbing: any) => ({
-        name: 'Instalaciones sanitarias',
-        type: 'PLUMBING', 
-        duration: this.calculatePlumbingDuration(plumbing),
-        dependencies: ['structure'],
-        technicalRequirements: plumbing.specifications || {}
-      })));
-    }
-  
-    return activities;
-  }
-  
-
+  // MÉTODO CORREGIDO: extractTechnicalActivities con validación de tipos
   private extractTechnicalActivities(calculationResult: any): any[] {
     const activities: any[] = [];
 
     try {
-      // Extraer actividades de cálculos estructurales
-      if (calculationResult?.calculations?.structural) {
-        const structuralActivities = this.extractStructuralActivities(
-          calculationResult.calculations.structural
-        );
-        activities.push(...structuralActivities);
+      // Validar que calculationResult y calculationResult.calculations existan
+      if (!calculationResult || !calculationResult.calculations) {
+        console.warn('Calculation result or calculations not found, creating basic activities');
+        return this.createBasicActivitiesFromResults(calculationResult?.results || {});
       }
 
-      // Extraer actividades de cálculos de materiales  
-      if (calculationResult?.calculations?.materials) {
-        const materialActivities = this.extractMaterialActivities(
-          calculationResult.calculations.materials
-        );
-        activities.push(...materialActivities);
+      // Extraer actividades de cálculos estructurales - CON VALIDACIÓN EXPLÍCITA DE TIPO
+      const structuralData = calculationResult.calculations.structural;
+      if (this.isValidCalculationData(structuralData)) {
+        const structuralActivities = this.extractStructuralActivities(structuralData as any);
+        if (Array.isArray(structuralActivities)) {
+          activities.push(...structuralActivities);
+        }
       }
 
-      // Extraer actividades de instalaciones
-      if (calculationResult?.calculations?.installations) {
-        const installationActivities = this.extractInstallationActivities(
-          calculationResult.calculations.installations
-        );
-        activities.push(...installationActivities);
+      // Extraer actividades de cálculos de materiales - CON VALIDACIÓN EXPLÍCITA DE TIPO
+      const materialsData = calculationResult.calculations.materials;
+      if (this.isValidCalculationData(materialsData)) {
+        const materialActivities = this.extractMaterialActivities(materialsData as any);
+        if (Array.isArray(materialActivities)) {
+          activities.push(...materialActivities);
+        }
+      }
+
+      // Extraer actividades de instalaciones - CON VALIDACIÓN EXPLÍCITA DE TIPO
+      const installationsData = calculationResult.calculations.installations;
+      if (this.isValidCalculationData(installationsData)) {
+        const installationActivities = this.extractInstallationActivities(installationsData as any);
+        if (Array.isArray(installationActivities)) {
+          activities.push(...installationActivities);
+        }
       }
 
       // Si no hay datos específicos, crear actividades básicas desde el resultado
@@ -307,6 +247,145 @@ export class CalculationScheduleService {
     return activities;
   }
 
+  // MÉTODO AUXILIAR: Validar que los datos de cálculo sean válidos
+  private isValidCalculationData(data: unknown): data is Record<string, any> {
+    return data != null && typeof data === 'object' && !Array.isArray(data);
+  }
+
+  // MÉTODO CORREGIDO: extractStructuralActivities con validación robusta
+  private extractStructuralActivities(structuralCalc: unknown): any[] {
+    const activities: any[] = [];
+
+    try {
+      // Validar entrada con type guard
+      if (!this.isValidCalculationData(structuralCalc)) {
+        console.warn('Invalid structural calculation data');
+        return activities;
+      }
+
+      // Cast seguro después de validación
+      const structuralData = structuralCalc as Record<string, any>;
+
+      // Actividades de fundación
+      if (this.isValidCalculationData(structuralData.foundation)) {
+        const foundationData = structuralData.foundation as Record<string, any>;
+        // Acceso directo con cast explícito
+        const foundationCompliance = foundationData.necCompliance;
+        
+        activities.push({
+          name: 'Excavación y preparación de fundación',
+          type: 'FOUNDATION',
+          duration: this.calculateFoundationDuration(foundationData),
+          dependencies: [],
+          technicalRequirements: foundationData.specifications || {},
+          necReferences: this.ensureArray(foundationCompliance as any)
+        });
+      }
+
+      // Actividades estructurales
+      if (structuralData.columns || structuralData.beams) {
+        activities.push({
+          name: 'Construcción de estructura',
+          type: 'STRUCTURE',
+          duration: this.calculateStructureDuration(structuralData),
+          dependencies: ['foundation'],
+          technicalRequirements: this.combineStructuralRequirements(structuralData),
+          necReferences: this.extractNECReferences(structuralData)
+        });
+      }
+
+    } catch (error) {
+      console.warn('Error extracting structural activities:', error);
+    }
+
+    return activities;
+  }
+
+  // MÉTODO CORREGIDO: extractMaterialActivities con validación robusta
+  private extractMaterialActivities(materialCalc: unknown): any[] {
+    const activities: any[] = [];
+
+    try {
+      // Validar entrada con type guard
+      if (!this.isValidCalculationData(materialCalc)) {
+        console.warn('Invalid material calculation data');
+        return activities;
+      }
+
+      // Cast seguro después de validación
+      const materialData = materialCalc as Record<string, any>;
+
+      // Acceso directo con cast explícito
+      const materialsValue = materialData.materials;
+      const materials = this.ensureArray(materialsValue as any);
+      
+      activities.push(...materials.map(material => ({
+        name: `Suministro e instalación de ${material?.name || 'Material'}`,
+        type: 'MATERIAL_INSTALLATION',
+        duration: this.calculateMaterialDuration(material),
+        dependencies: this.determineMaterialDependencies(material),
+        technicalRequirements: material?.specifications || {},
+        quantityRequired: material?.quantity || 1,
+        unit: material?.unit || 'unit'
+      })));
+
+    } catch (error) {
+      console.warn('Error extracting material activities:', error);
+    }
+
+    return activities;
+  }
+
+  // MÉTODO CORREGIDO: extractInstallationActivities con validación robusta
+  private extractInstallationActivities(installationCalc: unknown): any[] {
+    const activities: any[] = [];
+
+    try {
+      // Validar entrada con type guard
+      if (!this.isValidCalculationData(installationCalc)) {
+        console.warn('Invalid installation calculation data');
+        return activities;
+      }
+
+      // Cast seguro después de validación
+      const installationData = installationCalc as Record<string, any>;
+  
+      // Instalaciones eléctricas con acceso directo y cast explícito
+      const electricalValue = installationData.electrical;
+      if (electricalValue) {
+        const electricalData = this.ensureArray(electricalValue as any);
+        
+        activities.push(...electricalData.map((electrical: any) => ({
+          name: 'Instalaciones eléctricas',
+          type: 'ELECTRICAL',
+          duration: this.calculateElectricalDuration(electrical),
+          dependencies: ['structure'],
+          technicalRequirements: electrical?.specifications || {}
+        })));
+      }
+  
+      // Instalaciones sanitarias con acceso directo y cast explícito
+      const plumbingValue = installationData.plumbing;
+      if (plumbingValue) {
+        const plumbingData = this.ensureArray(plumbingValue as any);
+        
+        activities.push(...plumbingData.map((plumbing: any) => ({
+          name: 'Instalaciones sanitarias',
+          type: 'PLUMBING', 
+          duration: this.calculatePlumbingDuration(plumbing),
+          dependencies: ['structure'],
+          technicalRequirements: plumbing?.specifications || {}
+        })));
+      }
+
+    } catch (error) {
+      console.warn('Error extracting installation activities:', error);
+    }
+  
+    return activities;
+  }
+
+  // MÉTODO MEJORADO: ensureArray con validación más robusta
   private ensureArray(value: unknown): any[] {
     // Si ya es un array, devolverlo
     if (Array.isArray(value)) {
@@ -321,8 +400,8 @@ export class CalculationScheduleService {
     // Si es un objeto, intentar convertirlo
     if (typeof value === 'object') {
       // Si tiene una propiedad que parece ser un array
-      if ('items' in value && Array.isArray(value.items)) {
-        return value.items;
+      if ('items' in value && Array.isArray((value as any).items)) {
+        return (value as any).items;
       }
       
       // Si tiene propiedades numéricas como un array-like object
@@ -339,6 +418,16 @@ export class CalculationScheduleService {
     return [value];
   }
 
+  // MÉTODO AUXILIAR: Obtener valor de forma segura con tipo específico
+  private safeGet(obj: any, path: string, defaultValue: any = null): any {
+    try {
+      const result = path.split('.').reduce((current, key) => current?.[key], obj);
+      return result !== undefined ? result : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  }
+
   private createBasicActivitiesFromResults(results: any): any[] {
     const activities: any[] = [];
     
@@ -351,8 +440,7 @@ export class CalculationScheduleService {
             duration: Math.ceil(value / 10), // Estimación simple
             dependencies: [],
             technicalRequirements: { [key]: value },
-            quantityRequired: value,
-            unit: 'unit'
+            data: { [key]: value }
           });
         }
       });
@@ -506,8 +594,8 @@ export class CalculationScheduleService {
       combined: true,
       requirements: Object.keys(structural).map(key => ({
         element: key,
-        specifications: structural[key].specifications || {},
-        necCompliance: structural[key].necCompliance || []
+        specifications: structural[key]?.specifications || {},
+        necCompliance: structural[key]?.necCompliance || []
       }))
     };
   }
@@ -516,14 +604,23 @@ export class CalculationScheduleService {
     const references: string[] = [];
     
     try {
+      // Acceso directo con validación y casting explícito
       if (structural?.foundation?.necCompliance) {
-        references.push(...this.ensureArray(structural.foundation.necCompliance));
+        const foundationCompliance = structural.foundation.necCompliance;
+        // Cast explícito para evitar error de tipo unknown
+        references.push(...this.ensureArray(foundationCompliance as any));
       }
+      
       if (structural?.columns?.necCompliance) {
-        references.push(...this.ensureArray(structural.columns.necCompliance));
+        const columnsCompliance = structural.columns.necCompliance;
+        // Cast explícito para evitar error de tipo unknown
+        references.push(...this.ensureArray(columnsCompliance as any));  
       }
+      
       if (structural?.beams?.necCompliance) {
-        references.push(...this.ensureArray(structural.beams.necCompliance));
+        const beamsCompliance = structural.beams.necCompliance;
+        // Cast explícito para evitar error de tipo unknown
+        references.push(...this.ensureArray(beamsCompliance as any));
       }
       
       // Filtrar solo strings válidos
