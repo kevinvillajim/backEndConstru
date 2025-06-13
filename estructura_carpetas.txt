@@ -26,7 +26,23 @@ C:.
 |       component-template-import-export.txt
 |       component-WebSocketService.txt
 |       websocket-client.txt
-|       
+
+|       |               
+|       \---src
+|           |   Errors.js
+|           |   FormatValidators.js
+|           |   JsonValidation.js
+|           |   Polyfills.js
+|           |   Report.js
+|           |   SchemaCache.js
+|           |   SchemaCompilation.js
+|           |   SchemaValidation.js
+|           |   Utils.js
+|           |   ZSchema.js
+|           |   
+|           \---schemas
+|                   hyper-schema.json
+|                   schema.json
 |                   
 +---promptsNormativaNEC
 |       parte1.txt
@@ -143,6 +159,14 @@ C:.
 |   |   +---recommendation
 |   |   |       GetAdvancedRecommendationsUseCase.ts
 |   |   |       
+|   |   +---schedule
+|   |   |       GenerateScheduleFromBudgetUseCase.ts
+|   |   |       GenerateScheduleReportsUseCase.ts
+|   |   |       OptimizeProjectScheduleUseCase.ts
+|   |   |       PredictProjectDelaysScheduleUseCase.ts
+|   |   |       test.ts
+|   |   |       TrackDailyProgressUseCase.ts
+|   |   |       
 |   |   +---user
 |   |   |       UserRecommendationService.ts
 |   |   |       UserService.ts
@@ -243,6 +267,7 @@ C:.
 |   |   |           
 |   |   +---repositories
 |   |   |       AccountingTransactionRepository.ts
+|   |   |       ActivityProgressRepository.ts
 |   |   |       AuthorCreditRepository.ts
 |   |   |       BudgetItemRepository.ts
 |   |   |       BudgetLineItemRepository.ts
@@ -297,21 +322,28 @@ C:.
 |   |           AdvancedRecommendationService.ts
 |   |           AuthService.ts
 |   |           BudgetPricingService.ts
+|   |           BudgetScheduleIntegrationService.ts
 |   |           BudgetTemplateService.ts
 |   |           CalculationBudgetService.ts
+|   |           CalculationScheduleService.ts
 |   |           CalculationService.ts
 |   |           EmailService.ts
+|   |           ExternalIntegrationService.ts
 |   |           MaterialCalculationService.ts
 |   |           MaterialTemplateValidationService.ts
 |   |           NotificationService.ts
+|   |           ProgressAnalyticsService.ts
 |   |           ProjectMetricsService.ts
 |   |           PushNotificationService.ts
 |   |           RecommendationService.ts
+|   |           ResourceOptimizationService.ts
+|   |           ScheduleOptimizationService.ts
 |   |           SriService.ts
 |   |           SupplierIntegrationService.ts
 |   |           TemplateValidationService.ts
 |   |           TwoFactorAuthService.ts
 |   |           UserPatternAnalysisService.ts
+|   |           WeatherImpactService.ts
 |   |           
 |   +---infrastructure
 |   |   +---config
@@ -474,7 +506,10 @@ C:.
 |   |   +---jobs
 |   |   |       EnhancedRankingCalculationJob.ts
 |   |   |       MaterialRankingCalculationJob.ts
+|   |   |       PerformanceAnalysisJob.ts
 |   |   |       RankingCalculationJob.ts
+|   |   |       ScheduleUpdateJob.ts
+|   |   |       WeatherUpdateJob.ts
 |   |   |       
 |   |   +---services
 |   |   |   |   EmailServiceImpl.ts
@@ -504,6 +539,7 @@ C:.
 |   |   |   |       CalculationBudgetController.ts
 |   |   |   |       CalculationComparisonController.ts
 |   |   |   |       CalculationController.ts
+|   |   |   |       CalculationScheduleController.ts
 |   |   |   |       CalculationTemplateController.ts
 |   |   |   |       EnhancedProjectDashboardController.ts
 |   |   |   |       GlobalStatsController.ts
@@ -522,6 +558,8 @@ C:.
 |   |   |   |       ProjectMetricsController.ts
 |   |   |   |       ProjectPredictionController.ts
 |   |   |   |       ProjectScheduleController.ts
+|   |   |   |       ResourceManagementController.ts
+|   |   |   |       ScheduleAnalyticsController.ts
 |   |   |   |       SupplierIntegrationController.ts
 |   |   |   |       TaskController.ts
 |   |   |   |       TemplateAnalyticsController.ts
@@ -584,6 +622,7 @@ C:.
 |   |   |   |       budgetTemplateRoutes.ts
 |   |   |   |       calculationBudgetRoutes.ts
 |   |   |   |       calculationRoutes.ts
+|   |   |   |       calculationScheduleRoutes.ts
 |   |   |   |       enhancedProjectDashboardRoutes.ts
 |   |   |   |       invoiceRoutes.ts
 |   |   |   |       materialCalculationRoutes.ts
@@ -619,6 +658,7 @@ C:.
 |   |   |           materialValidator.ts
 |   |   |           projectScheduleValidator.ts
 |   |   |           promotionValidator.ts
+|   |   |           scheduleValidator.ts
 |   |   |           suggestionValidator.ts
 |   |   |           templateImportValidator.ts
 |   |   |           templateValidator.ts

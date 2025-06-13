@@ -148,4 +148,6 @@ export class MaterialEntity {
 
 	@DeleteDateColumn({name: "deleted_at", nullable: true})
 	deletedAt: Date;
+  type: string;
+  unitCost: number;
 }

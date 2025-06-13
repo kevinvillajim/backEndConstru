@@ -3,6 +3,7 @@ import { WeatherFactorRepository } from '../../domain/repositories/WeatherFactor
 import { CalculationScheduleRepository } from '../../domain/repositories/CalculationScheduleRepository';
 import { ScheduleActivityRepository } from '../../domain/repositories/ScheduleActivityRepository';
 import { NotificationService } from '../../domain/services/NotificationService';
+import { WeatherFactorEntity } from '../../domain/entities/WeatherFactorEntity'; // Adjust the path as needed
 
 export interface WeatherForecast {
   date: Date;
@@ -321,11 +322,13 @@ export class WeatherUpdateJob {
   private async processWeatherData(weatherUpdates: Map<string, WeatherForecast[]>): Promise<void> {
     for (const [scheduleId, forecasts] of weatherUpdates) {
       for (const forecast of forecasts) {
-        const weatherFactor = {
+        const weatherFactor: WeatherFactorEntity = {
+          id: '', // Assign a unique identifier if required
           scheduleId,
-          date: forecast.date,
+          geographicalZone: schedule.geographicalZone || '', // Add geographicalZone if applicable
+          weatherCondition: forecast.conditions.join(', '),
+          rainfall: forecast.precipitation.amount,
           temperature: forecast.temperature.avg,
-          precipitation: forecast.precipitation.amount,
           windSpeed: forecast.wind.speed,
           humidity: forecast.humidity,
           workabilityCondition: forecast.workability,
@@ -333,7 +336,8 @@ export class WeatherUpdateJob {
           activityImpacts: await this.calculateActivityImpacts(scheduleId, forecast),
           weatherConditions: forecast.conditions.join(', '),
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          // Add other required properties with appropriate values
         };
 
         await this.weatherRepository.save(weatherFactor);

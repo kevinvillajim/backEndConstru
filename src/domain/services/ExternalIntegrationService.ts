@@ -38,6 +38,63 @@ export interface FieldPlatformIntegration {
   syncIssues: boolean;
 }
 
+// Interfaces para respuestas de APIs externas
+export interface SupplierInventoryResponse {
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    lastUpdate: string;
+    location?: string;
+  }[];
+  totalItems: number;
+  lastSync: string;
+}
+
+export interface SupplierPricingResponse {
+  prices: {
+    id: string;
+    materialId: string;
+    price: number;
+    currency: string;
+    validFrom: string;
+    validTo: string;
+    minimumQuantity?: number;
+  }[];
+  lastUpdate: string;
+}
+
+export interface SupplierDeliveryResponse {
+  deliveries: {
+    id: string;
+    orderId: string;
+    status: 'pending' | 'in_transit' | 'delivered' | 'delayed';
+    estimatedDelivery: string;
+    trackingNumber?: string;
+    items: {
+      materialId: string;
+      quantity: number;
+    }[];
+  }[];
+  totalDeliveries: number;
+}
+
+export interface SupplierOrderResponse {
+  orders: {
+    id: string;
+    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'completed';
+    orderDate: string;
+    totalAmount: number;
+    items: {
+      materialId: string;
+      quantity: number;
+      unitPrice: number;
+    }[];
+  }[];
+  totalOrders: number;
+}
+
 export class ExternalIntegrationService {
   private supplierIntegrations: Map<string, SupplierIntegration> = new Map();
   private erpIntegrations: Map<string, ERPIntegration> = new Map();
@@ -358,7 +415,7 @@ export class ExternalIntegrationService {
       throw new Error('Failed to sync supplier inventory');
     }
     
-    const inventoryData = await response.json();
+    const inventoryData = await response.json() as SupplierInventoryResponse;
     
     // Actualizar inventario local
     for (const item of inventoryData.items) {
@@ -376,7 +433,11 @@ export class ExternalIntegrationService {
       headers: { 'Authorization': `Bearer ${integration.apiKey}` }
     });
     
-    const pricingData = await response.json();
+    if (!response.ok) {
+      throw new Error('Failed to sync supplier pricing');
+    }
+    
+    const pricingData = await response.json() as SupplierPricingResponse;
     
     // Actualizar precios en base de datos local
     for (const priceItem of pricingData.prices) {
@@ -394,7 +455,11 @@ export class ExternalIntegrationService {
       headers: { 'Authorization': `Bearer ${integration.apiKey}` }
     });
     
-    const deliveryData = await response.json();
+    if (!response.ok) {
+      throw new Error('Failed to sync supplier delivery');
+    }
+    
+    const deliveryData = await response.json() as SupplierDeliveryResponse;
     
     return {
       activeDeliveries: deliveryData.deliveries.length,
@@ -407,7 +472,11 @@ export class ExternalIntegrationService {
       headers: { 'Authorization': `Bearer ${integration.apiKey}` }
     });
     
-    const orderData = await response.json();
+    if (!response.ok) {
+      throw new Error('Failed to sync supplier orders');
+    }
+    
+    const orderData = await response.json() as SupplierOrderResponse;
     
     return {
       pendingOrders: orderData.orders.filter(o => o.status === 'pending').length,
@@ -421,7 +490,7 @@ export class ExternalIntegrationService {
     // Verificar disponibilidad de materiales
     if (activity.resourceRequirements?.materials) {
       for (const material of activity.resourceRequirements.materials) {
-        const supplierItem = supplierData.inventory?.find(i => i.id === material.materialId);
+        const supplierItem = supplierData.inventory?.find((i: any) => i.id === material.materialId);
         if (supplierItem) {
           if (supplierItem.quantity < material.quantity) {
             updates.push(`Material shortage detected: ${material.description}`);
@@ -442,7 +511,7 @@ export class ExternalIntegrationService {
   private async recalculateScheduleFromSupplierChanges(schedule: any, updateResults: any[]): Promise<void> {
     // Recalcular fechas del cronograma basado en cambios de proveedores
     const hasSignificantChanges = updateResults.some(update => 
-      update.updates.some(u => u.includes('shortage') || u.includes('delay'))
+      update.updates.some((u: string) => u.includes('shortage') || u.includes('delay'))
     );
     
     if (hasSignificantChanges) {
@@ -544,7 +613,7 @@ export class ExternalIntegrationService {
     return { issuesImported: 0 };
   }
 
-  private async updateMaterialInventory(item: any): Promise<void> {
+  private async updateMaterialInventory(item: SupplierInventoryResponse['items'][0]): Promise<void> {
     // Actualizar inventario de material
     const material = await this.materialRepository.findByExternalId(item.id);
     if (material) {
@@ -554,9 +623,9 @@ export class ExternalIntegrationService {
     }
   }
 
-  private async updateMaterialPricing(priceItem: any): Promise<void> {
+  private async updateMaterialPricing(priceItem: SupplierPricingResponse['prices'][0]): Promise<void> {
     // Actualizar precios de material
-    const material = await this.materialRepository.findByExternalId(priceItem.id);
+    const material = await this.materialRepository.findByExternalId(priceItem.materialId);
     if (material) {
       material.currentPrice = priceItem.price;
       material.lastPriceUpdate = new Date();

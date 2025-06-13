@@ -72,6 +72,7 @@ export class EquipmentEntity {
     enum: EquipmentType
   })
   equipmentType: EquipmentType;
+  dailyCost: number;
 
   // Alias para compatibilidad con código existente
   get type(): EquipmentType {

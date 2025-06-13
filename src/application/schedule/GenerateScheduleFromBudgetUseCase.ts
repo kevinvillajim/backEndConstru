@@ -165,11 +165,11 @@ export class GenerateScheduleFromBudgetUseCase {
 
     // Agregar actividades personalizadas si las hay
     if (request.customActivities) {
-      for (const customActivity of request.customActivities) {
-        const activity = this.createCustomActivity(customActivity, scheduleId);
-        activities.push(activity);
-      }
+    for (const customActivity of request.customActivities) {
+      const activity = this.createCustomActivity(customActivity, scheduleId);
+      activities.push(activity);
     }
+  }
 
     // Agregar actividades de template que no están en el presupuesto
     const templateActivities = await this.getTemplateActivities(template.id);
@@ -212,7 +212,9 @@ export class GenerateScheduleFromBudgetUseCase {
       workQuantities: {
         plannedQuantity: lineItem.quantity,
         completedQuantity: 0,
-        unit: lineItem.unit
+        unit: lineItem.unit,
+        remainingQuantity: lineItem.quantity,
+        productivity: 1.0
       },
       qualityRequirements: [],
       safetyRequirements: [],
@@ -345,7 +347,9 @@ export class GenerateScheduleFromBudgetUseCase {
       workQuantities: {
         plannedQuantity: 1,
         completedQuantity: 0,
-        unit: 'global'
+        unit: 'global',
+        remainingQuantity: 0,
+        productivity: 0
       },
       qualityRequirements: [],
       safetyRequirements: [],
@@ -389,7 +393,9 @@ export class GenerateScheduleFromBudgetUseCase {
       workQuantities: {
         plannedQuantity: 1,
         completedQuantity: 0,
-        unit: 'global'
+        unit: 'global',
+        remainingQuantity: 0,
+        productivity: 0
       },
       qualityRequirements: templateActivity.qualityChecks || [],
       safetyRequirements: templateActivity.safetyRequirements ? [templateActivity.safetyRequirements] : [],
@@ -449,7 +455,7 @@ export class GenerateScheduleFromBudgetUseCase {
       
       // Visitar predecesores primero
       for (const predId of activity.predecessors) {
-        const pred = activities.find(a => a.id === predId.activityId);
+        const pred = activities.find(a => a.id === predId);
         if (pred) {
           visit(pred);
         }
@@ -477,7 +483,7 @@ export class GenerateScheduleFromBudgetUseCase {
     let earliestStart = new Date(projectStartDate);
     
     for (const predId of activity.predecessors) {
-      const predecessor = allActivities.find(a => a.id === predId.activityId);
+      const predecessor = allActivities.find(a => a.id === predId);
       if (predecessor && predecessor.plannedEndDate) {
         const predEndDate = new Date(predecessor.plannedEndDate);
         if (predEndDate > earliestStart) {

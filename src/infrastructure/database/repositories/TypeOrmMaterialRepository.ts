@@ -1,314 +1,314 @@
 // src/infrastructure/database/repositories/TypeOrmMaterialRepository.ts
-import {Repository, Brackets} from "typeorm";
-import {AppDataSource} from "../data-source";
-import {
-	MaterialRepository,
-	HistoricalPriceData,
-} from "../../../domain/repositories/MaterialRepository";
-import {
-	MaterialPriceHistoryEntity,
-	PriceChangeReason,
-} from "../entities/MaterialPriceHistoryEntity";
-import {Material} from "../../../domain/models/material/Material";
-import {MaterialEntity} from "../entities/MaterialEntity";
+import { Repository, Like, Between, MoreThan, LessThan, IsNull, Not } from 'typeorm';
+import { MaterialRepository, MaterialFilters } from '../../../domain/repositories/MaterialRepository';
+import { AppDataSource } from '../data-source';
+import { MaterialEntity } from '../entities/MaterialEntity';
 
 export class TypeOrmMaterialRepository implements MaterialRepository {
-	private repository: Repository<MaterialEntity>;
+  private repository: Repository<MaterialEntity>;
 
-	constructor() {
-		this.repository = AppDataSource.getRepository(MaterialEntity);
-	}
+  constructor() {
+    this.repository = AppDataSource.getRepository(MaterialEntity);
+  }
 
-	async findById(id: string): Promise<Material | null> {
-		const material = await this.repository.findOne({
-			where: {id},
-			relations: ["category", "seller"],
-		});
+  async findById(id: string): Promise<MaterialEntity | null> {
+    return await this.repository.findOne({
+      where: { id }
+    });
+  }
 
-		return material ? this.toDomainModel(material) : null;
-	}
+  async findAll(): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { isActive: true },
+      order: { name: 'ASC' }
+    });
+  }
 
-	async findByName(name: string): Promise<Material[]> {
-		const materials = await this.repository.find({
-			where: {name: name},
-		});
+  async findByFilters(filters: MaterialFilters): Promise<MaterialEntity[]> {
+    const queryBuilder = this.repository.createQueryBuilder('material');
+    
+    queryBuilder.where('material.isActive = :isActive', { isActive: filters.isActive ?? true });
 
-		return materials.map((material) => this.toDomainModel(material));
-	}
+    if (filters.type) {
+      queryBuilder.andWhere('material.type = :type', { type: filters.type });
+    }
 
-	async findBySku(sku: string): Promise<Material | null> {
-		const material = await this.repository.findOne({
-			where: {sku},
-		});
+    if (filters.supplierCode) {
+      queryBuilder.andWhere('material.supplierCode = :supplierCode', { supplierCode: filters.supplierCode });
+    }
 
-		return material ? this.toDomainModel(material) : null;
-	}
+    if (filters.isInStock) {
+      queryBuilder.andWhere('material.availableQuantity > 0');
+    }
 
-	async findAll(
-		filters?: any,
-		pagination?: {
-			page: number;
-			limit: number;
-			sortBy?: string;
-			sortOrder?: "ASC" | "DESC";
-		}
-	): Promise<{materials: Material[]; total: number}> {
-		let queryBuilder = this.repository.createQueryBuilder("material");
+    if (filters.isLowStock) {
+      queryBuilder.andWhere(
+        'material.availableQuantity <= COALESCE(JSON_UNQUOTE(JSON_EXTRACT(material.supplierInfo, "$.minimumOrder")), 10)'
+      );
+    }
 
-		// Aplicar filtros
-		if (filters) {
-			if (filters.categoryId) {
-				queryBuilder = queryBuilder.andWhere(
-					"material.category_id = :categoryId",
-					{
-						categoryId: filters.categoryId,
-					}
-				);
-			}
+    if (filters.needsPriceUpdate) {
+      queryBuilder.andWhere(
+        '(material.lastPriceUpdate IS NULL OR material.lastPriceUpdate < DATE_SUB(NOW(), INTERVAL 30 DAY))'
+      );
+    }
 
-			if (filters.sellerId) {
-				queryBuilder = queryBuilder.andWhere("material.seller_id = :sellerId", {
-					sellerId: filters.sellerId,
-				});
-			}
+    if (filters.needsInventoryUpdate) {
+      queryBuilder.andWhere(
+        '(material.lastInventoryUpdate IS NULL OR material.lastInventoryUpdate < DATE_SUB(NOW(), INTERVAL 7 DAY))'
+      );
+    }
 
-			if (filters.isActive !== undefined) {
-				queryBuilder = queryBuilder.andWhere("material.is_active = :isActive", {
-					isActive: filters.isActive,
-				});
-			}
+    if (filters.minQuantity !== undefined) {
+      queryBuilder.andWhere('material.availableQuantity >= :minQuantity', { minQuantity: filters.minQuantity });
+    }
 
-			if (filters.isFeatured !== undefined) {
-				queryBuilder = queryBuilder.andWhere(
-					"material.is_featured = :isFeatured",
-					{
-						isFeatured: filters.isFeatured,
-					}
-				);
-			}
+    if (filters.maxPrice !== undefined) {
+      queryBuilder.andWhere('(material.currentPrice <= :maxPrice OR material.unitCost <= :maxPrice)', { maxPrice: filters.maxPrice });
+    }
 
-			if (filters.searchTerm) {
-				queryBuilder = queryBuilder.andWhere(
-					"(material.name LIKE :term OR material.description LIKE :term OR material.specifications LIKE :term)",
-					{term: `%${filters.searchTerm}%`}
-				);
-			}
+    return await queryBuilder
+      .orderBy('material.name', 'ASC')
+      .getMany();
+  }
 
-			if (filters.minPrice !== undefined) {
-				queryBuilder = queryBuilder.andWhere("material.price >= :minPrice", {
-					minPrice: filters.minPrice,
-				});
-			}
+  async findByType(type: string): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { type, isActive: true },
+      order: { name: 'ASC' }
+    });
+  }
 
-			if (filters.maxPrice !== undefined) {
-				queryBuilder = queryBuilder.andWhere("material.price <= :maxPrice", {
-					maxPrice: filters.maxPrice,
-				});
-			}
-		}
+  async findByName(name: string): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { name: Like(`%${name}%`), isActive: true },
+      order: { name: 'ASC' }
+    });
+  }
 
-		// Calcular total
-		const total = await queryBuilder.getCount();
+  async findByExternalId(externalId: string): Promise<MaterialEntity | null> {
+    return await this.repository.findOne({
+      where: { externalId, isActive: true }
+    });
+  }
 
-		// Aplicar paginación y ordenamiento
-		if (pagination) {
-			const skip = (pagination.page - 1) * pagination.limit;
-			queryBuilder = queryBuilder.skip(skip).take(pagination.limit);
+  async findBySupplierCode(supplierCode: string): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { supplierCode, isActive: true },
+      order: { name: 'ASC' }
+    });
+  }
 
-			if (pagination.sortBy) {
-				const order = pagination.sortOrder || "ASC";
-				queryBuilder = queryBuilder.orderBy(
-					`material.${pagination.sortBy}`,
-					order
-				);
-			} else {
-				// Ordenamiento por defecto
-				queryBuilder = queryBuilder.orderBy("material.name", "ASC");
-			}
-		}
+  async findBySupplierId(supplierId: string): Promise<MaterialEntity[]> {
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('JSON_UNQUOTE(JSON_EXTRACT(material.supplierInfo, "$.supplierId")) = :supplierId', { supplierId })
+      .orderBy('material.name', 'ASC')
+      .getMany();
+  }
 
-		// Ejecutar consulta
-		const materialEntities = await queryBuilder.getMany();
+  async findInStock(): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { 
+        availableQuantity: MoreThan(0),
+        isActive: true 
+      },
+      order: { name: 'ASC' }
+    });
+  }
 
-		// Convertir a modelos de dominio
-		const materials = materialEntities.map((entity) =>
-			this.toDomainModel(entity)
-		);
+  async findLowStock(): Promise<MaterialEntity[]> {
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('material.availableQuantity <= COALESCE(JSON_UNQUOTE(JSON_EXTRACT(material.supplierInfo, "$.minimumOrder")), 10)')
+      .andWhere('material.availableQuantity > 0')
+      .orderBy('material.availableQuantity', 'ASC')
+      .getMany();
+  }
 
-		return {materials, total};
-	}
+  async findOutOfStock(): Promise<MaterialEntity[]> {
+    return await this.repository.find({
+      where: { 
+        availableQuantity: 0,
+        isActive: true 
+      },
+      order: { name: 'ASC' }
+    });
+  }
 
-	async create(material: Omit<Material, "id">): Promise<Material> {
-		const materialEntity = this.toEntity(material as Material);
-		const savedMaterial = await this.repository.save(materialEntity);
-		return this.toDomainModel(savedMaterial);
-	}
+  async findNeedingInventoryUpdate(): Promise<MaterialEntity[]> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-	async update(
-		id: string,
-		materialData: Partial<Material>
-	): Promise<Material | null> {
-		const material = await this.repository.findOne({where: {id}});
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('(material.lastInventoryUpdate IS NULL OR material.lastInventoryUpdate < :sevenDaysAgo)', { sevenDaysAgo })
+      .orderBy('material.lastInventoryUpdate', 'ASC')
+      .getMany();
+  }
 
-		if (!material) return null;
+  async findNeedingPriceUpdate(): Promise<MaterialEntity[]> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-		// Actualizar campos
-		Object.assign(material, materialData);
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('(material.lastPriceUpdate IS NULL OR material.lastPriceUpdate < :thirtyDaysAgo)', { thirtyDaysAgo })
+      .orderBy('material.lastPriceUpdate', 'ASC')
+      .getMany();
+  }
 
-		const updatedMaterial = await this.repository.save(material);
-		return this.toDomainModel(updatedMaterial);
-	}
+  async findByPriceRange(minPrice: number, maxPrice: number): Promise<MaterialEntity[]> {
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('(material.currentPrice BETWEEN :minPrice AND :maxPrice OR material.unitCost BETWEEN :minPrice AND :maxPrice)', { minPrice, maxPrice })
+      .orderBy('COALESCE(material.currentPrice, material.unitCost)', 'ASC')
+      .getMany();
+  }
 
-	async delete(id: string): Promise<boolean> {
-		const result = await this.repository.softDelete(id);
-		return result.affected !== 0;
-	}
+  async save(material: MaterialEntity): Promise<MaterialEntity> {
+    return await this.repository.save(material);
+  }
 
-	async updateStock(id: string, quantity: number): Promise<boolean> {
-		const material = await this.repository.findOne({where: {id}});
+  async saveMany(materials: MaterialEntity[]): Promise<MaterialEntity[]> {
+    return await this.repository.save(materials);
+  }
 
-		if (!material) return false;
+  async update(id: string, updates: Partial<MaterialEntity>): Promise<MaterialEntity | null> {
+    await this.repository.update(id, updates);
+    return await this.findById(id);
+  }
 
-		material.stock += quantity;
+  async delete(id: string): Promise<boolean> {
+    const result = await this.repository.update(id, { isActive: false });
+    return result.affected > 0;
+  }
 
-		if (material.stock < 0) {
-			material.stock = 0; // Evitar stock negativo
-		}
+  async updateInventory(id: string, quantity: number, source: string = 'manual'): Promise<boolean> {
+    const result = await this.repository.update(id, {
+      availableQuantity: quantity,
+      lastInventoryUpdate: new Date()
+    });
+    return result.affected > 0;
+  }
 
-		await this.repository.save(material);
-		return true;
-	}
+  async updatePrice(id: string, price: number, source: string = 'manual'): Promise<boolean> {
+    const result = await this.repository.update(id, {
+      currentPrice: price,
+      lastPriceUpdate: new Date()
+    });
+    return result.affected > 0;
+  }
 
-	async updateViewCount(id: string): Promise<boolean> {
-		const result = await this.repository.increment({id}, "viewCount", 1);
-		return result.affected !== 0;
-	}
+  async bulkUpdateInventory(updates: { id: string; quantity: number }[]): Promise<number> {
+    let updatedCount = 0;
+    
+    for (const update of updates) {
+      const success = await this.updateInventory(update.id, update.quantity, 'bulk');
+      if (success) updatedCount++;
+    }
+    
+    return updatedCount;
+  }
 
-	// Métodos de conversión de entidad a dominio y viceversa
-	private toDomainModel(entity: MaterialEntity): Material {
-		return {
-			id: entity.id,
-			name: entity.name,
-			description: entity.description,
-			specifications: entity.specifications,
-			price: entity.price,
-			wholesalePrice: entity.wholesalePrice,
-			wholesaleMinQuantity: entity.wholesaleMinQuantity,
-			stock: entity.stock,
-			minStock: entity.minStock,
-			unitOfMeasure: entity.unitOfMeasure,
-			brand: entity.brand,
-			model: entity.model,
-			sku: entity.sku,
-			barcode: entity.barcode,
-			imageUrls: entity.imageUrls,
-			isFeatured: entity.isFeatured,
-			isActive: entity.isActive,
-			dimensions: entity.dimensions,
-			categoryId: entity.categoryId,
-			sellerId: entity.sellerId,
-			tags: entity.tags,
-			rating: entity.rating,
-			ratingCount: entity.ratingCount,
-			viewCount: entity.viewCount,
-			orderCount: entity.orderCount,
-			createdAt: entity.createdAt,
-			updatedAt: entity.updatedAt,
-			deletedAt: entity.deletedAt,
-		};
-	}
+  async bulkUpdatePrices(updates: { id: string; price: number }[]): Promise<number> {
+    let updatedCount = 0;
+    
+    for (const update of updates) {
+      const success = await this.updatePrice(update.id, update.price, 'bulk');
+      if (success) updatedCount++;
+    }
+    
+    return updatedCount;
+  }
 
-	private toEntity(model: Material): MaterialEntity {
-		const entity = new MaterialEntity();
+  async getInventoryReport(): Promise<any> {
+    const result = await this.repository
+      .createQueryBuilder('material')
+      .select([
+        'COUNT(*) as totalMaterials',
+        'SUM(CASE WHEN material.availableQuantity > 0 THEN 1 ELSE 0 END) as inStock',
+        'SUM(CASE WHEN material.availableQuantity = 0 THEN 1 ELSE 0 END) as outOfStock',
+        'SUM(CASE WHEN material.availableQuantity <= COALESCE(JSON_UNQUOTE(JSON_EXTRACT(material.supplierInfo, "$.minimumOrder")), 10) AND material.availableQuantity > 0 THEN 1 ELSE 0 END) as lowStock',
+        'AVG(material.availableQuantity) as avgQuantity',
+        'SUM(material.availableQuantity * COALESCE(material.currentPrice, material.unitCost, 0)) as totalInventoryValue'
+      ])
+      .where('material.isActive = true')
+      .getRawOne();
 
-		// Copiar campos
-		Object.assign(entity, model);
+    return {
+      totalMaterials: parseInt(result.totalMaterials) || 0,
+      inStock: parseInt(result.inStock) || 0,
+      outOfStock: parseInt(result.outOfStock) || 0,
+      lowStock: parseInt(result.lowStock) || 0,
+      averageQuantity: parseFloat(result.avgQuantity) || 0,
+      totalInventoryValue: parseFloat(result.totalInventoryValue) || 0,
+      reportDate: new Date()
+    };
+  }
 
-		return entity;
-	}
+  async getPriceHistory(materialId: string, days: number = 30): Promise<any[]> {
+    // En una implementación real, esto requeriría una tabla de historial de precios
+    // Por ahora retornamos información básica
+    const material = await this.findById(materialId);
+    if (!material) return [];
 
-	async saveHistoricalPrice(data: HistoricalPriceData): Promise<boolean> {
-		try {
-			// 1. Crear la entidad de historial de precios
-			const historyEntity = new MaterialPriceHistoryEntity();
-			historyEntity.materialId = data.materialId;
-			historyEntity.price = data.price;
-			historyEntity.wholesalePrice = data.wholesalePrice;
-			historyEntity.wholesaleMinQuantity = data.wholesaleMinQuantity;
-			historyEntity.effectiveDate = data.effectiveDate;
-			historyEntity.reason = data.reason as PriceChangeReason;
-			historyEntity.notes = data.notes;
-			historyEntity.supplierName = data.supplierName;
-			historyEntity.supplierId = data.supplierId;
-			historyEntity.recordedBy = data.recordedBy;
-			historyEntity.priceChangePercentage = data.priceChangePercentage;
-			historyEntity.isPromotion = data.isPromotion || false;
+    return [
+      {
+        date: material.lastPriceUpdate || material.updatedAt,
+        price: material.currentPrice || material.unitCost || 0,
+        source: 'current'
+      }
+    ];
+  }
 
-			// 2. Buscar el registro histórico anterior activo (sin endDate)
-			const historyRepository = AppDataSource.getRepository(
-				MaterialPriceHistoryEntity
-			);
-			const previousActiveRecord = await historyRepository.findOne({
-				where: {
-					materialId: data.materialId,
-					endDate: null,
-				},
-				order: {
-					effectiveDate: "DESC",
-				},
-			});
+  async getUsageStatistics(materialId: string, dateRange?: { start: Date; end: Date }): Promise<any> {
+    // En una implementación real, esto requeriría consultar las tablas de uso/consumo
+    return {
+      materialId,
+      totalUsed: 0,
+      averageMonthlyUsage: 0,
+      lastUsed: null,
+      projectsUsed: 0
+    };
+  }
 
-			// 3. Si hay un registro activo, establecer su fecha de fin
-			if (previousActiveRecord) {
-				previousActiveRecord.endDate = data.effectiveDate;
-				await historyRepository.save(previousActiveRecord);
-			}
+  async getLowStockAlerts(): Promise<MaterialEntity[]> {
+    return await this.findLowStock();
+  }
 
-			// 4. Guardar el nuevo registro histórico
-			await historyRepository.save(historyEntity);
+  async search(searchTerm: string): Promise<MaterialEntity[]> {
+    return await this.repository
+      .createQueryBuilder('material')
+      .where('material.isActive = true')
+      .andWhere('(material.name LIKE :searchTerm OR material.type LIKE :searchTerm OR material.supplierCode LIKE :searchTerm)', 
+        { searchTerm: `%${searchTerm}%` })
+      .orderBy('material.name', 'ASC')
+      .getMany();
+  }
 
-			return true;
-		} catch (error) {
-			console.error("Error al guardar historial de precios:", error);
-			return false;
-		}
-	}
+  async findSimilar(materialId: string): Promise<MaterialEntity[]> {
+    const material = await this.findById(materialId);
+    if (!material) return [];
 
-	async findSimilar(name: string, categoryId: string): Promise<Material[]> {
-		// Buscar materiales similares por nombre y categoría
-		const queryBuilder = this.repository
-			.createQueryBuilder("material")
-			.where("material.category_id = :categoryId", {categoryId})
-			.andWhere("material.is_active = :isActive", {isActive: true});
+    return await this.repository.find({
+      where: { 
+        type: material.type,
+        isActive: true,
+        id: Not(materialId)
+      },
+      order: { name: 'ASC' },
+      take: 10
+    });
+  }
 
-		// Buscar por palabras clave del nombre
-		const keywords = name
-			.split(" ")
-			.filter((word) => word.length > 3) // Ignorar palabras muy cortas
-			.map((word) => word.trim());
-
-		if (keywords.length > 0) {
-			queryBuilder.andWhere(
-				new Brackets((qb) => {
-					keywords.forEach((keyword, index) => {
-						if (index === 0) {
-							qb.where("material.name LIKE :keyword" + index, {
-								["keyword" + index]: `%${keyword}%`,
-							});
-						} else {
-							qb.orWhere("material.name LIKE :keyword" + index, {
-								["keyword" + index]: `%${keyword}%`,
-							});
-						}
-					});
-				})
-			);
-		}
-
-		// Excluir el material actual si estamos buscando alternativas
-		queryBuilder.andWhere("material.name != :exactName", {exactName: name});
-
-		const materials = await queryBuilder.getMany();
-		return materials.map((entity) => this.toDomainModel(entity));
-	}
+  async findAlternatives(materialId: string): Promise<MaterialEntity[]> {
+    // En una implementación real, esto podría usar algoritmos más sofisticados
+    return await this.findSimilar(materialId);
+  }
 }

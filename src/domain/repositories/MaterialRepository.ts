@@ -1,37 +1,61 @@
 // src/domain/repositories/MaterialRepository.ts
-import { MaterialEntity } from "../../infrastructure/database/entities/MaterialEntity";
-import {Material} from "../models/material/Material";
+import { MaterialEntity } from '../../infrastructure/database/entities/MaterialEntity';
 
-export interface MaterialRepository {
-	findById(id: string): Promise<Material | null>;
-	findByName(name: string): Promise<Material[]>;
-	findBySku(sku: string): Promise<Material | null>;
-	findAll(
-		filters?: any,
-		pagination?: any
-	): Promise<{materials: Material[]; total: number}>;
-	create(material: Omit<Material, "id">): Promise<Material>;
-	findByExternalId(externalId: string): Promise<MaterialEntity | null>;
-  save(material: MaterialEntity): Promise<MaterialEntity>;
-	update(id: string, materialData: Partial<Material>): Promise<Material | null>;
-	delete(id: string): Promise<boolean>;
-	updateStock(id: string, quantity: number): Promise<boolean>;
-	updateViewCount(id: string): Promise<boolean>;
-	saveHistoricalPrice(data: HistoricalPriceData): Promise<boolean>;
-	findSimilar(name: string, categoryId: string): Promise<Material[]>;
+export interface MaterialFilters {
+  type?: string;
+  supplierCode?: string;
+  isActive?: boolean;
+  isInStock?: boolean;
+  isLowStock?: boolean;
+  needsPriceUpdate?: boolean;
+  needsInventoryUpdate?: boolean;
+  minQuantity?: number;
+  maxPrice?: number;
 }
 
-export interface HistoricalPriceData {
-	materialId: string;
-	price: number;
-	wholesalePrice?: number;
-	wholesaleMinQuantity?: number;
-	effectiveDate: Date;
-	reason: string;
-	notes?: string;
-	supplierName?: string;
-	supplierId?: string;
-	recordedBy: string;
-	priceChangePercentage?: number;
-	isPromotion?: boolean;
+export interface MaterialRepository {
+  // Métodos básicos CRUD
+  findById(id: string): Promise<MaterialEntity | null>;
+  findAll(): Promise<MaterialEntity[]>;
+  findByFilters(filters: MaterialFilters): Promise<MaterialEntity[]>;
+  findByType(type: string): Promise<MaterialEntity[]>;
+  findByName(name: string): Promise<MaterialEntity[]>;
+  
+  // Métodos para integraciones externas
+  findByExternalId(externalId: string): Promise<MaterialEntity | null>;
+  findBySupplierCode(supplierCode: string): Promise<MaterialEntity[]>;
+  findBySupplierId(supplierId: string): Promise<MaterialEntity[]>;
+  
+  // Métodos de inventario
+  findInStock(): Promise<MaterialEntity[]>;
+  findLowStock(): Promise<MaterialEntity[]>;
+  findOutOfStock(): Promise<MaterialEntity[]>;
+  findNeedingInventoryUpdate(): Promise<MaterialEntity[]>;
+  
+  // Métodos de precios
+  findNeedingPriceUpdate(): Promise<MaterialEntity[]>;
+  findByPriceRange(minPrice: number, maxPrice: number): Promise<MaterialEntity[]>;
+  
+  // Operaciones CRUD
+  save(material: MaterialEntity): Promise<MaterialEntity>;
+  saveMany(materials: MaterialEntity[]): Promise<MaterialEntity[]>;
+  update(id: string, updates: Partial<MaterialEntity>): Promise<MaterialEntity | null>;
+  delete(id: string): Promise<boolean>;
+  
+  // Operaciones de inventario
+  updateInventory(id: string, quantity: number, source?: string): Promise<boolean>;
+  updatePrice(id: string, price: number, source?: string): Promise<boolean>;
+  bulkUpdateInventory(updates: { id: string; quantity: number }[]): Promise<number>;
+  bulkUpdatePrices(updates: { id: string; price: number }[]): Promise<number>;
+  
+  // Métodos de análisis
+  getInventoryReport(): Promise<any>;
+  getPriceHistory(materialId: string, days?: number): Promise<any[]>;
+  getUsageStatistics(materialId: string, dateRange?: { start: Date; end: Date }): Promise<any>;
+  getLowStockAlerts(): Promise<MaterialEntity[]>;
+  
+  // Búsqueda avanzada
+  search(searchTerm: string): Promise<MaterialEntity[]>;
+  findSimilar(materialId: string): Promise<MaterialEntity[]>;
+  findAlternatives(materialId: string): Promise<MaterialEntity[]>;
 }

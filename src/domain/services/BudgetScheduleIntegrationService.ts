@@ -58,7 +58,7 @@ export class BudgetScheduleIntegrationService {
       const activities = await this.activityRepository.findByScheduleId(syncRequest.scheduleId);
 
       // 3. Detectar diferencias y conflictos
-      const differences = this.detectDifferences(budgetItems, activities);
+      const differences = await this.detectDifferences(budgetItems, activities);
       const conflicts = this.detectConflicts(differences, syncRequest.conflictResolution);
 
       // 4. Ejecutar sincronización según dirección
@@ -527,14 +527,14 @@ export class BudgetScheduleIntegrationService {
     return totalPairs > 0 ? (coherentPairs / totalPairs) * 100 : 100;
   }
 
-  private identifyDiscrepancies(budgetItems: any[], activities: any[]): any[] {
-    const differences = this.detectDifferences(budgetItems, activities);
+  private async identifyDiscrepancies(budgetItems: any[], activities: any[]): Promise<any[]> {
+    const differences = await this.detectDifferences(budgetItems, activities);
     return differences.filter(diff => diff.differences.length > 0);
   }
 
-  private generateCoherenceRecommendations(budgetItems: any[], activities: any[]): string[] {
+  private async generateCoherenceRecommendations(budgetItems: any[], activities: any[]): Promise<string[]> {
     const recommendations = [];
-    const discrepancies = this.identifyDiscrepancies(budgetItems, activities);
+    const discrepancies = await this.identifyDiscrepancies(budgetItems, activities);
 
     if (discrepancies.length > 0) {
       recommendations.push(`Se detectaron ${discrepancies.length} discrepancias entre presupuesto y cronograma`);

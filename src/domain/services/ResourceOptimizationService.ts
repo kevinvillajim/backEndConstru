@@ -1,6 +1,6 @@
 // src/domain/services/ResourceOptimizationService.ts
 import { ScheduleActivityEntity } from '../../infrastructure/database/entities/ScheduleActivityEntity';
-import { ResourceAssignmentEntity } from '../../infrastructure/database/entities/ResourceAssignmentEntity';
+import { ResourceAssignmentEntity, ResourceType } from '../../infrastructure/database/entities/ResourceAssignmentEntity';
 import { WorkforceEntity } from '../../infrastructure/database/entities/WorkforceEntity';
 import { EquipmentEntity } from '../../infrastructure/database/entities/EquipmentEntity';
 import { CalculationScheduleEntity } from '../../infrastructure/database/entities/CalculationScheduleEntity';
@@ -714,7 +714,7 @@ export class ResourceOptimizationService {
   ): ResourceAssignmentEntity {
     const assignment = new ResourceAssignmentEntity();
     assignment.activityId = activity.id;
-    assignment.resourceType = type === 'workforce' ? 'workforce' : 'equipment';
+    assignment.resourceType = type === 'workforce' ? 'workforce' as ResourceType : 'equipment' as ResourceType;
     assignment.resourceId = resource.id;
     assignment.plannedStartDate = activity.plannedStartDate;
     assignment.plannedEndDate = activity.plannedEndDate;

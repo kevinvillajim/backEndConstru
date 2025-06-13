@@ -10,9 +10,9 @@ import {
   Index 
 } from 'typeorm';
 import { CalculationScheduleEntity } from './CalculationScheduleEntity';
-import { ResourceAssignmentEntity } from './ResourceAssignmentEntity';
+import { ResourceAssignmentEntity, ResourceType } from './ResourceAssignmentEntity';
 import { ActivityProgressEntity } from './ActivityProgressEntity';
-import {ActivityStatus, ActivityType, ActivityPriority, ConstructionTrade} from '../../../domain/models/calculation/ScheduleActivity';
+import { ActivityStatus, ActivityType, ActivityPriority, ConstructionTrade } from '../../../domain/models/calculation/ScheduleActivity';
 
 @Entity('schedule_activities')
 @Index(['scheduleId', 'status'])
@@ -255,11 +255,10 @@ export class ScheduleActivityEntity {
   @Column({ type: 'uuid' })
   scheduleId: string;
 
-  // RELACIÓN AGREGADA - Esta es la relación que faltaba
   @OneToMany(() => ResourceAssignmentEntity, assignment => assignment.activity)
   resourceAssignments: ResourceAssignmentEntity[];
 
-  // RELACIÓN AGREGADA - Alias para assignments (compatibilidad)
+  // ALIAS para compatibilidad con el optimizer
   get assignments(): ResourceAssignmentEntity[] {
     return this.resourceAssignments;
   }
@@ -267,7 +266,7 @@ export class ScheduleActivityEntity {
   @OneToMany(() => ActivityProgressEntity, progress => progress.activity)
   progressReports: ActivityProgressEntity[];
 
-  // Métodos calculados
+  // Métodos calculados requeridos por el optimizer
   public get durationVariance(): number {
     if (!this.plannedDurationDays || this.plannedDurationDays === 0) return 0;
     return ((this.actualDurationDays - this.plannedDurationDays) / this.plannedDurationDays) * 100;
@@ -402,5 +401,43 @@ export class ScheduleActivityEntity {
   public hasResourceConflicts(): boolean {
     const assignments = this.getActiveAssignments();
     return assignments.some(assignment => assignment.isOverallocated?.());
+  }
+
+  // Método helper para obtener requerimientos de recursos 
+  // (usado por el optimizer)
+  public getResourceRequirements(): any {
+    const assignments = this.resourceAssignments || [];
+    
+    const workforce = assignments
+      .filter(a => a.resourceType === ResourceType.WORKFORCE)
+      .map(a => ({
+        trade: a.workforce?.trade || this.primaryTrade || 'general',
+        quantity: a.quantity || 1,
+        skillLevel: a.workforce?.skillLevel || 'basic',
+        hourlyRate: a.plannedCost || 25
+      }));
+
+    const equipment = assignments
+      .filter(a => a.resourceType === ResourceType.EQUIPMENT)
+      .map(a => ({
+        type: a.equipment?.type || 'general',
+        quantity: a.quantity || 1,
+        dailyCost: a.plannedCost || 100
+      }));
+
+    const materials = assignments
+      .filter(a => a.resourceType === ResourceType.MATERIAL)
+      .map(a => ({
+        material: a.material?.name || 'general',
+        quantity: a.quantity || 1,
+        unit: a.unit || 'unit',
+        unitCost: a.plannedCost || 10
+      }));
+
+    return {
+      workforce: workforce.length > 0 ? workforce : undefined,
+      equipment: equipment.length > 0 ? equipment : undefined,
+      materials: materials.length > 0 ? materials : undefined
+    };
   }
 }
