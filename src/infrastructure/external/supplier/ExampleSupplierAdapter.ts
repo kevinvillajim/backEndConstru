@@ -167,13 +167,21 @@ export class ExampleSupplierAdapter implements SupplierIntegrationService {
 				: undefined,
 			wholesaleMinQuantity: product.wholesale_min_quantity,
 			stock: product.stock_quantity || 0,
+			minStock: product.min_stock || 5, // Agregado
+			unitOfMeasure: product.unit_of_measure || 'unidad', // Agregado
+			supplierCode: product.supplier_code || null, // Agregado
+			type: product.type || 'standard', // Agregado
+			supplierName: product.supplier_name || 'No especificado', // Agregado
+			minimumOrder: product.minimum_order || 1, // Agregado
+			deliveryTime: product.delivery_time || 3, // Agregado
+			qualityRating: product.quality_rating || 0, // Agregado
 			sku: product.sku,
 			barcode: product.barcode,
 			imageUrls: product.images,
 			brand: product.brand,
 			model: product.model,
 			categoryName: product.category,
-			tags: product.tags,
+			tags: product.tags || [],
 			dimensions: {
 				length: product.length,
 				width: product.width,

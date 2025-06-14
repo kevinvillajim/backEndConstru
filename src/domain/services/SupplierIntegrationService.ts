@@ -1,5 +1,13 @@
 // src/domain/services/SupplierIntegrationService.ts
 export interface SupplierProduct {
+	minStock: number;
+	unitOfMeasure: string;
+	supplierCode: null;
+	type: string;
+	supplierName: string;
+	minimumOrder: number;
+	deliveryTime: number;
+	qualityRating: number;
 	externalId: string;
 	name: string;
 	description?: string;

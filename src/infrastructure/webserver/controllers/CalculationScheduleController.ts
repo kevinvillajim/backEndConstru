@@ -1,5 +1,6 @@
 // src/infrastructure/webserver/controllers/CalculationScheduleController.ts
 import { Request, Response } from 'express';
+import { RequestWithUser } from '../middlewares/authMiddleware';
 import { GenerateScheduleFromBudgetUseCase } from '../../../application/schedule/GenerateScheduleFromBudgetUseCase';
 import { OptimizeProjectScheduleUseCase } from '../../../application/schedule/OptimizeProjectScheduleUseCase';
 import { TrackDailyProgressUseCase } from '../../../application/schedule/TrackDailyProgressUseCase';
@@ -25,7 +26,7 @@ export class CalculationScheduleController {
   ) {}
 
   // GET /api/calculation-schedules
-  async getSchedules(req: Request, res: Response): Promise<void> {
+  async getSchedules(req: RequestWithUser, res: Response): Promise<void> {
     try {
       const {
         projectId,
@@ -68,7 +69,7 @@ export class CalculationScheduleController {
   }
 
   // POST /api/calculation-schedules
-  async createSchedule(req: Request, res: Response): Promise<void> {
+  async createSchedule(req: RequestWithUser, res: Response): Promise<void> {
     try {
       const scheduleData = req.body;
       const newSchedule = await this.scheduleRepository.save(scheduleData);
@@ -88,7 +89,7 @@ export class CalculationScheduleController {
   }
 
   // GET /api/calculation-schedules/:scheduleId
-  async getScheduleById(req: Request, res: Response): Promise<void> {
+  async getScheduleById(req: RequestWithUser, res: Response): Promise<void> {
     try {
       const { scheduleId } = req.params;
       const { includeActivities = 'true', includeProgress = 'false' } = req.query;
@@ -126,7 +127,7 @@ export class CalculationScheduleController {
   }
 
   // PUT /api/calculation-schedules/:scheduleId
-  async updateSchedule(req: Request, res: Response): Promise<void> {
+  async updateSchedule(req: RequestWithUser, res: Response): Promise<void> {
     try {
       const { scheduleId } = req.params;
       const updateData = req.body;
@@ -259,7 +260,7 @@ export class CalculationScheduleController {
   }
 
   // POST /api/calculation-schedules/:scheduleId/progress-report
-  async submitProgressReport(req: Request, res: Response): Promise<void> {
+  async submitProgressReport(req: RequestWithUser, res: Response): Promise<void> {
     try {
       const { scheduleId } = req.params;
       const progressRequest = {
