@@ -103,9 +103,11 @@ export class ImportMaterialsFromSupplierUseCase {
 							// Crear nueva categoría
 							const newCategory = await this.categoryRepository.create({
 								name: product.categoryName,
-								description: `Categoría importada desde ${this.supplierService.getSupplierName()}`,
+								description: `Categoría para ${product.categoryName}`,
 								isActive: true,
 								displayOrder: 0,
+								createdAt: new Date(),
+								updatedAt: new Date(),
 							});
 							categoryId = newCategory.id;
 						}
@@ -121,9 +123,12 @@ export class ImportMaterialsFromSupplierUseCase {
 							// Crear categoría por defecto
 							const newCategory = await this.categoryRepository.create({
 								name: "Sin categoría",
-								description: "Categoría por defecto para productos importados",
+								description:
+									"Categoría por defecto para productos sin categoría específica",
 								isActive: true,
 								displayOrder: 0,
+								createdAt: new Date(),
+								updatedAt: new Date(),
 							});
 							categoryId = newCategory.id;
 						}
@@ -135,26 +140,42 @@ export class ImportMaterialsFromSupplierUseCase {
 						description: product.description,
 						specifications: product.specifications,
 						price: product.price,
+						currentPrice: product.price,
+						unitCost: product.price,
 						wholesalePrice: product.wholesalePrice,
 						wholesaleMinQuantity: product.wholesaleMinQuantity,
 						stock: product.stock,
-						minStock: 5, // Valor por defecto
-						unitOfMeasure: "unidad", // Valor por defecto
+						availableQuantity: product.stock,
+						minStock: product.minStock,
+						unitOfMeasure: product.unitOfMeasure,
 						brand: product.brand,
 						model: product.model,
 						sku: product.sku,
 						barcode: product.barcode,
+						externalId: product.externalId,
+						supplierCode: product.supplierCode,
+						lastPriceUpdate: new Date(),
+						lastInventoryUpdate: new Date(),
 						imageUrls: product.imageUrls,
 						isFeatured: false,
 						isActive: true,
 						dimensions: product.dimensions,
-						categoryId: categoryId!,
-						sellerId: userId,
+						type: product.type || "material",
+						supplierInfo: {
+							supplierId: supplierId,
+							supplierName: product.supplierName,
+							minimumOrder: product.minimumOrder || 1,
+							deliveryTime: product.deliveryTime || 7,
+							qualityRating: product.qualityRating || 0,
+						},
+						categoryId: category.id,
+						sellerId: supplierId,
 						tags: product.tags,
 						rating: 0,
 						ratingCount: 0,
 						viewCount: 0,
 						orderCount: 0,
+						deletedAt: null,
 					});
 
 					// Guardar historial de precio inicial (SIN supplierName)
