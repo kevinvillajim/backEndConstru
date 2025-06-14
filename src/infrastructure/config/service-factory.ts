@@ -515,8 +515,8 @@ export function initializeServices() {
 			calculationBudgetRepository,
 			calculationScheduleRepository,
 			scheduleActivityRepository,
-			notificationService,
 			budgetLineItemRepository,
+			notificationService,
 			progressTrackingRepository // ← AGREGADO: Parámetro faltante
 		);
 		

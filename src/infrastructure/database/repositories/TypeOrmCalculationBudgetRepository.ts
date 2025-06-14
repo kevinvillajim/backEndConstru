@@ -1,10 +1,19 @@
 // src/infrastructure/database/repositories/TypeOrmCalculationBudgetRepository.ts
-import { Repository } from "typeorm";
-import { AppDataSource } from "../data-source";
-import { CalculationBudgetRepository } from "../../../domain/repositories/CalculationBudgetRepository";
-import { CalculationBudget, CreateCalculationBudgetDTO } from "../../../domain/models/calculation/CalculationBudget";
-import { CalculationBudgetEntity } from "../entities/CalculationBudgetEntity";
-import { PaginationOptions } from "../../../domain/models/common/PaginationOptions";
+import {Repository} from "typeorm";
+import {AppDataSource} from "../data-source";
+import {CalculationBudgetRepository} from "../../../domain/repositories/CalculationBudgetRepository";
+import {
+	CalculationBudget,
+	CreateCalculationBudgetDTO,
+} from "../../../domain/models/calculation/CalculationBudget";
+import {CalculationBudgetEntity} from "../entities/CalculationBudgetEntity";
+import {PaginationOptions} from "../../../domain/models/common/PaginationOptions";
+// ✅ AGREGADO: Importar tipos del modelo de dominio
+import {
+	LineItemType,
+	LineItemSource,
+	LaborType,
+} from "../../../domain/models/calculation/BudgetLineItem";
 
 export class TypeOrmCalculationBudgetRepository
 	implements CalculationBudgetRepository
@@ -226,6 +235,8 @@ export class TypeOrmCalculationBudgetRepository
 				version: budget.version,
 				parentBudgetId: budget.parentBudgetId,
 				projectId: budget.projectId,
+				projectType: budget.projectType, // ✅ AGREGADO
+				customFields: budget.customFields, // ✅ AGREGADO
 				userId: budget.userId,
 				calculationResultId: budget.calculationResultId,
 				budgetTemplateId: budget.budgetTemplateId,
@@ -312,12 +323,14 @@ export class TypeOrmCalculationBudgetRepository
 			version: entity.version,
 			parentBudgetId: entity.parentBudgetId,
 			projectId: entity.projectId,
+			projectType: entity.projectType || "construction", // ✅ AGREGADO con valor por defecto
+			customFields: entity.customFields || {}, // ✅ AGREGADO
 			userId: entity.userId,
 			calculationResultId: entity.calculationResultId,
 			budgetTemplateId: entity.budgetTemplateId,
 			materialsSubtotal: entity.materialsSubtotal,
 			laborSubtotal: entity.laborSubtotal,
-			professionalCostsTotal: entity.professionalCostsTotal, // CORREGIDO: Usar el campo numérico
+			professionalCostsTotal: entity.professionalCostsTotal,
 			indirectCosts: entity.indirectCosts,
 			contingencyPercentage: entity.contingencyPercentage,
 			contingencyAmount: entity.contingencyAmount,
@@ -334,14 +347,14 @@ export class TypeOrmCalculationBudgetRepository
 			isTemplateBudget: entity.isTemplateBudget,
 			approvedBy: entity.approvedBy,
 			approvedAt: entity.approvedAt,
-			// CORREGIDO: Mapear correctamente los arrays relacionados
+			// ✅ CORREGIDO: Mapear correctamente con conversiones de tipos explícitas
 			lineItems: entity.lineItems?.map((item) => ({
 				id: item.id,
 				description: item.description,
 				specifications: item.specifications,
-				itemType: item.itemType,
-				source: item.source,
-				laborType: item.laborType, // ⭐ AGREGAR ESTA LÍNEA QUE FALTA
+				itemType: item.itemType as unknown as LineItemType, // ✅ Conversión explícita
+				source: item.source as unknown as LineItemSource, // ✅ Conversión explícita
+				laborType: item.laborType as LaborType | undefined, // ✅ Conversión explícita
 				calculationBudgetId: item.calculationBudgetId,
 				sourceCalculationId: item.sourceCalculationId,
 				calculationParameterKey: item.calculationParameterKey,
@@ -375,7 +388,9 @@ export class TypeOrmCalculationBudgetRepository
 		};
 	}
 
-	private toEntity(model: CreateCalculationBudgetDTO): CalculationBudgetEntity {
+	private toEntity(
+		model: CreateCalculationBudgetDTO | CalculationBudget
+	): CalculationBudgetEntity {
 		const entity = new CalculationBudgetEntity();
 		Object.assign(entity, model);
 		return entity;

@@ -1,13 +1,12 @@
 // src/infrastructure/services/NotificationServiceImpl.ts
 import {
 	NotificationService,
-	NotificationOptions,
-	NotificationResult,
+	CreateNotificationRequest,
 } from "../../domain/services/NotificationService";
 import {NotificationRepository} from "../../domain/repositories/NotificationRepository";
 import {UserRepository} from "../../domain/repositories/UserRepository";
 import {ProjectRepository} from "../../domain/repositories/ProjectRepository";
-import { WebSocketService } from "../websocket/WebSocketService";
+import {WebSocketService} from "../websocket/WebSocketService";
 import {EmailService} from "../../domain/services/EmailService";
 import {PushNotificationService} from "../../domain/services/PushNotificationService";
 import {
@@ -15,6 +14,45 @@ import {
 	NotificationType,
 } from "../database/entities/NotificationEntity";
 import {v4 as uuidv4} from "uuid";
+
+// ✅ Definir tipos locales con enum correcto
+export interface NotificationOptions {
+	title: string;
+	content: string;
+	type: NotificationType; // ✅ Usar enum en lugar de string
+	priority?: NotificationPriority | string;
+	actionUrl?: string;
+	actionText?: string;
+	relatedEntityType?: string;
+	relatedEntityId?: string;
+	icon?: string;
+	expiresAt?: Date;
+	sendEmail?: boolean;
+	sendPush?: boolean;
+	sendSms?: boolean;
+}
+
+export interface NotificationResult {
+	id: string;
+	userId: string;
+	title: string;
+	content: string;
+	type: NotificationType; // ✅ Usar enum en lugar de string
+	priority: NotificationPriority;
+	isRead: boolean;
+	createdAt: Date;
+	success: boolean;
+	emailSent?: boolean;
+	pushSent?: boolean;
+	smsSent?: boolean;
+	readAt?: Date;
+	actionUrl?: string;
+	actionText?: string;
+	relatedEntityType?: string;
+	relatedEntityId?: string;
+	icon?: string;
+	expiresAt?: Date;
+}
 
 export class NotificationServiceImpl implements NotificationService {
 	constructor(
@@ -24,6 +62,123 @@ export class NotificationServiceImpl implements NotificationService {
 		private emailService: EmailService,
 		private pushNotificationService: PushNotificationService
 	) {}
+
+	/**
+	 * ✅ Implementar método requerido por la interfaz
+	 */
+	async createNotification(request: CreateNotificationRequest): Promise<any> {
+		// Mapear el string type a NotificationType enum
+		let notificationType: NotificationType;
+		switch (request.type.toUpperCase()) {
+			case "PRICE_CHANGE":
+				notificationType = NotificationType.PRICE_CHANGE;
+				break;
+			case "PROJECT_DELAY":
+				notificationType = NotificationType.PROJECT_DELAY;
+				break;
+			case "MATERIAL_REQUEST":
+				notificationType = NotificationType.MATERIAL_REQUEST;
+				break;
+			case "TASK_ASSIGNMENT":
+				notificationType = NotificationType.TASK_ASSIGNMENT;
+				break;
+			case "SYSTEM_ALERT":
+			case "SYSTEM_ANNOUNCEMENT":
+				notificationType = NotificationType.SYSTEM_ANNOUNCEMENT;
+				break;
+			case "BUDGET_UPDATE":
+				notificationType = NotificationType.BUDGET_UPDATE;
+				break;
+			default:
+				notificationType = NotificationType.INFO;
+		}
+
+		return await this.sendToUser(request.userId, {
+			title: request.title,
+			content: request.message,
+			type: notificationType, // ✅ Usar enum correcto
+			priority: request.priority as NotificationPriority,
+			relatedEntityType: request.relatedEntityType,
+			relatedEntityId: request.relatedEntityId,
+		});
+	}
+
+	/**
+	 * ✅ Implementar método createSystemAlert requerido por la interfaz
+	 */
+	async createSystemAlert(
+		request: CreateNotificationRequest & {
+			metadata: {
+				component: string;
+				errorCode?: string;
+				resolution?: string;
+			};
+		}
+	): Promise<any> {
+		const enrichedRequest = {
+			...request,
+			type: "SYSTEM_ALERT",
+			metadata: {
+				...request.metadata,
+				category: "system",
+				requiresAction:
+					request.priority === "HIGH" || request.priority === "URGENT",
+			},
+		};
+
+		return await this.createNotification(enrichedRequest);
+	}
+
+	/**
+	 * ✅ Corregir firma del método createWeatherAlert
+	 */
+	async createWeatherAlert(
+		request: CreateNotificationRequest & {
+			metadata: {
+				alertType: "rain" | "wind" | "temperature" | "storm";
+				severity: "low" | "medium" | "high";
+				affectedDates: Date[];
+				recommendedActions: string[];
+			};
+		}
+	): Promise<any> {
+		const enrichedRequest = {
+			...request,
+			type: "WEATHER_ALERT",
+			metadata: {
+				...request.metadata,
+				category: "weather",
+				requiresAction: request.metadata.severity === "high",
+			},
+		};
+
+		return await this.createNotification(enrichedRequest);
+	}
+
+	/**
+	 * ✅ Corregir firma del método createScheduleAlert
+	 */
+	async createScheduleAlert(
+		request: CreateNotificationRequest & {
+			metadata: {
+				scheduleId: string;
+				changeType: "delay" | "cost_overrun" | "resource_conflict";
+				impact: "low" | "medium" | "high";
+			};
+		}
+	): Promise<any> {
+		const enrichedRequest = {
+			...request,
+			type: "SCHEDULE_ALERT",
+			metadata: {
+				...request.metadata,
+				category: "schedule",
+				requiresAction: request.metadata.impact === "high",
+			},
+		};
+
+		return await this.createNotification(enrichedRequest);
+	}
 
 	/**
 	 * Envía una notificación a un usuario específico
@@ -45,7 +200,7 @@ export class NotificationServiceImpl implements NotificationService {
 				userId,
 				title: options.title,
 				content: options.content,
-				type: options.type,
+				type: options.type, // ✅ Ya es NotificationType
 				priority:
 					(options.priority as NotificationPriority) ||
 					NotificationPriority.MEDIUM,
@@ -67,20 +222,24 @@ export class NotificationServiceImpl implements NotificationService {
 				await this.notificationRepository.create(notification);
 
 			// 3. Enviar notificación en tiempo real por WebSocket
-			WebSocketService.getInstance().sendNotificationToUser(userId, {
-				userId,
-				type: options.type,
-				priority:
-					(options.priority as NotificationPriority) ||
-					NotificationPriority.MEDIUM,
-				title: options.title,
-				content: options.content,
-				actionUrl: options.actionUrl,
-				actionText: options.actionText,
-				relatedEntityType: options.relatedEntityType,
-				relatedEntityId: options.relatedEntityId,
-				icon: options.icon,
-			});
+			try {
+				WebSocketService.getInstance().sendNotificationToUser(userId, {
+					userId,
+					type: options.type,
+					priority:
+						(options.priority as NotificationPriority) ||
+						NotificationPriority.MEDIUM,
+					title: options.title,
+					content: options.content,
+					actionUrl: options.actionUrl,
+					actionText: options.actionText,
+					relatedEntityType: options.relatedEntityType,
+					relatedEntityId: options.relatedEntityId,
+					icon: options.icon,
+				});
+			} catch (wsError) {
+				console.error("WebSocket service not available:", wsError);
+			}
 
 			// 4. Verificar preferencias del usuario y enviar por canales adicionales
 			const userPreferences = user.preferences?.notifications;
@@ -175,7 +334,7 @@ export class NotificationServiceImpl implements NotificationService {
 				userId,
 				title: options.title,
 				content: options.content,
-				type: options.type,
+				type: options.type, // ✅ Ya es NotificationType
 				priority:
 					(options.priority as NotificationPriority) ||
 					NotificationPriority.MEDIUM,
@@ -266,15 +425,6 @@ export class NotificationServiceImpl implements NotificationService {
 	}
 
 	/**
-	 * Crea una notificación básica (alias para sendToUser)
-	 */
-	async createNotification(
-		options: NotificationOptions & {userId: string}
-	): Promise<NotificationResult> {
-		return await this.sendToUser(options.userId, options);
-	}
-
-	/**
 	 * Marca todas las notificaciones de un usuario como leídas
 	 */
 	async markAllAsRead(userId: string): Promise<boolean> {
@@ -302,106 +452,6 @@ export class NotificationServiceImpl implements NotificationService {
 			);
 			return false;
 		}
-	}
-
-	/**
-	 * Crea una alerta meteorológica
-	 */
-	async createWeatherAlert(
-		userId: string,
-		weatherData: {
-			condition: string;
-			severity: "low" | "medium" | "high" | "critical";
-			message: string;
-			location?: string;
-		}
-	): Promise<NotificationResult> {
-		return await this.sendToUser(userId, {
-			title: "🌦️ Alerta Meteorológica",
-			content: `${weatherData.condition}: ${weatherData.message}${weatherData.location ? ` en ${weatherData.location}` : ""}`,
-			type: "weather_alert" as NotificationType,
-			priority: weatherData.severity as NotificationPriority,
-			sendEmail:
-				weatherData.severity === "high" || weatherData.severity === "critical",
-			sendPush: true,
-			icon: "weather-alert",
-			relatedEntityType: "weather",
-			relatedEntityId: `weather-${Date.now()}`,
-		});
-	}
-
-	/**
-	 * Crea una alerta de cronograma
-	 */
-	async createScheduleAlert(
-		userId: string,
-		scheduleData: {
-			scheduleId: string;
-			activityName: string;
-			alertType: "delay" | "completion" | "conflict" | "update";
-			message: string;
-			severity?: "low" | "medium" | "high";
-		}
-	): Promise<NotificationResult> {
-		const severity = scheduleData.severity || "medium";
-		const icons = {
-			delay: "clock-alert",
-			completion: "check-circle",
-			conflict: "alert-triangle",
-			update: "calendar",
-		};
-
-		return await this.sendToUser(userId, {
-			title: `📅 Alerta de Cronograma - ${scheduleData.activityName}`,
-			content: scheduleData.message,
-			type: "schedule_alert" as NotificationType,
-			priority: severity as NotificationPriority,
-			sendEmail: severity === "high",
-			sendPush: true,
-			icon: icons[scheduleData.alertType],
-			relatedEntityType: "schedule",
-			relatedEntityId: scheduleData.scheduleId,
-			actionUrl: `/schedules/${scheduleData.scheduleId}`,
-			actionText: "Ver Cronograma",
-		});
-	}
-
-	/**
-	 * Crea una alerta de recursos
-	 */
-	async createResourceAlert(
-		userId: string,
-		resourceData: {
-			resourceType: "workforce" | "equipment" | "material";
-			resourceName: string;
-			alertType: "shortage" | "conflict" | "availability" | "maintenance";
-			message: string;
-			severity?: "low" | "medium" | "high";
-			projectId?: string;
-		}
-	): Promise<NotificationResult> {
-		const severity = resourceData.severity || "medium";
-		const icons = {
-			workforce: "users",
-			equipment: "tool",
-			material: "package",
-		};
-
-		return await this.sendToUser(userId, {
-			title: `🔧 Alerta de Recursos - ${resourceData.resourceName}`,
-			content: resourceData.message,
-			type: "resource_alert" as NotificationType,
-			priority: severity as NotificationPriority,
-			sendEmail: severity === "high",
-			sendPush: true,
-			icon: icons[resourceData.resourceType],
-			relatedEntityType: "resource",
-			relatedEntityId: `${resourceData.resourceType}-${resourceData.resourceName}`,
-			actionUrl: resourceData.projectId
-				? `/projects/${resourceData.projectId}/resources`
-				: "/resources",
-			actionText: "Gestionar Recursos",
-		});
 	}
 
 	/**
