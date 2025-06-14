@@ -35,13 +35,14 @@ export interface MaterialRepository {
 	// Métodos básicos CRUD
 	findById(id: string): Promise<MaterialEntity | null>;
 	findAll(): Promise<MaterialEntity[]>;
+	findAll(
+		filters?: MaterialFilters,
+		pagination?: PaginationOptions
+	): Promise<PaginatedResult<MaterialEntity>>;
 	findByFilters(filters: MaterialFilters): Promise<MaterialEntity[]>;
 	findByType(type: string): Promise<MaterialEntity[]>;
 	findByName(name: string): Promise<MaterialEntity[]>;
 	findBySku(sku: string): Promise<MaterialEntity | null>;
-
-	// Método create para compatibilidad
-	create(material: Partial<MaterialEntity>): Promise<MaterialEntity>;
 
 	// Métodos para integraciones externas
 	findByExternalId(externalId: string): Promise<MaterialEntity | null>;
@@ -111,7 +112,7 @@ export interface MaterialRepository {
 		reason: any; // PriceChangeReason from entities
 		notes?: string;
 		recordedBy: string;
-		priceChangePercentage?: number;
+		priceChangePercentage: number;
 		isPromotion: boolean;
 	}): Promise<boolean>;
 }
