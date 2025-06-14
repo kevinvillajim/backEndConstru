@@ -217,7 +217,7 @@ export class WorkforceEntity {
   @ManyToOne(() => UserEntity, user => user.id, { nullable: true })
   @JoinColumn({ name: 'managedById' })
   managedBy: UserEntity;
-  trade: import("c:/Users/As/Desktop/Apps Web/Proyectos Personales/ConstruApp/backend/src/domain/models/calculation/ScheduleActivity").ConstructionTrade;
+  trade: import("../../../../src/domain/models/calculation/ScheduleActivity").ConstructionTrade;
 
   // Métodos de utilidad
   calculateDailyCost(hours: number): number {

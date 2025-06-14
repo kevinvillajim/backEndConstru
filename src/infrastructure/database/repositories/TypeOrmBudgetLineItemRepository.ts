@@ -1,11 +1,25 @@
 // src/infrastructure/database/repositories/TypeOrmBudgetLineItemRepository.ts
-import { Repository } from "typeorm";
-import { AppDataSource } from "../data-source";
-import { BudgetLineItemRepository } from "../../../domain/repositories/BudgetLineItemRepository";
-import { BudgetLineItem, CreateBudgetLineItemDTO, LineItemType, LineItemSource } from "../../../domain/models/calculation/BudgetLineItem";
-import { BudgetLineItemEntity } from "../entities/BudgetLineItemEntity";
+import {Repository} from "typeorm";
+import {AppDataSource} from "../data-source";
+import {BudgetLineItemRepository} from "../../../domain/repositories/BudgetLineItemRepository";
+import {
+	BudgetLineItem,
+	CreateBudgetLineItemDTO,
+	LineItemType,
+	LineItemSource,
+	LaborType,
+} from "../../../domain/models/calculation/BudgetLineItem";
+import {
+	BudgetLineItemEntity,
+	ItemType,
+	ItemSource,
+	LaborType as EntityLaborType,
+} from "../entities/BudgetLineItemEntity";
+import {v4 as uuidv4} from "uuid";
 
-export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository {
+export class TypeOrmBudgetLineItemRepository
+	implements BudgetLineItemRepository
+{
 	private repository: Repository<BudgetLineItemEntity>;
 
 	constructor() {
@@ -24,7 +38,7 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 	async save(item: BudgetLineItemEntity): Promise<BudgetLineItemEntity> {
 		// Si es una entidad nueva, generar ID
 		if (!item.id) {
-			item.id = uuidv4(); // Asegurar que uuid esté importado
+			item.id = uuidv4();
 			item.createdAt = new Date();
 		}
 
@@ -35,7 +49,9 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 		return await this.repository.save(item);
 	}
 
-	async findByBudget(calculationBudgetId: string): Promise<BudgetLineItemEntity[]> {
+	async findByBudget(
+		calculationBudgetId: string
+	): Promise<BudgetLineItemEntity[]> {
 		return await this.repository.find({
 			where: {calculationBudgetId},
 			relations: ["material"],
@@ -50,7 +66,7 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 		const lineItems = await this.repository.find({
 			where: {
 				calculationBudgetId,
-				itemType,
+				itemType: this.mapDomainItemTypeToEntity(itemType),
 			},
 			relations: ["material"],
 			order: {displayOrder: "ASC"},
@@ -66,7 +82,7 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 		const lineItems = await this.repository.find({
 			where: {
 				calculationBudgetId,
-				source,
+				source: this.mapDomainSourceToEntity(source),
 			},
 			relations: ["material", "sourceCalculation"],
 			order: {displayOrder: "ASC"},
@@ -116,7 +132,10 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 		const lineItem = await this.repository.findOne({where: {id}});
 		if (!lineItem) return null;
 
-		Object.assign(lineItem, lineItemData);
+		// Convert domain types to entity types before assignment
+		const entityData = this.convertDomainDataToEntityData(lineItemData);
+		Object.assign(lineItem, entityData);
+
 		const updatedLineItem = await this.repository.save(lineItem);
 		return this.toDomainModel(updatedLineItem);
 	}
@@ -188,10 +207,112 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 			.where("lineItem.calculationBudgetId = :calculationBudgetId", {
 				calculationBudgetId,
 			})
-			.andWhere("lineItem.itemType = :itemType", {itemType})
+			.andWhere("lineItem.itemType = :itemType", {
+				itemType: this.mapDomainItemTypeToEntity(itemType),
+			})
 			.getRawOne();
 
 		return parseFloat(result.total) || 0;
+	}
+
+	// Mapping methods for converting between domain and entity enums
+	private mapDomainItemTypeToEntity(domainType: LineItemType): ItemType {
+		const mapping: Record<LineItemType, ItemType> = {
+			[LineItemType.MATERIAL]: ItemType.MATERIAL,
+			[LineItemType.LABOR]: ItemType.LABOR,
+			[LineItemType.EQUIPMENT]: ItemType.EQUIPMENT,
+			[LineItemType.SUBCONTRACT]: ItemType.SUBCONTRACT,
+			[LineItemType.PROFESSIONAL]: ItemType.OTHER, // Map to OTHER since PROFESSIONAL doesn't exist in entity
+			[LineItemType.INDIRECT]: ItemType.OTHER, // Map to OTHER since INDIRECT doesn't exist in entity
+			[LineItemType.CONTINGENCY]: ItemType.OTHER, // Map to OTHER since CONTINGENCY doesn't exist in entity
+			[LineItemType.OTHER]: ItemType.OTHER,
+		};
+		return mapping[domainType];
+	}
+
+	private mapEntityItemTypeToDomain(entityType: ItemType): LineItemType {
+		const mapping: Record<ItemType, LineItemType> = {
+			[ItemType.MATERIAL]: LineItemType.MATERIAL,
+			[ItemType.LABOR]: LineItemType.LABOR,
+			[ItemType.EQUIPMENT]: LineItemType.EQUIPMENT,
+			[ItemType.SUBCONTRACT]: LineItemType.SUBCONTRACT,
+			[ItemType.OTHER]: LineItemType.OTHER,
+		};
+		return mapping[entityType];
+	}
+
+	private mapDomainSourceToEntity(domainSource: LineItemSource): ItemSource {
+		const mapping: Record<LineItemSource, ItemSource> = {
+			[LineItemSource.CALCULATION]: ItemSource.CALCULATION,
+			[LineItemSource.MANUAL]: ItemSource.MANUAL,
+			[LineItemSource.TEMPLATE]: ItemSource.TEMPLATE,
+			[LineItemSource.IMPORTED]: ItemSource.IMPORTED,
+		};
+		return mapping[domainSource];
+	}
+
+	private mapEntitySourceToDomain(entitySource: ItemSource): LineItemSource {
+		const mapping: Record<ItemSource, LineItemSource> = {
+			[ItemSource.CALCULATION]: LineItemSource.CALCULATION,
+			[ItemSource.MANUAL]: LineItemSource.MANUAL,
+			[ItemSource.TEMPLATE]: LineItemSource.TEMPLATE,
+			[ItemSource.IMPORTED]: LineItemSource.IMPORTED,
+		};
+		return mapping[entitySource];
+	}
+
+	private mapDomainLaborTypeToEntity(
+		domainLaborType?: LaborType
+	): EntityLaborType | undefined {
+		if (!domainLaborType) return undefined;
+
+		const mapping: Record<LaborType, EntityLaborType> = {
+			[LaborType.GENERAL]: EntityLaborType.GENERAL,
+			[LaborType.SPECIALIZED]: EntityLaborType.SPECIALIZED,
+			[LaborType.TECHNICAL]: EntityLaborType.TECHNICAL,
+			[LaborType.SUPERVISION]: EntityLaborType.SUPERVISION,
+			[LaborType.SKILLED]: EntityLaborType.SKILLED,
+			[LaborType.UNSKILLED]: EntityLaborType.UNSKILLED,
+		};
+		return mapping[domainLaborType];
+	}
+
+	private mapEntityLaborTypeToDomain(
+		entityLaborType?: EntityLaborType
+	): LaborType | undefined {
+		if (!entityLaborType) return undefined;
+
+		const mapping: Record<EntityLaborType, LaborType> = {
+			[EntityLaborType.GENERAL]: LaborType.GENERAL,
+			[EntityLaborType.SPECIALIZED]: LaborType.SPECIALIZED,
+			[EntityLaborType.TECHNICAL]: LaborType.TECHNICAL,
+			[EntityLaborType.SUPERVISION]: LaborType.SUPERVISION,
+			[EntityLaborType.SKILLED]: LaborType.SKILLED,
+			[EntityLaborType.UNSKILLED]: LaborType.UNSKILLED,
+		};
+		return mapping[entityLaborType];
+	}
+
+	private convertDomainDataToEntityData(
+		domainData: Partial<BudgetLineItem>
+	): Partial<BudgetLineItemEntity> {
+		const entityData: any = {...domainData};
+
+		if (domainData.itemType) {
+			entityData.itemType = this.mapDomainItemTypeToEntity(domainData.itemType);
+		}
+
+		if (domainData.source) {
+			entityData.source = this.mapDomainSourceToEntity(domainData.source);
+		}
+
+		if (domainData.laborType) {
+			entityData.laborType = this.mapDomainLaborTypeToEntity(
+				domainData.laborType
+			);
+		}
+
+		return entityData;
 	}
 
 	private toDomainModel(entity: BudgetLineItemEntity): BudgetLineItem {
@@ -199,8 +320,9 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 			id: entity.id,
 			description: entity.description,
 			specifications: entity.specifications,
-			itemType: entity.itemType,
-			source: entity.source,
+			itemType: this.mapEntityItemTypeToDomain(entity.itemType),
+			source: this.mapEntitySourceToDomain(entity.source),
+			laborType: this.mapEntityLaborTypeToDomain(entity.laborType),
 			calculationBudgetId: entity.calculationBudgetId,
 			sourceCalculationId: entity.sourceCalculationId,
 			calculationParameterKey: entity.calculationParameterKey,
@@ -232,11 +354,16 @@ export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository
 
 	private toEntity(model: CreateBudgetLineItemDTO): BudgetLineItemEntity {
 		const entity = new BudgetLineItemEntity();
-		Object.assign(entity, model);
+
+		// Map basic properties
+		Object.assign(entity, {
+			...model,
+			// Convert domain enums to entity enums
+			itemType: this.mapDomainItemTypeToEntity(model.itemType),
+			source: this.mapDomainSourceToEntity(model.source),
+			laborType: this.mapDomainLaborTypeToEntity(model.laborType),
+		});
+
 		return entity;
 	}
-}
-
-function uuidv4(): string {
-  throw new Error("Function not implemented.");
 }
