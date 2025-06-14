@@ -1,10 +1,14 @@
 // src/infrastructure/webserver/controllers/MaterialController.ts
 import {Request, Response} from "express";
-import {MaterialRepository} from "../../../domain/repositories/MaterialRepository";
+import {
+	MaterialRepository,
+	MaterialFilters,
+	PaginationOptions,
+} from "../../../domain/repositories/MaterialRepository";
 import {handleError} from "../utils/errorHandler";
-import { UserRole } from "../../../domain/models/user/User";
+import {UserRole} from "../../../domain/models/user/User";
 import {RequestWithUser} from "../middlewares/authMiddleware";
-import { BulkUpdateMaterialPricesUseCase } from "../../../application/material/BulkUpdateMaterialPricesUseCase";
+import {BulkUpdateMaterialPricesUseCase} from "../../../application/material/BulkUpdateMaterialPricesUseCase";
 import {
 	MaterialPriceHistoryEntity,
 	PriceChangeReason,
@@ -12,8 +16,6 @@ import {
 import {NotificationServiceImpl} from "../../services/NotificationServiceImpl";
 import {AppDataSource} from "../../database/data-source";
 import {getNotificationService} from "../../config/service-factory";
-import { parse } from "path";
-
 
 export class MaterialController {
 	private compareMaterialPricesUseCase: any;
@@ -45,17 +47,17 @@ export class MaterialController {
 				sortOrder,
 			} = req.query;
 
-			const filters: any = {};
+			const filters: MaterialFilters = {};
 
-			if (categoryId) filters.categoryId = categoryId;
-			if (sellerId) filters.sellerId = sellerId;
+			if (categoryId) filters.categoryId = categoryId as string;
+			if (sellerId) filters.sellerId = sellerId as string;
 			if (isActive !== undefined) filters.isActive = isActive === "true";
 			if (isFeatured !== undefined) filters.isFeatured = isFeatured === "true";
-			if (searchTerm) filters.searchTerm = searchTerm;
+			if (searchTerm) filters.searchTerm = searchTerm as string;
 			if (minPrice) filters.minPrice = parseFloat(minPrice as string);
 			if (maxPrice) filters.maxPrice = parseFloat(maxPrice as string);
 
-			const pagination = {
+			const pagination: PaginationOptions = {
 				page: parseInt(page as string, 10),
 				limit: parseInt(limit as string, 10),
 				sortBy: sortBy as string,
@@ -64,20 +66,18 @@ export class MaterialController {
 					| "DESC",
 			};
 
-			const {materials, total} = await this.materialRepository.findAll(
-				filters,
-				pagination
-			);
+			// Use the overloaded findAll method with filters and pagination
+			const result = await this.materialRepository.findAll(filters, pagination);
 
 			res.status(200).json({
 				success: true,
 				data: {
-					materials,
+					materials: result.materials,
 					pagination: {
-						total,
+						total: result.total,
 						page: pagination.page,
 						limit: pagination.limit,
-						pages: Math.ceil(total / pagination.limit),
+						pages: Math.ceil(result.total / pagination.limit),
 					},
 				},
 			});
@@ -325,18 +325,18 @@ export class MaterialController {
 			}
 
 			const parsedQuantity = parseInt(quantity as string, 10);
-			if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+			if (isNaN(parsedQuantity)) {
 				res.status(400).json({
 					success: false,
-					message: "La cantidad debe ser un número positivo",
+					message: "La cantidad debe ser un número válido",
 				});
 				return;
 			}
 
-			// Actualizar el stock
+			// Actualizar el stock usando updateStock (que acepta cambios relativos)
 			const success = await this.materialRepository.updateStock(
 				id,
-				parsedQuantity
+				parsedQuantity - material.stock // Calcular la diferencia
 			);
 
 			if (success) {
@@ -510,12 +510,22 @@ export class MaterialController {
 
 			// Verificar que el usuario es admin
 			if (req.user.role !== UserRole.ADMIN) {
-    res.status(403).json({
-        success: false,
-        message: "Solo los administradores pueden acceder a esta funcionalidad",
-    });
-    return;
-}
+				res.status(403).json({
+					success: false,
+					message:
+						"Solo los administradores pueden acceder a esta funcionalidad",
+				});
+				return;
+			}
+
+			// Verificar que el caso de uso está disponible
+			if (!this.compareMaterialPricesUseCase) {
+				res.status(503).json({
+					success: false,
+					message: "Servicio de comparación de precios no disponible",
+				});
+				return;
+			}
 
 			const comparison = await this.compareMaterialPricesUseCase.execute(
 				materialId,

@@ -12,17 +12,17 @@ import {
 	CalculationBudget,
 	BudgetCustomization,
 } from "../../domain/models/calculation/CalculationBudget";
-// ✅ CORRIGIDO: Usar ItemType de la entidad en lugar de LineItemType del modelo
+// ✅ CORRIGIDO: Solo usar los tipos del modelo de dominio
 import {
-	BudgetLineItemEntity,
-	ItemType,
-} from "../../infrastructure/database/entities/BudgetLineItemEntity";
+	BudgetLineItem,
+	LineItemType,
+	CreateBudgetLineItemDTO,
+} from "../../domain/models/calculation/BudgetLineItem";
 import {
 	NotificationType,
 	NotificationPriority,
 } from "../../infrastructure/database/entities/NotificationEntity";
 import {v4 as uuidv4} from "uuid";
-import { BudgetLineItem, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 
 export interface UpdateBudgetPricingRequest {
 	budgetId: string;
@@ -42,7 +42,7 @@ export interface UpdateBudgetPricingResponse {
 	success: boolean;
 	updatedBudget: CalculationBudget;
 	priceUpdateResult: PriceUpdateResult;
-	updatedLineItems: BudgetLineItemEntity[]; // ✅ CORRIGIDO: Usar entidad real
+	updatedLineItems: BudgetLineItem[]; // ✅ CORRIGIDO: Usar modelo de dominio
 	totalImpact: {
 		oldTotal: number;
 		newTotal: number;
@@ -101,6 +101,7 @@ export class UpdateBudgetPricingUseCase {
 		const lineItems = await this.budgetLineItemRepository.findByBudget(
 			request.budgetId
 		);
+		// ✅ CORRIGIDO: Usar LineItemType.MATERIAL en lugar de ItemType.MATERIAL
 		const materialLineItems = lineItems.filter(
 			(item) => item.itemType === LineItemType.MATERIAL && item.materialId
 		);
@@ -188,9 +189,9 @@ export class UpdateBudgetPricingUseCase {
 		const budget = await this.validateAndGetBudget(budgetId, userId);
 		const lineItems =
 			await this.budgetLineItemRepository.findByBudget(budgetId);
-		// ✅ CORRIGIDO: Usar ItemType.MATERIAL en lugar de LineItemType.MATERIAL
+		// ✅ CORRIGIDO: Usar LineItemType.MATERIAL
 		const materialLineItems = lineItems.filter(
-			(item) => item.itemType === ItemType.MATERIAL && item.materialId
+			(item) => item.itemType === LineItemType.MATERIAL && item.materialId
 		);
 
 		const comparisons: PriceComparisonResult[] = [];
@@ -303,7 +304,7 @@ export class UpdateBudgetPricingUseCase {
 	}
 
 	private determineMaterialsToUpdate(
-		materialLineItems: BudgetLineItemEntity[], // ✅ CORRIGIDO: Usar entidad real
+		materialLineItems: BudgetLineItem[], // ✅ CORRIGIDO: Usar modelo de dominio
 		request: UpdateBudgetPricingRequest
 	): string[] {
 		if (request.specificMaterials && request.specificMaterials.length > 0) {
@@ -342,7 +343,7 @@ export class UpdateBudgetPricingUseCase {
 
 	private async applyPriceUpdates(
 		budget: CalculationBudget,
-		materialLineItems: BudgetLineItem[], // Ahora son modelos de dominio
+		materialLineItems: BudgetLineItem[], // ✅ CORRIGIDO: Usar modelo de dominio
 		priceComparisons: Map<string, any[]>,
 		request: UpdateBudgetPricingRequest
 	): Promise<PriceUpdateResult> {
@@ -474,12 +475,12 @@ export class UpdateBudgetPricingUseCase {
 
 	private async recalculateBudgetTotals(
 		budget: CalculationBudget,
-		updatedLineItems: BudgetLineItemEntity[] // ✅ CORRIGIDO: Usar entidad real
+		updatedLineItems: BudgetLineItem[] // ✅ CORRIGIDO: Usar modelo de dominio
 	): Promise<CalculationBudget> {
 		// Recalcular subtotal de materiales
-		// ✅ CORRIGIDO: Usar ItemType.MATERIAL en lugar de LineItemType.MATERIAL
+		// ✅ CORRIGIDO: Usar LineItemType.MATERIAL
 		const materialItems = updatedLineItems.filter(
-			(item) => item.itemType === ItemType.MATERIAL
+			(item) => item.itemType === LineItemType.MATERIAL
 		);
 		const newMaterialsSubtotal = materialItems.reduce(
 			(sum, item) => sum + item.subtotal,

@@ -70,8 +70,13 @@ export class ApproveMaterialRequestUseCase {
 		});
 
 		// 6. Actualizar el stock del material
-		await this.materialRepository.updateStock(material.id, -finalQuantity);
-
+const newStockValue = material.stock - finalQuantity;
+await this.materialRepository.updateInventory(
+	material.id,
+	newStockValue,
+	"material_request_approval"
+		);
+		
 		// 7. Notificar al solicitante
 		const requester = await this.userRepository.findById(request.requesterId);
 

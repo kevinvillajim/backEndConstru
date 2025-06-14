@@ -1,6 +1,4 @@
 // src/application/material/CompareMaterialPricesUseCase.ts
-// Corregir la clase con estos cambios:
-
 import {MaterialRepository} from "../../domain/repositories/MaterialRepository";
 import {UserRepository} from "../../domain/repositories/UserRepository";
 import {UserRole} from "../../domain/models/user/User";
@@ -57,9 +55,9 @@ export class CompareMaterialPricesUseCase {
 		}
 
 		// 3. Buscar materiales similares de otros proveedores
+		// FIXED: Call findSimilar with only the materialId parameter
 		const similarMaterials = await this.materialRepository.findSimilar(
-			material.name,
-			material.categoryId
+			material.id
 		);
 
 		// 4. Preparar resultados de comparación

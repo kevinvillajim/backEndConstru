@@ -72,7 +72,7 @@ export class ImportMaterialsFromSupplierUseCase {
 							updatedAt: new Date(),
 						});
 
-						// Guardar historial de precio
+						// Guardar historial de precio (SIN supplierName y con priceChangePercentage opcional)
 						await this.materialRepository.saveHistoricalPrice({
 							materialId: existingMaterial.id,
 							price: product.price,
@@ -81,8 +81,8 @@ export class ImportMaterialsFromSupplierUseCase {
 							effectiveDate: new Date(),
 							reason: "supplier_update",
 							notes: `Actualización automática desde ${this.supplierService.getSupplierName()}`,
-							supplierName: this.supplierService.getSupplierName(),
 							recordedBy: userId,
+							priceChangePercentage: 0, // Calcular la diferencia real si es necesario
 							isPromotion: false,
 						});
 
@@ -105,8 +105,6 @@ export class ImportMaterialsFromSupplierUseCase {
 								name: product.categoryName,
 								description: `Categoría importada desde ${this.supplierService.getSupplierName()}`,
 								isActive: true,
-								createdAt: new Date(),
-								updatedAt: new Date(),
 								displayOrder: 0,
 							});
 							categoryId = newCategory.id;
@@ -125,15 +123,13 @@ export class ImportMaterialsFromSupplierUseCase {
 								name: "Sin categoría",
 								description: "Categoría por defecto para productos importados",
 								isActive: true,
-								createdAt: new Date(),
-								updatedAt: new Date(),
 								displayOrder: 0,
 							});
 							categoryId = newCategory.id;
 						}
 					}
 
-					// Crear el nuevo material
+					// Crear el nuevo material (SIN createdAt y updatedAt)
 					const newMaterial = await this.materialRepository.create({
 						name: product.name,
 						description: product.description,
@@ -159,11 +155,9 @@ export class ImportMaterialsFromSupplierUseCase {
 						ratingCount: 0,
 						viewCount: 0,
 						orderCount: 0,
-						createdAt: new Date(), // Añadido para corregir error
-						updatedAt: new Date(), // Añadido para corregir error
 					});
 
-					// Guardar historial de precio inicial
+					// Guardar historial de precio inicial (SIN supplierName)
 					await this.materialRepository.saveHistoricalPrice({
 						materialId: newMaterial.id,
 						price: product.price,
@@ -172,8 +166,8 @@ export class ImportMaterialsFromSupplierUseCase {
 						effectiveDate: new Date(),
 						reason: "supplier_update",
 						notes: `Importación inicial desde ${this.supplierService.getSupplierName()}`,
-						supplierName: this.supplierService.getSupplierName(),
 						recordedBy: userId,
+						priceChangePercentage: 0,
 						isPromotion: false,
 					});
 

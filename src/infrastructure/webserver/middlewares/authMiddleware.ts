@@ -127,3 +127,5 @@ export const authorize = (roles: UserRole[]) => {
 		next();
 	};
 };
+
+export const authMiddleware = authenticate;

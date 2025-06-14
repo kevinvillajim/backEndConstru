@@ -1,5 +1,8 @@
 // src/application/material/BulkUpdateMaterialPricesUseCase.ts
-import {MaterialRepository} from "../../domain/repositories/MaterialRepository";
+import {
+	MaterialRepository,
+	MaterialFilters,
+} from "../../domain/repositories/MaterialRepository";
 import {NotificationService} from "../../domain/services/NotificationService";
 import {
 	NotificationType,
@@ -33,7 +36,7 @@ export class BulkUpdateMaterialPricesUseCase {
 		materials: {id: string; name: string; oldPrice: number; newPrice: number}[];
 	}> {
 		// 1. Buscar materiales que cumplan con los criterios
-		const filters: any = {};
+		const filters: MaterialFilters = {};
 
 		if (updateRule.categoryId) filters.categoryId = updateRule.categoryId;
 		if (updateRule.sellerId) filters.sellerId = updateRule.sellerId;
@@ -42,7 +45,11 @@ export class BulkUpdateMaterialPricesUseCase {
 		if (updateRule.minPrice) filters.minPrice = updateRule.minPrice;
 		if (updateRule.maxPrice) filters.maxPrice = updateRule.maxPrice;
 
-		const {materials} = await this.materialRepository.findAll(filters);
+		// Call findAll with filters and get the result
+		const result = await this.materialRepository.findAll(filters);
+
+		// Handle both possible return types (array or paginated result)
+		const materials = Array.isArray(result) ? result : result.materials;
 
 		if (materials.length === 0) {
 			return {success: false, updatedCount: 0, materials: []};
