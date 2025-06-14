@@ -1,7 +1,9 @@
 // src/application/calculation/ReviewPromotionRequestUseCase.ts
 import {PromotionRequestRepository} from "../../domain/repositories/PromotionRequestRepository";
 import {UserRepository} from "../../domain/repositories/UserRepository";
-import {NotificationService, NotificationType} from "../../domain/services/NotificationService";
+import {NotificationService} from "../../domain/services/NotificationService";
+// ✅ CORRIGIDO: Importar NotificationType desde la entidad correcta
+import {NotificationType} from "../../infrastructure/database/entities/NotificationEntity";
 import {
 	PromotionRequestData,
 	PromotionRequestStatus,
@@ -154,45 +156,72 @@ export class ReviewPromotionRequestUseCase {
 			if (promotionRequest.originalAuthorId) {
 				let message = "";
 				let title = "";
+				let notificationType: string;
 
 				switch (action) {
 					case "approve":
 						title = "¡Tu plantilla ha sido aprobada para promoción!";
 						message = `Tu plantilla "${promotionRequest.personalTemplate?.name}" ha sido aprobada para convertirse en plantilla verificada.`;
+						notificationType = "SUCCESS";
 						break;
 					case "reject":
 						title = "Solicitud de promoción rechazada";
 						message = `La solicitud de promoción para tu plantilla "${promotionRequest.personalTemplate?.name}" ha sido rechazada.`;
+						notificationType = "WARNING";
 						break;
 					case "request_changes":
 						title = "Se requieren cambios en tu plantilla";
 						message = `Se han solicitado cambios para la promoción de tu plantilla "${promotionRequest.personalTemplate?.name}".`;
+						notificationType = "INFO";
 						break;
+					default:
+						notificationType = "INFO";
 				}
 
-				await this.notificationService.sendToUser(
-					promotionRequest.originalAuthorId,
-					{
-						title,
-						content: message,
-						type:
-							action === "approve"
-								? NotificationType.SUCCESS
-								: NotificationType.INFO,
-					}
-				);
+				// ✅ CORRIGIDO: Usar createNotification en lugar de sendToUser
+				await this.notificationService.createNotification({
+					userId: promotionRequest.originalAuthorId,
+					type: notificationType,
+					title,
+					message,
+					priority: "MEDIUM",
+					relatedEntityType: "PROMOTION_REQUEST",
+					relatedEntityId: promotionRequest.id,
+					metadata: {
+						promotionRequestId: promotionRequest.id,
+						templateId: promotionRequest.personalTemplateId,
+						action,
+						reviewComments: promotionRequest.reviewComments,
+					},
+				});
 			}
 
 			// Notificar al solicitante si es diferente del autor
 			if (promotionRequest.requestedBy !== promotionRequest.originalAuthorId) {
-				await this.notificationService.sendToUser(
-					promotionRequest.requestedBy,
-					{
-						title: `Solicitud de promoción ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "en revisión"}`,
-						content: `La solicitud de promoción para "${promotionRequest.personalTemplate?.name}" ha sido ${action === "approve" ? "aprobada" : action === "reject" ? "rechazada" : "marcada para revisión"}.`,
-						type: action === "approve" ? NotificationType.SUCCESS : NotificationType.INFO,
-					}
-				);
+				const actionText =
+					action === "approve"
+						? "aprobada"
+						: action === "reject"
+							? "rechazada"
+							: "en revisión";
+				const notificationType = action === "approve" ? "SUCCESS" : "INFO";
+
+				// ✅ CORRIGIDO: Usar createNotification en lugar de sendToUser
+				await this.notificationService.createNotification({
+					userId: promotionRequest.requestedBy,
+					type: notificationType,
+					title: `Solicitud de promoción ${actionText}`,
+					message: `La solicitud de promoción para "${promotionRequest.personalTemplate?.name}" ha sido ${actionText}.`,
+					priority: "MEDIUM",
+					relatedEntityType: "PROMOTION_REQUEST",
+					relatedEntityId: promotionRequest.id,
+					metadata: {
+						promotionRequestId: promotionRequest.id,
+						templateId: promotionRequest.personalTemplateId,
+						action,
+						reviewComments: promotionRequest.reviewComments,
+					},
+				});
 			}
 		} catch (error) {
 			console.error("Error enviando notificaciones:", error);

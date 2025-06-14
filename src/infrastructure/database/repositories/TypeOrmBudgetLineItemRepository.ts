@@ -17,9 +17,7 @@ import {
 } from "../entities/BudgetLineItemEntity";
 import {v4 as uuidv4} from "uuid";
 
-export class TypeOrmBudgetLineItemRepository
-	implements BudgetLineItemRepository
-{
+export class TypeOrmBudgetLineItemRepository implements BudgetLineItemRepository {
 	private repository: Repository<BudgetLineItemEntity>;
 
 	constructor() {
@@ -35,28 +33,27 @@ export class TypeOrmBudgetLineItemRepository
 		return lineItem ? this.toDomainModel(lineItem) : null;
 	}
 
-	async save(item: BudgetLineItemEntity): Promise<BudgetLineItemEntity> {
-		// Si es una entidad nueva, generar ID
-		if (!item.id) {
-			item.id = uuidv4();
-			item.createdAt = new Date();
+	async save(lineItem: BudgetLineItem): Promise<BudgetLineItem> {
+		const entity = this.toEntityFromDomain(lineItem);
+
+		if (!entity.id) {
+			entity.id = uuidv4();
+			entity.createdAt = new Date();
 		}
 
-		// Siempre actualizar updatedAt
-		item.updatedAt = new Date();
-
-		// Guardar en base de datos
-		return await this.repository.save(item);
+		entity.updatedAt = new Date();
+		const savedEntity = await this.repository.save(entity);
+		return this.toDomainModel(savedEntity);
 	}
 
-	async findByBudget(
-		calculationBudgetId: string
-	): Promise<BudgetLineItemEntity[]> {
-		return await this.repository.find({
+	async findByBudget(calculationBudgetId: string): Promise<BudgetLineItem[]> {
+		const entities = await this.repository.find({
 			where: {calculationBudgetId},
 			relations: ["material"],
 			order: {displayOrder: "ASC", createdAt: "ASC"},
 		});
+
+		return entities.map((entity) => this.toDomainModel(entity));
 	}
 
 	async findByType(
@@ -215,6 +212,47 @@ export class TypeOrmBudgetLineItemRepository
 		return parseFloat(result.total) || 0;
 	}
 
+	// ✅ AGREGADO: Método auxiliar para convertir de dominio a entidad
+	private toEntityFromDomain(model: BudgetLineItem): BudgetLineItemEntity {
+		const entity = new BudgetLineItemEntity();
+
+		// Mapear propiedades básicas
+		entity.id = model.id;
+		entity.description = model.description;
+		entity.specifications = model.specifications;
+		entity.itemType = this.mapDomainItemTypeToEntity(model.itemType);
+		entity.source = this.mapDomainSourceToEntity(model.source);
+		entity.laborType = this.mapDomainLaborTypeToEntity(model.laborType);
+		entity.calculationBudgetId = model.calculationBudgetId;
+		entity.sourceCalculationId = model.sourceCalculationId;
+		entity.calculationParameterKey = model.calculationParameterKey;
+		entity.materialId = model.materialId;
+		entity.quantity = model.quantity;
+		entity.unitOfMeasure = model.unitOfMeasure;
+		entity.unitPrice = model.unitPrice;
+		entity.wastePercentage = model.wastePercentage;
+		entity.finalQuantity = model.finalQuantity;
+		entity.subtotal = model.subtotal;
+		entity.category = model.category;
+		entity.subcategory = model.subcategory;
+		entity.chapter = model.chapter;
+		entity.costCode = model.costCode;
+		entity.regionalFactor = model.regionalFactor;
+		entity.difficultyFactor = model.difficultyFactor;
+		entity.necReference = model.necReference;
+		entity.priceDate = model.priceDate;
+		entity.priceSource = model.priceSource;
+		entity.priceValidityDays = model.priceValidityDays;
+		entity.metadata = model.metadata;
+		entity.displayOrder = model.displayOrder;
+		entity.isOptional = model.isOptional;
+		entity.isAlternate = model.isAlternate;
+		entity.createdAt = model.createdAt;
+		entity.updatedAt = model.updatedAt;
+
+		return entity;
+	}
+
 	// Mapping methods for converting between domain and entity enums
 	private mapDomainItemTypeToEntity(domainType: LineItemType): ItemType {
 		const mapping: Record<LineItemType, ItemType> = {
@@ -222,9 +260,9 @@ export class TypeOrmBudgetLineItemRepository
 			[LineItemType.LABOR]: ItemType.LABOR,
 			[LineItemType.EQUIPMENT]: ItemType.EQUIPMENT,
 			[LineItemType.SUBCONTRACT]: ItemType.SUBCONTRACT,
-			[LineItemType.PROFESSIONAL]: ItemType.OTHER, // Map to OTHER since PROFESSIONAL doesn't exist in entity
-			[LineItemType.INDIRECT]: ItemType.OTHER, // Map to OTHER since INDIRECT doesn't exist in entity
-			[LineItemType.CONTINGENCY]: ItemType.OTHER, // Map to OTHER since CONTINGENCY doesn't exist in entity
+			[LineItemType.PROFESSIONAL]: ItemType.OTHER,
+			[LineItemType.INDIRECT]: ItemType.OTHER,
+			[LineItemType.CONTINGENCY]: ItemType.OTHER,
 			[LineItemType.OTHER]: ItemType.OTHER,
 		};
 		return mapping[domainType];

@@ -4,7 +4,9 @@ import {UserCalculationTemplateRepository} from "../../domain/repositories/UserC
 import {CalculationTemplateRepository} from "../../domain/repositories/CalculationTemplateRepository";
 import {CalculationParameterRepository} from "../../domain/repositories/CalculationParameterRepository";
 import {AuthorCreditRepository} from "../../domain/repositories/AuthorCreditRepository";
-import {NotificationService, NotificationType} from "../../domain/services/NotificationService";
+import {NotificationService} from "../../domain/services/NotificationService";
+// ✅ CORRIGIDO: Importar NotificationType desde la entidad correcta
+import {NotificationType} from "../../infrastructure/database/entities/NotificationEntity";
 import {
 	PromotionRequestStatus,
 	PromotionRequestData,
@@ -15,7 +17,10 @@ import {
 	ProfessionType,
 	TemplateSource,
 } from "../../domain/models/calculation/CalculationTemplate";
-import {CreateCalculationParameterDTO, ParameterScope} from "../../domain/models/calculation/CalculationParameter";
+import {
+	CreateCalculationParameterDTO,
+	ParameterScope,
+} from "../../domain/models/calculation/CalculationParameter";
 import {CreateAuthorCreditDTO} from "../../domain/models/tracking/AuthorCredit";
 import {ParameterDataType} from "../../domain/models/calculation/CalculationParameter";
 
@@ -254,7 +259,9 @@ export class PromoteTemplateToVerifiedUseCase {
 		return professionMap[profession] || ProfessionType.ALL;
 	}
 
-	private mapScopeToParameterScope(scope: "input" | "internal" | "output"): ParameterScope {
+	private mapScopeToParameterScope(
+		scope: "input" | "internal" | "output"
+	): ParameterScope {
 		switch (scope) {
 			case "input":
 				return ParameterScope.INPUT;
@@ -291,23 +298,44 @@ export class PromoteTemplateToVerifiedUseCase {
 		promotionRequest: any
 	): Promise<void> {
 		try {
+			// ✅ CORRIGIDO: Usar createNotification en lugar de sendToUser
 			// Notificar al autor original
-			await this.notificationService.sendToUser(personalTemplate.author.id, {
+			await this.notificationService.createNotification({
+				userId: personalTemplate.author.id,
+				type: "SUCCESS",
 				title: "🎉 ¡Tu plantilla ahora es oficial!",
-				content: `Tu plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada y ahora está disponible para toda la comunidad.`,
-				type: NotificationType.SYSTEM,
+				message: `Tu plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada y ahora está disponible para toda la comunidad.`,
+				priority: "HIGH",
+				relatedEntityType: "VERIFIED_TEMPLATE",
+				relatedEntityId: verifiedTemplate.id,
+				metadata: {
+					originalTemplateId: personalTemplate.id,
+					verifiedTemplateId: verifiedTemplate.id,
+					promotionRequestId: promotionRequest.id,
+					authorPoints: this.calculateAuthorPoints(promotionRequest.metrics),
+					recognitionLevel: this.determineRecognitionLevel(
+						promotionRequest.qualityScore
+					),
+				},
 			});
 
 			// Notificar al solicitante si es diferente
 			if (promotionRequest.requestedBy !== personalTemplate.author.id) {
-				await this.notificationService.sendToUser(
-					promotionRequest.requestedBy,
-					{
-						title: "Promoción implementada exitosamente",
-						content: `La plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada.`,
-						type: NotificationType.SYSTEM,
-					}
-				);
+				await this.notificationService.createNotification({
+					userId: promotionRequest.requestedBy,
+					type: "SUCCESS",
+					title: "Promoción implementada exitosamente",
+					message: `La plantilla "${personalTemplate.name}" ha sido promovida a plantilla verificada.`,
+					priority: "MEDIUM",
+					relatedEntityType: "VERIFIED_TEMPLATE",
+					relatedEntityId: verifiedTemplate.id,
+					metadata: {
+						originalTemplateId: personalTemplate.id,
+						verifiedTemplateId: verifiedTemplate.id,
+						promotionRequestId: promotionRequest.id,
+						implementationNotes: promotionRequest.implementationNotes,
+					},
+				});
 			}
 		} catch (error) {
 			console.error("Error enviando notificaciones de éxito:", error);

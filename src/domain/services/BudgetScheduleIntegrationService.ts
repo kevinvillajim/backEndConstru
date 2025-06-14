@@ -7,47 +7,50 @@ import {NotificationService} from "./NotificationService";
 import {DailyProgressRequest} from "../../application/schedule/TrackDailyProgressUseCase";
 import {ActivityProgressEntity} from "../../infrastructure/database/entities/ActivityProgressEntity";
 import {ScheduleActivityEntity} from "../../infrastructure/database/entities/ScheduleActivityEntity";
-// ✅ CORRIGIDO: Usar los nombres correctos de los enums exportados
+
+// ✅ CORRIGIDO: Usar rutas correctas y importar desde las entidades
 import {
 	BudgetLineItemEntity,
 	ItemType,
 	ItemSource,
 } from "../../infrastructure/database/entities/BudgetLineItemEntity";
+
+// ✅ CORRIGIDO: Importar los enums desde el modelo de dominio con ruta correcta
 import {
 	ActivityStatus,
 	ActivityType,
 	ActivityPriority,
 	ConstructionTrade,
-} from "../../domain/models/calculation/ScheduleActivity";
-
+} from "../models/calculation/ScheduleActivity";
+import { BudgetLineItem, CreateBudgetLineItemDTO, LineItemSource, LineItemType } from "../../domain/models/calculation/BudgetLineItem";
 
 export interface BudgetScheduleSync {
-  budgetId: string;
-  scheduleId: string;
-  syncDirection: 'budget_to_schedule' | 'schedule_to_budget' | 'bidirectional';
-  syncOptions: {
-    syncCosts: boolean;
-    syncQuantities: boolean;
-    syncTimelines: boolean;
-    syncResources: boolean;
-    createMissingItems: boolean;
-    preserveCustomizations: boolean;
-  };
-  conflictResolution: 'budget_wins' | 'schedule_wins' | 'manual_review';
+	budgetId: string;
+	scheduleId: string;
+	syncDirection: "budget_to_schedule" | "schedule_to_budget" | "bidirectional";
+	syncOptions: {
+		syncCosts: boolean;
+		syncQuantities: boolean;
+		syncTimelines: boolean;
+		syncResources: boolean;
+		createMissingItems: boolean;
+		preserveCustomizations: boolean;
+	};
+	conflictResolution: "budget_wins" | "schedule_wins" | "manual_review";
 }
 
 export interface SyncResult {
-  success: boolean;
-  syncedItems: number;
-  conflictsDetected: number;
-  conflictsResolved: number;
-  warnings: string[];
-  errors: string[];
-  summary: {
-    budgetChanges: any[];
-    scheduleChanges: any[];
-    newItemsCreated: any[];
-  };
+	success: boolean;
+	syncedItems: number;
+	conflictsDetected: number;
+	conflictsResolved: number;
+	warnings: string[];
+	errors: string[];
+	summary: {
+		budgetChanges: any[];
+		scheduleChanges: any[];
+		newItemsCreated: any[];
+	};
 }
 
 export class BudgetScheduleIntegrationService {
@@ -57,7 +60,7 @@ export class BudgetScheduleIntegrationService {
 		private activityRepository: ScheduleActivityRepository,
 		private lineItemRepository: BudgetLineItemRepository,
 		private notificationService: NotificationService,
-		private progressRepository: any // Repositorio de progreso, debe ser definido
+		private progressRepository: any // Repositorio de progreso
 	) {}
 
 	async synchronizeBudgetAndSchedule(
@@ -170,7 +173,6 @@ export class BudgetScheduleIntegrationService {
 		scheduleId: string,
 		syncOptions: any
 	): Promise<void> {
-		// Configurar sincronización automática
 		const budget = await this.budgetRepository.findById(budgetId);
 		const schedule = await this.scheduleRepository.findById(scheduleId);
 
@@ -512,7 +514,6 @@ export class BudgetScheduleIntegrationService {
 		for (const item of items) {
 			const score = this.calculateTextSimilarity(searchText, item[fieldName]);
 			if (score > bestScore && score > 0.7) {
-				// Threshold de 70%
 				bestScore = score;
 				bestMatch = item;
 			}
@@ -567,16 +568,16 @@ export class BudgetScheduleIntegrationService {
 
 	private async updateBudgetItemFromActivity(
 		activity: any,
-		item: any,
+		item: BudgetLineItem,
 		syncOptions: any
 	): Promise<string[]> {
 		const changes = [];
 
 		if (
 			syncOptions.syncCosts &&
-			Math.abs(activity.plannedTotalCost - item.totalCost) > 0.01
+			Math.abs(activity.plannedTotalCost - item.subtotal) > 0.01
 		) {
-			item.totalCost = activity.plannedTotalCost;
+			item.subtotal = activity.plannedTotalCost;
 			changes.push("cost_updated");
 		}
 
@@ -585,7 +586,8 @@ export class BudgetScheduleIntegrationService {
 			Math.abs(activity.workQuantities.plannedQuantity - item.quantity) > 0.01
 		) {
 			item.quantity = activity.workQuantities.plannedQuantity;
-			item.unit = activity.workQuantities.unit;
+			item.unitOfMeasure = activity.workQuantities.unit;
+			item.subtotal = item.quantity * item.unitPrice;
 			changes.push("quantity_updated");
 		}
 
@@ -595,10 +597,6 @@ export class BudgetScheduleIntegrationService {
 
 		return changes;
 	}
-
-	// ===== CORRECCIÓN 1: TrackDailyProgressUseCase.ts =====
-	// Problema: El objeto progressRecord no cumple con ActivityProgressEntity
-	// Línea 180: El método createProgressRecord debe crear un objeto compatible
 
 	private async createProgressRecord(
 		request: DailyProgressRequest,
@@ -618,13 +616,13 @@ export class BudgetScheduleIntegrationService {
 			quantity: request.workCompleted.quantity,
 			unit: request.workCompleted.unit,
 			description: request.workCompleted.description,
-			qualityLevel: "SATISFACTORY" as any, // Usar enum correcto
+			qualityLevel: "SATISFACTORY" as any,
 		};
 
 		// Recursos utilizados
 		progressRecord.actualWorkersOnSite = request.actualWorkersOnSite;
 		progressRecord.actualHoursWorked = request.actualHoursWorked;
-		progressRecord.plannedHoursForDay = 8; // Valor por defecto
+		progressRecord.plannedHoursForDay = 8;
 
 		// Métricas calculadas
 		progressRecord.productivityRate = this.calculateProductivityRate(
@@ -636,20 +634,20 @@ export class BudgetScheduleIntegrationService {
 			activity
 		);
 
-		// Condiciones ambientales (estructura completa requerida por la entidad)
+		// Condiciones ambientales
 		if (request.weatherConditions) {
 			progressRecord.weatherConditions = {
 				workability: request.weatherConditions.workability as any,
 				temperature: request.weatherConditions.temperature,
-				humidity: 50, // Valor por defecto si no se proporciona
+				humidity: 50,
 				precipitation: request.weatherConditions.precipitation,
-				windSpeed: 0, // Valor por defecto
-				visibility: "good", // Valor por defecto
+				windSpeed: 0,
+				visibility: "good",
 				description: `${request.weatherConditions.condition} weather conditions`,
 			};
 		}
 
-		// Problemas de calidad (mapear correctamente)
+		// Problemas de calidad
 		progressRecord.qualityIssues =
 			request.qualityIssues?.map((issue, index) => ({
 				id: `quality_${Date.now()}_${index}`,
@@ -662,7 +660,7 @@ export class BudgetScheduleIntegrationService {
 					: "Not required",
 			})) || [];
 
-		// Incidentes de seguridad (mapear correctamente)
+		// Incidentes de seguridad
 		progressRecord.safetyIncidents =
 			request.safetyIncidents?.map((incident, index) => ({
 				id: `safety_${Date.now()}_${index}`,
@@ -673,7 +671,7 @@ export class BudgetScheduleIntegrationService {
 				preventiveMeasures: "To be defined",
 			})) || [];
 
-		// Obstáculos (mapear desde materialIssues)
+		// Obstáculos
 		progressRecord.obstacles =
 			request.materialIssues?.map((issue) => ({
 				type:
@@ -697,13 +695,13 @@ export class BudgetScheduleIntegrationService {
 				wasteReason: issue.issue === "quality" ? "Quality issues" : undefined,
 			})) || [];
 
-		// Uso de equipos (array vacío por defecto)
+		// Uso de equipos
 		progressRecord.equipmentUsage = [];
 
-		// Costos del día (calculados)
+		// Costos del día
 		progressRecord.dailyLaborCost =
 			request.actualWorkersOnSite * request.actualHoursWorked * 25;
-		progressRecord.dailyMaterialCost = 0; // Se calculará después
+		progressRecord.dailyMaterialCost = 0;
 		progressRecord.dailyEquipmentCost = 0;
 		progressRecord.dailyTotalCost = progressRecord.dailyLaborCost;
 
@@ -719,7 +717,7 @@ export class BudgetScheduleIntegrationService {
 				}
 			: undefined;
 
-		// Fotos (mapear correctamente)
+		// Fotos
 		progressRecord.photos =
 			request.photos?.map((url) => ({
 				url,
@@ -731,8 +729,8 @@ export class BudgetScheduleIntegrationService {
 		// Puntuaciones
 		progressRecord.qualityScore = this.calculateQualityScore(request);
 		progressRecord.safetyScore = this.calculateSafetyScore(request);
-		progressRecord.productivityScore = 8.0; // Valor calculado
-		progressRecord.overallScore = 0; // Se calculará automáticamente
+		progressRecord.productivityScore = 8.0;
+		progressRecord.overallScore = 0;
 
 		// Comentarios
 		progressRecord.generalComments = request.notes || "";
@@ -743,8 +741,6 @@ export class BudgetScheduleIntegrationService {
 		progressRecord.status = "submitted" as any;
 		progressRecord.isActive = true;
 
-		// Las fechas se asignan automáticamente por las decoraciones de TypeORM
-
 		return await this.progressRepository.save(progressRecord);
 	}
 
@@ -752,10 +748,8 @@ export class BudgetScheduleIntegrationService {
 		item: any,
 		scheduleId: string
 	): Promise<any> {
-		// Crear una instancia de la entidad correctamente
 		const newActivity = new ScheduleActivityEntity();
 
-		// Asignar propiedades básicas
 		newActivity.scheduleId = scheduleId;
 		newActivity.name = item.description;
 		newActivity.description = `Actividad generada desde ítem de presupuesto: ${item.description}`;
@@ -792,13 +786,13 @@ export class BudgetScheduleIntegrationService {
 		newActivity.actualMaterialCost = 0;
 		newActivity.actualEquipmentCost = 0;
 
-		// Configuración de trabajo (requerida)
+		// Configuración de trabajo
 		newActivity.workConfiguration = {
 			workingHours: {
 				dailyHours: 8,
 				startTime: "08:00",
 				endTime: "16:00",
-				workingDays: [1, 2, 3, 4, 5], // Lunes a Viernes
+				workingDays: [1, 2, 3, 4, 5],
 			},
 			shifts: [
 				{
@@ -814,7 +808,7 @@ export class BudgetScheduleIntegrationService {
 			},
 		};
 
-		// Cantidades de trabajo (requerida)
+		// Cantidades de trabajo
 		newActivity.workQuantities = {
 			unit: item.unitOfMeasure || "unit",
 			plannedQuantity: item.quantity || 1,
@@ -835,11 +829,7 @@ export class BudgetScheduleIntegrationService {
 			},
 		};
 
-		// Estado
 		newActivity.isActive = true;
-
-		// Las fechas de creación y actualización se asignan automáticamente
-		// Los campos id, createdAt, updatedAt son manejados por TypeORM
 
 		return await this.activityRepository.save(newActivity);
 	}
@@ -847,64 +837,44 @@ export class BudgetScheduleIntegrationService {
 	private async createBudgetItemFromActivity(
 		activity: any,
 		budgetId: string
-	): Promise<any> {
-		// Crear una instancia de la entidad correctamente
-		const newItem = new BudgetLineItemEntity();
-
-		// Propiedades básicas requeridas
-		newItem.calculationBudgetId = budgetId;
-		newItem.description = activity.name;
-		newItem.specifications = activity.description;
-    newItem.itemType = ItemType.LABOR;
-    newItem.source = ItemSource.CALCULATION;
-    
-		// Cantidades y precios
-		newItem.quantity = activity.workQuantities?.plannedQuantity || 1;
-		newItem.unitOfMeasure = activity.workQuantities?.unit || "unit";
-		newItem.unitPrice =
-			activity.workQuantities?.plannedQuantity > 0
-				? activity.plannedTotalCost / activity.workQuantities.plannedQuantity
-				: 0;
-		newItem.wastePercentage = 5;
-		newItem.finalQuantity =
-			newItem.quantity * (1 + newItem.wastePercentage / 100);
-		newItem.subtotal = newItem.finalQuantity * newItem.unitPrice;
-
-		// Categorización
-		newItem.category = "LABOR";
-		newItem.subcategory = activity.activityType || "OTHER";
-
-		// Factores
-		newItem.regionalFactor = 1;
-		newItem.difficultyFactor = 1;
-
-		// Tracking de precios
-		newItem.priceDate = new Date();
-		newItem.priceSource = "generated_from_schedule";
-		newItem.priceValidityDays = 30;
-
-		// Metadata
-		newItem.metadata = {
-			linkedActivityId: activity.id,
-			generatedFromSchedule: true,
-			originalActivityData: {
-				activityId: activity.id,
-				activityName: activity.name,
-				plannedCost: activity.plannedTotalCost,
-				createdAt: new Date(),
+	): Promise<BudgetLineItem> {
+		const newItemDto: CreateBudgetLineItemDTO = {
+			calculationBudgetId: budgetId,
+			description: activity.name,
+			specifications: activity.description,
+			itemType: LineItemType.LABOR,
+			source: LineItemSource.CALCULATION,
+			quantity: activity.workQuantities?.plannedQuantity || 1,
+			unitOfMeasure: activity.workQuantities?.unit || "unit",
+			unitPrice:
+				activity.workQuantities?.plannedQuantity > 0
+					? activity.plannedTotalCost / activity.workQuantities.plannedQuantity
+					: 0,
+			wastePercentage: 5,
+			finalQuantity: 0,
+			subtotal: 0,
+			category: "LABOR",
+			subcategory: activity.activityType || "OTHER",
+			regionalFactor: 1,
+			difficultyFactor: 1,
+			priceDate: new Date(),
+			priceSource: "generated_from_schedule",
+			priceValidityDays: 30,
+			metadata: {
+				linkedActivityId: activity.id,
+				generatedFromSchedule: true,
+				notes: "Generado automáticamente desde cronograma",
 			},
-			notes: "Generado automáticamente desde cronograma",
+			displayOrder: 0,
+			isOptional: false,
+			isAlternate: false,
 		};
 
-		// Orden y opciones
-		newItem.displayOrder = 0;
-		newItem.isOptional = false;
-		newItem.isAlternate = false;
+		newItemDto.finalQuantity =
+			newItemDto.quantity * (1 + newItemDto.wastePercentage / 100);
+		newItemDto.subtotal = newItemDto.finalQuantity * newItemDto.unitPrice;
 
-
-		// Los campos id, createdAt, updatedAt son manejados por TypeORM
-
-		return await this.lineItemRepository.save(newItem);
+		return await this.lineItemRepository.create(newItemDto);
 	}
 
 	private calculateCoherenceScore(
@@ -996,34 +966,32 @@ export class BudgetScheduleIntegrationService {
 		syncResult: SyncResult
 	): Promise<void> {
 		await this.notificationService.createNotification({
-			userId: "system", // Or get from context
+			userId: "system",
 			type: "WARNING",
 			title: "Conflictos en Sincronización Presupuesto-Cronograma",
 			message: `Se detectaron ${syncResult.conflictsDetected} conflictos durante la sincronización`,
 			priority: "MEDIUM",
 			relatedEntityType: "BUDGET_SCHEDULE_SYNC",
 			relatedEntityId: syncRequest.budgetId,
-			// CORREGIDO: Removido actionRequired, agregado a metadata
 			metadata: {
 				budgetId: syncRequest.budgetId,
 				scheduleId: syncRequest.scheduleId,
 				conflicts: syncResult.conflictsDetected,
 				syncDirection: syncRequest.syncDirection,
-				requiresAction: true, // Movido a metadata
+				requiresAction: true,
 			},
 		});
 	}
+
 	private calculateProductivityRate(request: any, activity: any): number {
-		// En este contexto no tenemos request de progreso diario,
-		// así que calculamos basado en datos de actividad
 		if (
 			!activity.workQuantities?.plannedQuantity ||
 			!activity.plannedDurationDays
 		) {
-			return 1.0; // Valor por defecto
+			return 1.0;
 		}
 
-		const assumedWorkersPerDay = 2; // Estimación
+		const assumedWorkersPerDay = 2;
 		const assumedHoursPerDay = 8;
 		const totalPersonHours =
 			assumedWorkersPerDay * assumedHoursPerDay * activity.plannedDurationDays;
@@ -1032,21 +1000,16 @@ export class BudgetScheduleIntegrationService {
 			? activity.workQuantities.plannedQuantity / totalPersonHours
 			: 1.0;
 	}
-	// Método para calcular eficiencia (simplificado)
+
 	private calculateEfficiency(request: any, activity: any): number {
-		// Como no tenemos datos reales de progreso, asumimos 100% de eficiencia planificada
 		return 100;
 	}
 
-	// Método para calcular puntuación de calidad (simplificado)
 	private calculateQualityScore(request: any): number {
-		// Como no tenemos problemas de calidad en este contexto, asumimos puntuación perfecta
 		return 100;
 	}
 
-	// Método para calcular puntuación de seguridad (simplificado)
 	private calculateSafetyScore(request: any): number {
-		// Como no tenemos incidentes de seguridad en este contexto, asumimos puntuación perfecta
 		return 100;
 	}
 }
