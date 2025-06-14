@@ -18,7 +18,7 @@ import {
 	ActivityType,
 	ActivityPriority,
 	ConstructionTrade,
-} from "@domain/models/calculation/ScheduleActivity";
+} from "../../domain/models/calculation/ScheduleActivity";
 
 
 export interface BudgetScheduleSync {
